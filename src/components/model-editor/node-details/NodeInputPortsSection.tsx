@@ -63,26 +63,21 @@ import { useDimensionNames } from './useDimensionNames';
 type OutputPort = NonNullable<ReturnType<typeof getNodeSpec>>['outputPorts'][number];
 
 /**
- * Node categories whose backend classes only operate on input *nodes* —
- * dataset bindings are ignored (SubtractiveNode) or fail the computation
- * (MultiplicativeNode "must receive at least two inputs"), so datasets are
- * not offered as an input source at all.
+ * Node categories whose backend classes still read their dataset through the
+ * legacy `get_single_dataset` operation chain (GenericNode's default), which
+ * raises when more than one dataset is bound to the node. WeightedSum/Lever-
+ * style subclasses override the chain and are exempt via their own category.
+ *
+ * The additive/mix/multiplicative/subtractive families and most action
+ * classes have been migrated to uniform port bindings (node and dataset
+ * inputs are interchangeable; multi ports aggregate several bindings), so
+ * they are no longer restricted here — the backend's port-capacity check and
+ * constraint solver gate those binds. Legacy action classes (GenericAction,
+ * DatasetAction) can still fail with a second dataset, but the action
+ * category can't distinguish them from migrated ones; that failure now
+ * surfaces as node status instead of silent breakage.
  */
-const NODES_ONLY_CATEGORIES: ReadonlySet<CategoryKey> = new Set(['multiplicative', 'subtractive']);
-
-/**
- * Node categories whose backend classes read their dataset through
- * `get_input_dataset_pl`, which raises when more than one dataset is bound
- * to the node (AdditiveNode family, GenericNode/GenericAction default
- * operation chains). WeightedSum/Lever-style GenericNode subclasses override
- * the operation chain and are exempt.
- */
-const SINGLE_DATASET_CATEGORIES: ReadonlySet<CategoryKey> = new Set([
-  'additive',
-  'mix',
-  'generic',
-  'action',
-]);
+const SINGLE_DATASET_CATEGORIES: ReadonlySet<CategoryKey> = new Set(['generic']);
 
 /**
  * The source node's output ports compatible with `port`. On bare ports (no
@@ -433,8 +428,6 @@ export default function NodeInputPortsSection({
 
   const currentNode = nodeMap.get(currentNodeId);
   const currentCategory = currentNode ? getCategoryForNode(currentNode) : null;
-  const allowDatasetInputs =
-    currentCategory === null || !NODES_ONLY_CATEGORIES.has(currentCategory);
 
   // Add-port affordances from the node class's declared input roles: a
   // repeatable role can always take another port instance, a non-repeatable
@@ -1040,7 +1033,6 @@ export default function NodeInputPortsSection({
                   nodes={[...nodeMap.values()]}
                   port={editingPort}
                   currentNodeId={currentNodeId}
-                  allowDatasets={allowDatasetInputs}
                   datasetsDisabledReason={singleDatasetLimitReason(editingPort)}
                   currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
                     edgeId: e.id,

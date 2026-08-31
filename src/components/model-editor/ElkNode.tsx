@@ -126,7 +126,9 @@ const CLASS_CATEGORY: Record<string, CategoryKey> = {
   // Arithmetic operators (nodes/simple.py)
   SimpleNode: 'generic',
   AdditiveNode: 'additive',
+  AdditiveNode2: 'additive',
   MultiplicativeNode: 'multiplicative',
+  MultiplicativeNode2: 'multiplicative',
   SubtractiveNode: 'subtractive',
   MixNode: 'mix',
   FixedMultiplierNode: 'multiplicative',

@@ -30,12 +30,6 @@ type Props = {
   currentSources?: readonly CurrentInputSource[];
   removingEdgeId?: string | null;
   /**
-   * Offer dataset bindings as a source. Off for node types whose computation
-   * only operates on input nodes (e.g. multiplicative nodes) — a dataset
-   * bound to such a node is silently ignored or fails at compute time.
-   */
-  allowDatasets?: boolean;
-  /**
    * When set, the Datasets tab stays visible but shows this message instead
    * of the selector — for temporary limits (e.g. node types that support a
    * single input dataset and already have one bound).
@@ -124,7 +118,6 @@ export default function PortBindingSelector({
   currentNodeId,
   currentSources,
   removingEdgeId,
-  allowDatasets = true,
   datasetsDisabledReason,
   onSelectNode,
   onSelectDataset,
@@ -133,7 +126,6 @@ export default function PortBindingSelector({
   const t = useTranslations('model-editor');
   const [tab, setTab] = useState<SourceKind>('node');
   const [search, setSearch] = useState('');
-  const activeTab: SourceKind = allowDatasets ? tab : 'node';
 
   const excludeNodeIds = new Set(
     (currentSources ?? []).map((s) => s.node?.id).filter((id): id is string => id != null)
@@ -197,18 +189,16 @@ export default function PortBindingSelector({
           },
         }}
       />
-      {allowDatasets && (
-        <Tabs
-          value={activeTab}
-          onChange={(_, next: SourceKind) => setTab(next)}
-          variant="fullWidth"
-          sx={{ minHeight: 32, '& .MuiTab-root': { minHeight: 32, fontSize: 12 } }}
-        >
-          <Tab value="node" label={t('editor-nav-nodes')} />
-          <Tab value="dataset" label={t('editor-nav-datasets')} />
-        </Tabs>
-      )}
-      {activeTab === 'node' ? (
+      <Tabs
+        value={tab}
+        onChange={(_, next: SourceKind) => setTab(next)}
+        variant="fullWidth"
+        sx={{ minHeight: 32, '& .MuiTab-root': { minHeight: 32, fontSize: 12 } }}
+      >
+        <Tab value="node" label={t('editor-nav-nodes')} />
+        <Tab value="dataset" label={t('editor-nav-datasets')} />
+      </Tabs>
+      {tab === 'node' ? (
         <NodeSelector
           nodes={nodes}
           port={port}
