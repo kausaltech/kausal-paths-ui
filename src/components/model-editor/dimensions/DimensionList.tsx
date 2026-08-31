@@ -23,6 +23,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -30,7 +31,7 @@ import {
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { Pencil, Plus, Trash } from 'react-bootstrap-icons';
+import { Box as BoxIcon, Pencil, Plus, Trash } from 'react-bootstrap-icons';
 
 import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
@@ -42,6 +43,9 @@ function getDimensionsBase(pathname: string): string {
   const idx = pathname.indexOf('/model');
   return idx >= 0 ? pathname.slice(0, idx) + '/model/dimensions' : '/model/dimensions';
 }
+
+type SortKey = 'name' | 'categories' | 'datasets';
+type SortOrder = 'asc' | 'desc';
 
 export default function DimensionList() {
   const t = useTranslations('model-editor');
@@ -57,6 +61,17 @@ export default function DimensionList() {
   const pathname = usePathname();
   const base = getDimensionsBase(pathname);
   const [createOpen, setCreateOpen] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortOrder('asc');
+    }
+  };
 
   const instance = useInstance();
   const [deleteDimension, { loading: deleting }] = useMutation(DELETE_DIMENSION);
@@ -114,6 +129,24 @@ export default function DimensionList() {
     }
   }
 
+  const getSortValue = (dim: (typeof dimensions)[number]): string | number => {
+    switch (sortKey) {
+      case 'name':
+        return dim.name.toLowerCase();
+      case 'categories':
+        return dim.categories.length;
+      case 'datasets':
+        return datasetNamesByDimension.get(dim.id)?.length ?? 0;
+    }
+  };
+  const sortedDimensions = [...dimensions].sort((a, b) => {
+    const av = getSortValue(a);
+    const bv = getSortValue(b);
+    if (av < bv) return sortOrder === 'asc' ? -1 : 1;
+    if (av > bv) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   return (
     <Container maxWidth="lg" sx={{ pt: 20, pb: 3, mx: 0 }}>
       <Stack
@@ -124,7 +157,16 @@ export default function DimensionList() {
           mb: 2,
         }}
       >
-        <Typography variant="h5">{t('dimensions-title')}</Typography>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
+          <BoxIcon size={22} />
+          <Typography variant="h5">{t('dimensions-title')}</Typography>
+        </Stack>
         <Button variant="contained" startIcon={<Plus />} onClick={() => setCreateOpen(true)}>
           {t('dimensions-new-dimension')}
         </Button>
@@ -138,9 +180,33 @@ export default function DimensionList() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>{t('dimensions-name')}</TableCell>
-              <TableCell align="right">{t('dimensions-categories')}</TableCell>
-              <TableCell align="right">{t('dimensions-datasets')}</TableCell>
+              <TableCell sortDirection={sortKey === 'name' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'name'}
+                  direction={sortKey === 'name' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('name')}
+                >
+                  {t('dimensions-name')}
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'categories' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'categories'}
+                  direction={sortKey === 'categories' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('categories')}
+                >
+                  {t('dimensions-categories')}
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'datasets' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'datasets'}
+                  direction={sortKey === 'datasets' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('datasets')}
+                >
+                  {t('dimensions-datasets')}
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
                 {t('dimensions-actions')}
               </TableCell>
@@ -161,7 +227,7 @@ export default function DimensionList() {
                 </TableCell>
               </TableRow>
             )}
-            {dimensions.map((dim) => {
+            {sortedDimensions.map((dim) => {
               const usingDatasets = datasetNamesByDimension.get(dim.id) ?? [];
               return (
                 <TableRow
