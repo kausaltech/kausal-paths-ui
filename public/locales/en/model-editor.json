@@ -457,7 +457,6 @@
   "nodes-duplicate-node": "Duplicate node",
   "nodes-edit-input-port": "Edit input port",
   "nodes-edit-output-port": "Edit output port",
-  "nodes-explanation": "Node explanation",
   "nodes-failed-add-input-port": "Failed to add input port",
   "nodes-failed-create-edge": "Failed to create edge",
   "nodes-failed-remove-input-source": "Failed to remove input source",

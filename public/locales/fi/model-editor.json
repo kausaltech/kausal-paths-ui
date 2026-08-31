@@ -416,7 +416,6 @@
   "nodes-duplicate-node": "Monista solmu",
   "nodes-edit-input-port": "Muokkaa syöteporttia",
   "nodes-edit-output-port": "Muokkaa lähtöporttia",
-  "nodes-explanation": "Solmun selitys",
   "nodes-failed-add-input-port": "Syöteportin lisääminen epäonnistui",
   "nodes-failed-create-edge": "Kaaren luominen epäonnistui",
   "nodes-failed-remove-input-source": "Syötelähteen poistaminen epäonnistui",

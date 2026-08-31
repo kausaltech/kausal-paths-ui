@@ -421,7 +421,6 @@
   "nodes-duplicate-node": "Knoten duplizieren",
   "nodes-edit-input-port": "Eingabeport bearbeiten",
   "nodes-edit-output-port": "Ausgabeport bearbeiten",
-  "nodes-explanation": "Knotenerläuterung",
   "nodes-failed-add-input-port": "Eingabeport konnte nicht hinzugefügt werden",
   "nodes-failed-create-edge": "Kante konnte nicht erstellt werden",
   "nodes-failed-remove-input-source": "Eingabequelle konnte nicht entfernt werden",
