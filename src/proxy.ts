@@ -34,7 +34,7 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
 import { auth } from './lib/auth';
-import { getInstancesForRequest } from './middleware/context';
+import { getFreshInstancesForRequest, getInstancesForRequest } from './middleware/context';
 
 type Instance = AvailableInstanceFragment;
 
@@ -137,6 +137,9 @@ function errorResponse(
 }
 
 const NON_PAGE_PATHS = ['api', 'static', '_next', 'favicon.ico'];
+
+// Instances created through the self-service flow get a UUID basePath.
+const UUID_PATH_SEGMENT_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function isHotReloadPath(parts: string[]) {
   return isLocalDev && parts.join('/').startsWith('_next/static/webpack');
@@ -338,7 +341,21 @@ async function proxy(req: NextRequest) {
     }
     return errorResponse(req, reqHeaders, 'server-error', error);
   }
-  const match = determineMatchingInstance(instances, path);
+  let match = determineMatchingInstance(instances, path);
+  // A UUID first segment that didn't match any basePath is likely an instance
+  // created moments ago that the SWR-cached list (up to 30s stale) doesn't
+  // know about yet. Refetch the list once before falling back to the root
+  // instance (which would 404 the request).
+  if (match.basePath === '' && UUID_PATH_SEGMENT_RE.test(pathParts[0] ?? '')) {
+    try {
+      instances = await getFreshInstancesForRequest(req, hostname, logger);
+      match = determineMatchingInstance(instances, path);
+    } catch (error) {
+      // Keep the stale match; the request falls through to the usual
+      // not-found handling below.
+      Sentry.captureException(error);
+    }
+  }
   setInstanceHeaders(reqHeaders, instances, match?.instance ?? null);
   const { instance, basePath } = match;
   reqHeaders.set(BASE_PATH_HEADER, basePath);

@@ -3,18 +3,29 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft } from 'react-bootstrap-icons';
+import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 
 import { useTheme } from '@common/themes';
 import { getThemeStaticURL } from '@common/themes/theme';
 
 import type {
+  CreateInstanceEditUrlQueryVariables,
   CreateInstanceFrameworkNameQueryVariables,
   CreateInstanceMutationVariables,
 } from '@/common/__generated__/graphql';
@@ -57,6 +68,39 @@ type CreateInstanceData = {
   createInstance:
     | { instanceId: string; instanceName: string }
     | { messages: { kind: string; message: string; field?: string }[] };
+};
+
+// The create mutation only returns the instance identifier, so the public URL
+// of the new instance (host or path scoped, depending on the framework) is
+// resolved separately via `frameworkConfig.viewUrl` once creation succeeds.
+const NEW_INSTANCE_EDIT_URL: TypedDocumentNode<
+  CreateInstanceEditUrlData,
+  CreateInstanceEditUrlQueryVariables
+> = gql`
+  query CreateInstanceEditUrl($frameworkId: ID!) {
+    me {
+      id
+      editableInstances(frameworkId: $frameworkId) {
+        id
+        identifier
+        frameworkConfig {
+          id
+          viewUrl
+        }
+      }
+    }
+  }
+`;
+
+type CreateInstanceEditUrlData = {
+  me: {
+    id: string;
+    editableInstances: {
+      id: string;
+      identifier: string;
+      frameworkConfig: { id: string; viewUrl: string | null } | null;
+    }[];
+  } | null;
 };
 
 function isOperationError(
@@ -128,6 +172,17 @@ export default function CreateInstancePage() {
     skip: !frameworkId,
   });
   const frameworkName = frameworkData?.framework?.name;
+
+  const { data: editUrlData, loading: editUrlLoading } = useQuery(NEW_INSTANCE_EDIT_URL, {
+    variables: { frameworkId },
+    skip: !created,
+    fetchPolicy: 'network-only',
+  });
+  const newInstanceViewUrl = created
+    ? editUrlData?.me?.editableInstances.find((i) => i.identifier === created.instanceId)
+        ?.frameworkConfig?.viewUrl
+    : null;
+  const editorUrl = newInstanceViewUrl ? `${newInstanceViewUrl.replace(/\/$/, '')}/model` : null;
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -220,9 +275,26 @@ export default function CreateInstancePage() {
               <Alert severity="success">
                 {t('create-model-success', { name: newInstanceName })}
               </Alert>
-              <Button variant="contained" size="large" onClick={() => router.push('/')} fullWidth>
-                {t('return-to-front')}
-              </Button>
+              {editorUrl || editUrlLoading ? (
+                // Same-tab navigation: the editor lives under the new
+                // instance's own URL, so a full load replaces this session's
+                // instance context on purpose.
+                <Button
+                  variant="contained"
+                  size="large"
+                  href={editorUrl ?? undefined}
+                  loading={editUrlLoading}
+                  loadingIndicator={<CircularProgress color="inherit" size={18} />}
+                  endIcon={<ArrowRight />}
+                  fullWidth
+                >
+                  {t('create-model-continue')}
+                </Button>
+              ) : (
+                <Button variant="contained" size="large" onClick={() => router.push('/')} fullWidth>
+                  {t('return-to-front')}
+                </Button>
+              )}
             </Stack>
           ) : (
             <Box component="form" onSubmit={(e) => void handleSubmit(e)}>
@@ -266,7 +338,9 @@ export default function CreateInstancePage() {
                     size="large"
                     loading={loading}
                     loadingPosition="start"
+                    loadingIndicator={<CircularProgress color="inherit" size={18} />}
                     fullWidth
+                    sx={{ lineHeight: 1.2 }}
                   >
                     {loading ? t('create-model-creating') : t('create-model-submit')}
                   </Button>

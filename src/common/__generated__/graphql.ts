@@ -672,6 +672,25 @@ export type CreateInstanceMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type CreateInstanceEditUrlQueryVariables = Exact<{
+  frameworkId: string | number;
+}>;
+
+
+export type CreateInstanceEditUrlQuery = (
+  { me: (
+    { id: string, editableInstances: Array<(
+      { id: string, identifier: string, frameworkConfig: (
+        { id: string, viewUrl: string | null }
+        & { __typename: 'FrameworkConfig' }
+      ) | null }
+      & { __typename: 'InstanceType' }
+    )> }
+    & { __typename: 'User' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type FrameworkNameQueryVariables = Exact<{
   identifier: string | number;
 }>;
