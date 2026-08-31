@@ -398,7 +398,11 @@ async function proxy(req: NextRequest) {
   if (requiresAuth) {
     const sessionCookie = getSessionCookie(req);
     if (!sessionCookie) {
-      return NextResponse.redirect(new URL('/auth/sign-in', req.url));
+      const signInUrl = new URL('/auth/sign-in', req.url);
+      // Preserve the originally requested URL (pre-rewrite, so including any
+      // instance basePath) so sign-in can return the user to it.
+      signInUrl.searchParams.set('next', nextUrl.pathname + nextUrl.search);
+      return NextResponse.redirect(signInUrl);
     }
   }
 
