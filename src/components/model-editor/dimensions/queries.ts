@@ -7,6 +7,8 @@ import type {
   CreateDimensionMutationVariables,
   DeleteDimensionCategoryMutation,
   DeleteDimensionCategoryMutationVariables,
+  DeleteDimensionMutation,
+  DeleteDimensionMutationVariables,
   InstanceDimensionsQuery,
   InstanceDimensionsQueryVariables,
   UpdateDimensionCategoriesMutation,
@@ -78,6 +80,26 @@ export const CREATE_DIMENSION: TypedDocumentNode<
     }
   }
   ${INSTANCE_DIMENSION_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_DIMENSION: TypedDocumentNode<
+  DeleteDimensionMutation,
+  DeleteDimensionMutationVariables
+> = gql`
+  mutation DeleteDimension($instanceId: ID!, $dimensionId: UUID!) {
+    instanceEditor(instanceId: $instanceId) {
+      deleteDimension(dimensionId: $dimensionId) {
+        __typename
+        ... on ModelDeletePayload {
+          ok
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
   ${OPERATION_INFO_FIELDS}
 `;
 

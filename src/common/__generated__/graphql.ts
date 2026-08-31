@@ -2136,6 +2136,32 @@ export type CreateDimensionMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type DeleteDimensionMutationVariables = Exact<{
+  instanceId: string | number;
+  dimensionId: string;
+}>;
+
+
+export type DeleteDimensionMutation = (
+  { instanceEditor: (
+    { deleteDimension:
+      | (
+        { ok: boolean }
+        & { __typename: 'ModelDeletePayload' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type UpdateDimensionMutationVariables = Exact<{
   instanceId: string | number;
   input: UpdateDimensionInput;
