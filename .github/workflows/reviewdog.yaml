@@ -35,6 +35,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile --no-optional
 
+      - name: Generate Next.js types
+        run: pnpm typegen
+
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: v0.21.0
