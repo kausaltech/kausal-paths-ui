@@ -20,7 +20,11 @@ jobs:
           fetch-depth: 0
 
       - name: Check out submodules
-        run: git submodule update --init --recursive --checkout
+        run: |
+          if ssh_command=$(git config --local core.sshCommand); then
+            export GIT_SSH_COMMAND="$ssh_command"
+          fi
+          git submodule update --init --recursive --checkout
 
       - uses: pnpm/action-setup@v6
 

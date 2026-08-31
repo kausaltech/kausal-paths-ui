@@ -86,7 +86,11 @@ jobs:
           ssh-key: ${{ secrets.PRIVATE_SUBMODULE_DEPLOY_KEY }}
 
       - name: Check out submodules
-        run: git submodule update --init --recursive --checkout
+        run: |
+          if ssh_command=$(git config --local core.sshCommand); then
+            export GIT_SSH_COMMAND="$ssh_command"
+          fi
+          git submodule update --init --recursive --checkout
 
       - name: Install dependencies for e2e tests
         run: corepack enable pnpm && pnpm install --frozen-lockfile
