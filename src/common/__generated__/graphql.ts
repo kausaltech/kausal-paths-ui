@@ -1274,7 +1274,10 @@ export type DatasetSummaryFieldsFragment = (
     { id: string, name: string }
     & { __typename: 'DatasetDimension' }
   )>, metrics: Array<(
-    { id: string, label: string, unitInfo: (
+    { id: string, label: string, quantity: (
+      { id: string }
+      & { __typename: 'QuantityKindType' }
+    ) | null, unitInfo: (
       { id: string, standard: string }
       & { __typename: 'UnitType' }
     ) | null }
@@ -1416,7 +1419,10 @@ export type InstanceDatasetsQuery = (
           { id: string, name: string }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, label: string, unitInfo: (
+          { id: string, label: string, quantity: (
+            { id: string }
+            & { __typename: 'QuantityKindType' }
+          ) | null, unitInfo: (
             { id: string, standard: string }
             & { __typename: 'UnitType' }
           ) | null }
@@ -1545,7 +1551,10 @@ export type CreateDatasetMutation = (
           { id: string, name: string }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, label: string, unitInfo: (
+          { id: string, label: string, quantity: (
+            { id: string }
+            & { __typename: 'QuantityKindType' }
+          ) | null, unitInfo: (
             { id: string, standard: string }
             & { __typename: 'UnitType' }
           ) | null }

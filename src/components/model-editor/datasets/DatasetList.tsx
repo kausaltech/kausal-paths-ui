@@ -31,7 +31,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useQuery } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
   ChatLeft,
@@ -47,11 +47,12 @@ import {
 } from 'react-bootstrap-icons';
 
 import type { InstanceDatasetsQuery } from '@/common/__generated__/graphql';
+import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { useEditorDateFormat } from '../useEditorDateFormat';
 import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { CreateDatasetDialog } from './CreateDatasetDialog';
-import { GET_INSTANCE_DATASETS } from './queries';
+import { CREATE_DATASET, GET_INSTANCE_DATASETS } from './queries';
 import { getUserName } from './shared';
 
 function getDatasetsBase(pathname: string): string {
@@ -166,6 +167,49 @@ export default function DatasetList() {
   const base = getDatasetsBase(pathname);
   const [notice, setNotice] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+
+  const instance = useInstance();
+  const [createDataset] = useMutation(CREATE_DATASET);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+
+  // "Duplicate" copies the schema only (dimensions and metrics), not the data
+  // points — the backend has no full-copy mutation yet.
+  const handleDuplicate = async (ds: DatasetRow) => {
+    if (duplicatingId !== null) return;
+    setDuplicatingId(ds.id);
+    try {
+      const result = await createDataset({
+        variables: {
+          instanceId: instance.id,
+          input: {
+            name: t('datasets-copy-of', { name: ds.name ?? '' }),
+            dimensions: ds.dimensions.map((d) => d.id),
+            metrics: ds.metrics.map((m) => ({
+              id: null,
+              label: m.label ?? '',
+              unit: m.unitInfo?.standard ?? '',
+              quantity: m.quantity?.id ?? null,
+            })),
+            identifier: null,
+            id: null,
+          },
+        },
+        refetchQueries: [GET_INSTANCE_DATASETS],
+      });
+      const payload = result.data?.instanceEditor.createDataset;
+      if (payload?.__typename === 'Dataset') {
+        router.push(`${base}/${encodeURIComponent(payload.id)}`);
+      } else if (payload?.__typename === 'OperationInfo') {
+        setNotice(payload.messages.map((m) => m.message).join(' '));
+      } else {
+        setNotice(t('common-failed'));
+      }
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : t('common-failed'));
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
   const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -455,9 +499,7 @@ export default function DatasetList() {
                     canChange={!editorReadOnly && ds.userPermissions?.change === true}
                     canDelete={!editorReadOnly && ds.userPermissions?.delete === true}
                     isProtected={!ds.isEditable}
-                    onDuplicate={() =>
-                      setNotice(t('datasets-duplicating-not-implemented', { name: ds.name }))
-                    }
+                    onDuplicate={() => void handleDuplicate(ds)}
                     onDelete={() =>
                       setNotice(t('datasets-deleting-not-implemented', { name: ds.name }))
                     }

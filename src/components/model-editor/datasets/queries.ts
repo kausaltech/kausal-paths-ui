@@ -61,6 +61,9 @@ export const DATASET_SUMMARY_FIELDS = gql`
     metrics {
       id
       label
+      quantity {
+        id
+      }
       unitInfo {
         id
         standard
