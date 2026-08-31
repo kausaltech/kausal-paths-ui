@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 
@@ -15,6 +15,10 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   Table,
@@ -31,7 +35,13 @@ import {
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { Box as BoxIcon, Pencil, Plus, Trash } from 'react-bootstrap-icons';
+import {
+  Box as BoxIcon,
+  PencilSquare,
+  Plus,
+  ThreeDotsVertical,
+  Trash,
+} from 'react-bootstrap-icons';
 
 import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
@@ -47,6 +57,59 @@ function getDimensionsBase(pathname: string): string {
 type SortKey = 'name' | 'categories' | 'datasets';
 type SortOrder = 'asc' | 'desc';
 
+type DimensionRowActionsProps = {
+  onOpen: () => void;
+  onDelete: () => void;
+  onOpenChange?: (open: boolean) => void;
+};
+
+function DimensionRowActions({ onOpen, onDelete, onOpenChange }: DimensionRowActionsProps) {
+  const t = useTranslations('model-editor');
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const open = (e: MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+    onOpenChange?.(true);
+  };
+  const close = () => {
+    setAnchorEl(null);
+    onOpenChange?.(false);
+  };
+  const wrap = (handler: () => void) => () => {
+    close();
+    handler();
+  };
+  return (
+    <>
+      <Tooltip title={t('dimensions-actions')}>
+        <IconButton size="small" onClick={open} aria-label={t('dimensions-actions')}>
+          <ThreeDotsVertical />
+        </IconButton>
+      </Tooltip>
+      <Menu
+        anchorEl={anchorEl}
+        open={anchorEl !== null}
+        onClose={close}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ list: { dense: true } }}
+      >
+        <MenuItem onClick={wrap(onOpen)}>
+          <ListItemIcon>
+            <PencilSquare size={14} />
+          </ListItemIcon>
+          <ListItemText>{t('dimensions-edit')}</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={wrap(onDelete)}>
+          <ListItemIcon>
+            <Trash size={14} />
+          </ListItemIcon>
+          <ListItemText>{t('dimensions-delete')}</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
 export default function DimensionList() {
   const t = useTranslations('model-editor');
   const { data, loading, error } = useQuery(GET_INSTANCE_DIMENSIONS, {
@@ -61,6 +124,7 @@ export default function DimensionList() {
   const pathname = usePathname();
   const base = getDimensionsBase(pathname);
   const [createOpen, setCreateOpen] = useState(false);
+  const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
@@ -233,6 +297,7 @@ export default function DimensionList() {
                 <TableRow
                   key={dim.id}
                   hover
+                  selected={openMenuRowId === dim.id}
                   sx={{ cursor: 'pointer' }}
                   onClick={() => router.push(`${base}/${encodeURIComponent(dim.id)}`)}
                 >
@@ -285,25 +350,14 @@ export default function DimensionList() {
                     )}
                   </TableCell>
                   <TableCell align="right" onClick={(e) => e.stopPropagation()}>
-                    <Tooltip title={t('dimensions-edit')}>
-                      <IconButton
-                        size="small"
-                        onClick={() => router.push(`${base}/${encodeURIComponent(dim.id)}`)}
-                      >
-                        <Pencil size={18} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={t('dimensions-delete')}>
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setDeleteError('');
-                          setDeleteTarget({ id: dim.id, name: dim.name });
-                        }}
-                      >
-                        <Trash size={18} />
-                      </IconButton>
-                    </Tooltip>
+                    <DimensionRowActions
+                      onOpen={() => router.push(`${base}/${encodeURIComponent(dim.id)}`)}
+                      onDelete={() => {
+                        setDeleteError('');
+                        setDeleteTarget({ id: dim.id, name: dim.name });
+                      }}
+                      onOpenChange={(open) => setOpenMenuRowId(open ? dim.id : null)}
+                    />
                   </TableCell>
                 </TableRow>
               );
