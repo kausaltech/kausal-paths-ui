@@ -68,6 +68,7 @@ export default function RegisterPage() {
   const theme = useTheme();
   const searchParams = useSearchParams();
   const frameworkId = searchParams.get('framework') ?? '';
+  const invitationToken = searchParams.get('invitation_code');
   const logoUrl = theme.themeLogoUrl ? getThemeStaticURL(theme.themeLogoUrl) : null;
   const isLogoBitmap = theme.themeLogoUrl?.endsWith('.png');
 
@@ -89,8 +90,8 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
-    if (!frameworkId) {
-      setError('Framework not specified');
+    if (!frameworkId && !invitationToken) {
+      setError('Registration context not specified');
       return;
     }
 
@@ -98,8 +99,8 @@ export default function RegisterPage() {
       const { data } = await registerUser({
         variables: {
           input: {
-            frameworkId,
-            invitationToken: null,
+            frameworkId: frameworkId || null,
+            invitationToken,
             email,
             password,
             firstName: firstName || null,

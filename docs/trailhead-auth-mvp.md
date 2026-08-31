@@ -78,6 +78,11 @@ This is faster to implement than adding `django-registration` to the
 backend and templating the IdP login page — and gives us full control
 over the registration UX.
 
+Invitation emails use the same registration page with an
+`invitation_code` query parameter. The page passes that value to GraphQL as
+`RegisterUserInput.invitationToken`; redeeming it accepts the invitation and
+grants the new user the instance-admin role.
+
 ### Route Protection
 
 The Next.js 16 proxy (`src/proxy.ts`) already handles instance routing.
