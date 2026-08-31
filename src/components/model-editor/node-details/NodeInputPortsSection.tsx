@@ -423,6 +423,8 @@ export default function NodeInputPortsSection({
   const updateInputPorts = useUpdateInputPorts();
   const [addPortDialogOpen, setAddPortDialogOpen] = useState(false);
   const [addPortMenuAnchor, setAddPortMenuAnchor] = useState<HTMLElement | null>(null);
+  const [addingPort, setAddingPort] = useState(false);
+  const [addPortError, setAddPortError] = useState<string | null>(null);
   const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
   const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
 
@@ -454,12 +456,17 @@ export default function NodeInputPortsSection({
       key: `role:${decl.role}`,
       label: decl.label ?? decl.role,
       action: () => {
+        if (addingPort) return;
+        setAddingPort(true);
+        setAddPortError(null);
         // Carry the declaration's `multi` — an omitted multi serializes as
         // false, which would turn a multi-role port into a single-input one
         // (bindings replacing instead of appending).
-        void addInputPort({ nodeId: currentNodeId, role: decl.role, multi: decl.multi }).catch(
-          () => {}
-        );
+        void addInputPort({ nodeId: currentNodeId, role: decl.role, multi: decl.multi })
+          .catch((err: unknown) =>
+            setAddPortError(err instanceof Error ? err.message : t('common-save-failed'))
+          )
+          .finally(() => setAddingPort(false));
       },
     })),
     ...(showAuthoredPortAdd
@@ -904,9 +911,19 @@ export default function NodeInputPortsSection({
       })}
       {!readOnly && addPortOptions.length > 0 && (
         <Paper variant="outlined" sx={{ p: 1 }}>
+          {addPortError && (
+            <Alert
+              severity="error"
+              onClose={() => setAddPortError(null)}
+              sx={{ mb: 1, fontSize: 12 }}
+            >
+              {addPortError}
+            </Alert>
+          )}
           <Button
             size="small"
-            startIcon={<Plus />}
+            startIcon={addingPort ? <CircularProgress size={14} color="inherit" /> : <Plus />}
+            disabled={addingPort}
             onClick={(event) => {
               if (addPortOptions.length === 1) addPortOptions[0].action();
               else setAddPortMenuAnchor(event.currentTarget);
