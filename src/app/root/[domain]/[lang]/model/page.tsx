@@ -14,10 +14,6 @@ import {
   Chip,
   Collapse,
   Container,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
   Paper,
   Snackbar,
   Stack,
@@ -29,7 +25,6 @@ import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
-  ArrowRight,
   Box as BoxIcon,
   CaretDownFill,
   CaretRightFill,
@@ -43,11 +38,6 @@ import {
 import type { ModelEditorLandingDataQueryVariables } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { constraintViolationsVar } from '@/components/model-editor/constraintViolations';
-import {
-  type EditableNodeField,
-  type MockNodeEdit,
-  mockNodeEditsVar,
-} from '@/components/model-editor/mockEdits';
 import { getModelEditorBase } from '@/components/model-editor/paths';
 import {
   INSTANCE_EDITOR_PUBLISH_STATE,
@@ -214,24 +204,6 @@ const CARD_DEFS = [
   },
 ] as const;
 
-type EditedNodeRow = {
-  id: string;
-  originalName: string;
-  editedFields: string[];
-};
-
-const FIELD_LABEL_KEYS = {
-  actionGroup: 'editor-field-action-group',
-} as const satisfies Record<EditableNodeField, string>;
-
-function getEditedFieldLabels(edit: MockNodeEdit, t: ReturnType<typeof useTranslations>): string[] {
-  const labels: string[] = [];
-  for (const key of Object.keys(FIELD_LABEL_KEYS) as EditableNodeField[]) {
-    if (edit[key] !== undefined) labels.push(t(FIELD_LABEL_KEYS[key]));
-  }
-  return labels;
-}
-
 function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <Box sx={{ display: 'flex', gap: 2, alignItems: 'baseline' }}>
@@ -273,7 +245,6 @@ export default function ModelEditorLandingPage() {
   const df = useEditorDateFormat();
   const pathname = usePathname();
   const instance = useInstance();
-  const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const previewMode = useReactiveVar(editorPreviewModeVar);
 
   const { data } = useQuery(GET_LANDING_DATA, {
@@ -284,29 +255,6 @@ export default function ModelEditorLandingPage() {
 
   const [toast, setToast] = useState<ToastState>(null);
   const [conflictsOpen, setConflictsOpen] = useState(false);
-
-  const editedRows = useMemo<EditedNodeRow[]>(() => {
-    const nodes = data?.instance.model.nodes ?? [];
-    const byId = new Map(nodes.map((n) => [n.id, n.name]));
-    const rows: EditedNodeRow[] = [];
-    for (const [id, edit] of Object.entries(nodeEdits)) {
-      const editedFields = getEditedFieldLabels(edit, t);
-      if (editedFields.length === 0) continue;
-      rows.push({ id, originalName: byId.get(id) ?? id, editedFields });
-    }
-    return rows;
-  }, [nodeEdits, data, t]);
-
-  const latestMockEdit = useMemo(() => {
-    let latest: { at: Date; by: string } | null = null;
-    for (const edit of Object.values(nodeEdits)) {
-      if (!edit.editedAt) continue;
-      if (!latest || edit.editedAt > latest.at) {
-        latest = { at: edit.editedAt, by: edit.editedBy ?? t('common-unknown-user') };
-      }
-    }
-    return latest;
-  }, [nodeEdits, t]);
 
   // Seed the optimistic-locking token var whenever the query returns a new
   // value — mutations read from this var to gate writes via the backend's
@@ -344,7 +292,6 @@ export default function ModelEditorLandingPage() {
       .map((u) => nodeNameByUuid.get(u))
       .filter((n): n is string => n != null);
   };
-  const hasMockEdits = editedRows.length > 0;
   const lastPublishedLabel = editor?.lastPublishedAt ? df.dateTime(editor.lastPublishedAt) : null;
   const lastPublishedRelative = formatRelative(editor?.lastPublishedAt, t);
   // Shown instead of a publish timestamp while nothing has been published.
@@ -610,78 +557,6 @@ export default function ModelEditorLandingPage() {
               </Box>
             </Collapse>
           </Alert>
-        )}
-
-        {hasMockEdits && (
-          <>
-            <Divider sx={{ mt: 2, mb: 1 }} />
-            <Typography variant="caption" sx={{ color: 'info.main', display: 'block', mb: 1 }}>
-              {t('editor-mock-preview')}
-              {latestMockEdit
-                ? t('editor-mock-preview-last-edited', {
-                    date: df.dateTime(latestMockEdit.at),
-                    name: latestMockEdit.by,
-                  })
-                : ''}
-            </Typography>
-            <List dense disablePadding>
-              {editedRows.map((row) => (
-                <ListItem
-                  key={row.id}
-                  disableGutters
-                  secondaryAction={
-                    <Button
-                      size="small"
-                      variant="text"
-                      component={Link}
-                      href={`${base}/nodes?node=${encodeURIComponent(row.id)}`}
-                    >
-                      {t('common-view')}
-                    </Button>
-                  }
-                  sx={{
-                    borderTop: '1px solid',
-                    borderColor: 'divider',
-                    py: 1,
-                    bgcolor: (theme) => `${theme.palette.info.main}14`,
-                  }}
-                >
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'info.dark' }}>
-                          {row.originalName}
-                        </Typography>
-                        <ArrowRight size={12} />
-                      </Box>
-                    }
-                    secondary={
-                      <Box
-                        component="span"
-                        sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}
-                      >
-                        {row.editedFields.map((label) => (
-                          <Chip
-                            key={label}
-                            label={label}
-                            size="small"
-                            variant="outlined"
-                            sx={{
-                              height: 18,
-                              borderColor: 'info.main',
-                              color: 'info.dark',
-                              '& .MuiChip-label': { px: 0.75, fontSize: 10 },
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    }
-                    slotProps={{ secondary: { component: 'div' } }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </>
         )}
       </Paper>
 

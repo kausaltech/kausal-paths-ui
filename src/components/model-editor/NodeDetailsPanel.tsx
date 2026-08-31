@@ -15,14 +15,13 @@ import {
   type SetActionEnabledMutation,
   type SetActionEnabledMutationVariables,
 } from '@/common/__generated__/graphql';
-import { useSession } from '@/lib/auth-client';
 import NodeChangeHistorySection from './NodeChangeHistorySection';
 import NodeDetailsSection from './NodeDetailsSection';
 import { useEditorUiActions } from './editor-ui';
-import { mockNodeEditsVar } from './mockEdits';
 import { NodeContentSection } from './node-details/NodeContentSection';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
 import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
+import type { ActionGroupOption } from './node-details/fields';
 import { CollapsibleSection, getStyleForNode } from './node-details/shared';
 import { getNodeGroup, getNodeSpec } from './nodeHelpers';
 import { NODE_PARAMETERS, type NodeStatusEntry, nodeStatusVar } from './queries';
@@ -173,7 +172,7 @@ function ActionEnabledToggle({
   );
 }
 
-export type ActionGroupOption = { id: string; name: string; color: string | null };
+export type { ActionGroupOption };
 
 export type NodeDetailsPanelProps = {
   node: EditorNodeFieldsFragment | null;
@@ -196,10 +195,7 @@ export default function NodeDetailsPanel({
 }: NodeDetailsPanelProps) {
   const t = useTranslations('model-editor');
   const { focusNode } = useEditorUiActions();
-  const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const statusEntry = useReactiveVar(nodeStatusVar)[node?.id ?? ''];
-  const { data: session } = useSession();
-  const editorUserName = session?.user?.name ?? session?.user?.email ?? t('common-unknown-user');
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [problemsOpen, setProblemsOpen] = useState(true);
   const [contentOpen, setContentOpen] = useState(true);
@@ -210,7 +206,6 @@ export default function NodeDetailsPanel({
   const [historyOpen, setHistoryOpen] = useState(false);
   const readOnly = useIsEntityReadOnly(node);
 
-  const currentEdit = node ? nodeEdits[node.id] : undefined;
   const displayName = node?.name ?? '';
 
   const { data: parametersData } = useQuery(NODE_PARAMETERS, {
@@ -367,8 +362,6 @@ export default function NodeDetailsPanel({
       >
         <NodeDetailsSection
           node={node}
-          editorUserName={editorUserName}
-          currentEdit={currentEdit}
           nodeGroupOptions={nodeGroupOptions}
           actionGroupOptions={actionGroups}
           readOnly={readOnly}

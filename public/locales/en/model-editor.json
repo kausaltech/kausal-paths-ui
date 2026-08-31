@@ -308,8 +308,6 @@
   "editor-last-published": "Last published {date}",
   "editor-last-published-with-relative": "Last published {date} ({relative})",
   "editor-manage-access": "Manage access",
-  "editor-mock-preview": "Mock preview · edits to short name, description, node group and action group are not yet persisted",
-  "editor-mock-preview-last-edited": " · last edited {date} by {name}",
   "editor-model-landing": "Model editor",
   "editor-model-properties": "Properties",
   "editor-model-properties-hint": "Basic settings of this model.",

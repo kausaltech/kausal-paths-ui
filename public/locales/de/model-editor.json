@@ -272,8 +272,6 @@
   "editor-last-published": "Zuletzt veröffentlicht {date}",
   "editor-last-published-with-relative": "Zuletzt veröffentlicht {date} ({relative})",
   "editor-manage-access": "Zugriff verwalten",
-  "editor-mock-preview": "Mock-Vorschau · Änderungen an Kurzname, Beschreibung, Knotengruppe und Maßnahmengruppe werden noch nicht gespeichert",
-  "editor-mock-preview-last-edited": " · zuletzt bearbeitet {date} von {name}",
   "editor-model-landing": "Modelleditor",
   "editor-model-properties": "Eigenschaften",
   "editor-model-properties-hint": "Grundeinstellungen dieses Modells.",

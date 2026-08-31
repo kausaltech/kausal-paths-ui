@@ -69,6 +69,11 @@ export function useUpdateNodeMutation() {
           if (input.nodeGroup !== undefined) {
             override.nodeGroup = payload.editor?.nodeGroup ?? null;
           }
+          // The action group rides inside the replaced action type config, so
+          // any config write on an action may have changed it.
+          if (input.config !== undefined && payload.__typename === 'ActionNode') {
+            override.actionGroup = payload.group ?? null;
+          }
           patchNodeGraphOverride(nodeId, override);
         }
         return result;

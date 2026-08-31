@@ -1,7 +1,6 @@
 import { type FC, Fragment, type ReactElement, createContext, memo, use } from 'react';
 
 import { Box, Tooltip, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 
 import { useReactiveVar } from '@apollo/client/react';
 import {
@@ -42,7 +41,6 @@ import {
 
 import { NodeStatus } from '@/common/__generated__/graphql';
 import { nodeDisplaySettingsVar } from './displaySettings';
-import { mockNodeEditsVar } from './mockEdits';
 import { type NodeStatusEntry, nodeStatusVar } from './queries';
 
 export type NodeGraphInteraction = {
@@ -348,9 +346,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
   const { highlightedNodeIds, activeNodeId, onHiddenContextClick } = use(
     NodeGraphInteractionContext
   );
-  const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const display = useReactiveVar(nodeDisplaySettingsVar);
-  const hasMockEdit = Boolean(nodeEdits[id]);
   const statusEntry = useReactiveVar(nodeStatusVar)[id];
   const statusSeverity = getStatusSeverity(statusEntry?.status);
   const highlighted = highlightedNodeIds.has(id);
@@ -505,9 +501,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                 ? `2px solid ${style.border}`
                 : 'none',
             outlineOffset: active ? '1px' : undefined,
-            backgroundColor: hasMockEdit
-              ? (theme) => alpha(theme.palette.info.main, 0.18)
-              : 'white',
+            backgroundColor: 'white',
             minWidth: 100,
             maxWidth: 180,
             minHeight: 8 * Math.max(targetCount, sourceCount),

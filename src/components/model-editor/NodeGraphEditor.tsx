@@ -254,7 +254,7 @@ function FlowEditor(props: {
     source: NodeLayoutSource;
   }[];
   outcomeNodeIds: readonly string[];
-  actionGroups: readonly { id: string; name: string; color: string | null }[];
+  actionGroups: readonly { id: string; uuid: string; name: string; color: string | null }[];
 }) {
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
@@ -639,6 +639,23 @@ function applyOverride(
   }
   if (override.nodeGroup !== undefined && merged.editor) {
     merged.editor = { ...merged.editor, nodeGroup: override.nodeGroup };
+  }
+  if (override.actionGroup !== undefined && merged.__typename === 'ActionNode') {
+    const group = override.actionGroup;
+    merged.group = group
+      ? { __typename: 'ActionGroupType', id: group.id, name: group.name, color: group.color }
+      : null;
+    // The group also lives in the action type config (as a UUID), which node
+    // duplication reads — keep it in sync so a duplicate lands in the new group.
+    if (merged.editor?.spec?.typeConfig?.__typename === 'ActionConfigType') {
+      merged.editor = {
+        ...merged.editor,
+        spec: {
+          ...merged.editor.spec,
+          typeConfig: { ...merged.editor.spec.typeConfig, group: group?.uuid ?? null },
+        },
+      };
+    }
   }
   return merged;
 }

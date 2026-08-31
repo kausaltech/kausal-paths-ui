@@ -2439,7 +2439,7 @@ export type NodeGraphQueryVariables = Exact<{ [key: string]: never; }>;
 export type NodeGraphQuery = (
   { instance: (
     { id: string, identifier: string, actionGroups: Array<(
-      { id: string, name: string, color: string | null }
+      { id: string, uuid: string, name: string, color: string | null }
       & { __typename: 'ActionGroupType' }
     )>, editor: (
       { nodeLayouts: Array<(
@@ -3839,7 +3839,10 @@ export type UpdateNodeMutation = (
     { nodeEditor: (
       { update:
         | (
-          { id: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, editor: (
+          { id: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, group: (
+            { id: string, uuid: string, name: string, color: string | null }
+            & { __typename: 'ActionGroupType' }
+          ) | null, editor: (
             { nodeGroup: string | null }
             & { __typename: 'NodeEditor' }
           ) | null }
