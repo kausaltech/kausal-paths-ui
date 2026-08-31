@@ -1,4 +1,4 @@
-import { Suspense, lazy, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { Box, CircularProgress, Drawer } from '@mui/material';
@@ -65,8 +65,6 @@ import useLayoutNodes from './useLayoutNodes';
 import { useNodeCrudActions } from './useNodeCrudActions';
 import { useNodeStatuses } from './useNodeStatuses';
 import { useClearNodeLayouts, useUpdateNodeLayouts } from './useUpdateNodeLayouts';
-
-const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
 
 const nodeTypes = {
   elk: ElkNode,
@@ -260,10 +258,6 @@ function FlowEditor(props: {
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
   const { screenToFlowPosition } = useReactFlow();
-  const [wizardOpen, setWizardOpen] = useState(false);
-  const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
-    null
-  );
   const [overlay, setOverlay] = useState<
     | { kind: 'metrics'; nodeId: string; nodeName: string | null }
     | { kind: 'dataset'; bindingId: string }
@@ -432,13 +426,11 @@ function FlowEditor(props: {
     (event: React.MouseEvent, node: { id: string }) => {
       event.preventDefault();
       const graphNode = nodeMap.get(node.id);
-      const isAction = (graphNode?.kind ?? '').toLowerCase() === 'action';
       setContextMenu({
         kind: 'node',
         mouseX: event.clientX,
         mouseY: event.clientY,
         nodeId: node.id,
-        isAction,
         isProtected: graphNode?.isEditable === false,
         canChange: graphNode?.userPermissions?.change === true,
         canDelete: graphNode?.userPermissions?.delete === true,
@@ -467,16 +459,6 @@ function FlowEditor(props: {
   const handleHideEdge = useCallback((edgeId: string) => {
     setUserHiddenEdgeIds((prev) => new Set([...prev, edgeId]));
   }, []);
-
-  const handleOpenActionWizard = useCallback(
-    (nodeId: string) => {
-      const node = nodeMap.get(nodeId);
-      if (!node) return;
-      setWizardSourceAction(node);
-      setWizardOpen(true);
-    },
-    [nodeMap]
-  );
 
   const handleNodeDeleted = useCallback(
     (nodeId: string) => {
@@ -540,7 +522,6 @@ function FlowEditor(props: {
                 state={contextMenu}
                 onClose={() => setContextMenu(null)}
                 onHideEdge={handleHideEdge}
-                onOpenActionWizard={handleOpenActionWizard}
                 onDuplicateNode={crud.duplicateNode}
                 onDeleteNode={crud.requestDeleteNode}
                 onNewNode={crud.createNodeAt}
@@ -602,21 +583,6 @@ function FlowEditor(props: {
           </Box>
           <AssistantIntegration />
         </Box>
-        {wizardOpen && (
-          <Suspense fallback={null}>
-            <ActionWizard
-              key={wizardSourceAction?.id ?? 'blank'}
-              open={wizardOpen}
-              onClose={() => {
-                setWizardOpen(false);
-                setWizardSourceAction(null);
-              }}
-              nodes={props.nodes}
-              edges={props.edges}
-              initialSourceAction={wizardSourceAction}
-            />
-          </Suspense>
-        )}
         <NodeCrudDialogs crud={crud} />
       </NodeGraphInteractionContext>
     </EditorUiProvider>

@@ -389,7 +389,6 @@
   "nav-search-dimensions": "Hae dimensioita…",
   "nodes-action-off": "Toimenpide ei ole käytössä",
   "nodes-action-on": "Toimenpide on käytössä",
-  "nodes-action-wizard": "Toimenpideopas (vanha)",
   "nodes-add-action": "Lisää toimenpide",
   "nodes-add-input-port": "Lisää syöteportti",
   "nodes-add-input-port-hint": "Kaikki kentät ovat valinnaisia. Jätä suure ja yksikkö tyhjiksi, jos portti hyväksyy minkä tahansa syötteen.",

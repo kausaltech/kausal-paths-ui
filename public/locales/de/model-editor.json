@@ -394,7 +394,6 @@
   "nav-search-dimensions": "Dimensionen suchen…",
   "nodes-action-off": "Maßnahme ist deaktiviert",
   "nodes-action-on": "Maßnahme ist aktiviert",
-  "nodes-action-wizard": "Maßnahmen-Assistent (Legacy)",
   "nodes-add-action": "Maßnahme hinzufügen",
   "nodes-add-input-port": "Eingabeport hinzufügen",
   "nodes-add-input-port-hint": "Alle Felder sind optional. Größe und Einheit leer lassen, um beliebige Eingaben zu akzeptieren.",
