@@ -121,7 +121,6 @@ export function useCreateNode() {
         // metric lookups keyed on it (e.g. the output data preview resolver).
         columnId: 'Value',
         label: null,
-        role: null,
         quantity,
         dimensions: [],
         role: null,

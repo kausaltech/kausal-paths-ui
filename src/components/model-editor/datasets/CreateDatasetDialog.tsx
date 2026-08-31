@@ -98,7 +98,15 @@ export function CreateDatasetDialog({ open, onClose, onCreated }: Props) {
         }
       }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1.5}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          px: 2,
+          py: 1.5,
+        }}
+      >
         <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.2rem', p: 0 }}>
           {t('datasets-new-dataset')}
         </DialogTitle>
@@ -108,9 +116,7 @@ export function CreateDatasetDialog({ open, onClose, onCreated }: Props) {
       </Box>
 
       <DialogContent sx={{ pt: 1, pb: 2 }}>
-        <Typography fontWeight="bold" sx={{ mb: 0.5 }}>
-          {t('datasets-name')}
-        </Typography>
+        <Typography sx={{ fontWeight: 'bold', mb: 0.5 }}>{t('datasets-name')}</Typography>
         <TextField
           fullWidth
           autoFocus

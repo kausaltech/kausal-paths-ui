@@ -103,7 +103,15 @@ export function MetricDialog({
         }
       }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1.5}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          px: 2,
+          py: 1.5,
+        }}
+      >
         <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.2rem', p: 0 }}>{title}</DialogTitle>
         <IconButton onClick={onClose} size="small" disabled={saving}>
           <X />

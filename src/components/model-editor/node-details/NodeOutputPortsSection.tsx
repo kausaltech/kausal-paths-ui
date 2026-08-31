@@ -49,8 +49,6 @@ function portsToInput(ports: readonly OutputPort[]): OutputPortInput[] {
     unit: p.unit?.standard ?? '',
     quantity: p.quantity ?? null,
     label: p.label ?? null,
-    // Null keeps the port's existing value when the id matches.
-    role: null,
     // Backfill: a single output port's physical metric column is the runtime
     // default 'Value' (backend VALUE_COLUMN). Editor-created ports predating
     // this had columnId null, which breaks metric lookups keyed on it (e.g.

@@ -78,7 +78,6 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     quantity: port.quantity ?? null,
     role: port.role ?? null,
     unit: port.unit?.standard ?? null,
-    isEditable: null,
     requiredDimensions: [...port.requiredDimensions],
     isEditable: null,
   }));
@@ -88,7 +87,6 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     columnId: port.columnId ?? null,
     label: port.label ?? null,
     quantity: port.quantity ?? null,
-    role: port.role ?? null,
     unit: port.unit?.standard ?? '',
     dimensions: [...port.dimensions],
     role: null,
