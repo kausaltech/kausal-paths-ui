@@ -4,6 +4,8 @@ on: push
 jobs:
   lint:
     uses: ./.github/workflows/reviewdog.yaml
+    secrets:
+      PRIVATE_SUBMODULE_DEPLOY_KEY: ${{ secrets.PRIVATE_SUBMODULE_DEPLOY_KEY }}
 
   build:
     uses: kausaltech/github-actions/.github/workflows/build.yaml@main
@@ -17,6 +19,7 @@ jobs:
       NPM_PASSWORD: ${{ secrets.NPM_PASSWORD }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PRIVATE_SUBMODULE_DEPLOY_KEY: ${{ secrets.PRIVATE_SUBMODULE_DEPLOY_KEY }}
 
   test:
     needs: [build]

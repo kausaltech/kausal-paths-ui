@@ -2,6 +2,9 @@ name: reviewdog
 on:
   pull_request:
   workflow_call:
+    secrets:
+      PRIVATE_SUBMODULE_DEPLOY_KEY:
+        required: true
 
 jobs:
   reviewdog:
@@ -13,8 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          submodules: recursive
+          ssh-key: ${{ secrets.PRIVATE_SUBMODULE_DEPLOY_KEY }}
           fetch-depth: 0
+
+      - name: Check out submodules
+        run: git submodule update --init --recursive --checkout
 
       - uses: pnpm/action-setup@v6
 
