@@ -27,6 +27,7 @@ import { useTranslations } from 'next-intl';
 import { Pencil, Plus, Trash } from 'react-bootstrap-icons';
 
 import GraphQLError from '@/components/common/GraphQLError';
+import { CreateDimensionDialog } from './CreateDimensionDialog';
 import { GET_INSTANCE_DIMENSIONS } from './queries';
 
 function getDimensionsBase(pathname: string): string {
@@ -43,6 +44,7 @@ export default function DimensionList() {
   const pathname = usePathname();
   const base = getDimensionsBase(pathname);
   const [notice, setNotice] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   if (loading && !data) {
     return (
@@ -65,11 +67,7 @@ export default function DimensionList() {
         }}
       >
         <Typography variant="h5">{t('dimensions-title')}</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Plus />}
-          onClick={() => setNotice(t('dimensions-creating-not-implemented'))}
-        >
+        <Button variant="contained" startIcon={<Plus />} onClick={() => setCreateOpen(true)}>
           {t('dimensions-new-dimension')}
         </Button>
       </Stack>
@@ -142,6 +140,11 @@ export default function DimensionList() {
           </TableBody>
         </Table>
       </TableContainer>
+      <CreateDimensionDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(dimensionId) => router.push(`${base}/${encodeURIComponent(dimensionId)}`)}
+      />
       <Snackbar
         open={notice !== null}
         autoHideDuration={4000}

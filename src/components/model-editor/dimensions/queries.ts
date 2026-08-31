@@ -3,6 +3,8 @@ import { type TypedDocumentNode, gql } from '@apollo/client';
 import type {
   CreateDimensionCategoriesMutation,
   CreateDimensionCategoriesMutationVariables,
+  CreateDimensionMutation,
+  CreateDimensionMutationVariables,
   DeleteDimensionCategoryMutation,
   DeleteDimensionCategoryMutationVariables,
   InstanceDimensionsQuery,
@@ -56,6 +58,27 @@ export const GET_INSTANCE_DIMENSIONS: TypedDocumentNode<
     }
   }
   ${INSTANCE_DIMENSION_FIELDS}
+`;
+
+export const CREATE_DIMENSION: TypedDocumentNode<
+  CreateDimensionMutation,
+  CreateDimensionMutationVariables
+> = gql`
+  mutation CreateDimension($instanceId: ID!, $input: CreateDimensionInput!) {
+    instanceEditor(instanceId: $instanceId) {
+      createDimension(input: $input) {
+        __typename
+        ... on InstanceDimension {
+          ...InstanceDimensionFields
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
+  ${INSTANCE_DIMENSION_FIELDS}
+  ${OPERATION_INFO_FIELDS}
 `;
 
 export const UPDATE_DIMENSION: TypedDocumentNode<

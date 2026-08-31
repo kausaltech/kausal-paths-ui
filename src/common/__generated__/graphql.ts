@@ -114,6 +114,14 @@ export type CreateDimensionCategoryInput = {
   previousSibling: string | number | null | undefined;
 };
 
+export type CreateDimensionInput = {
+  categories: Array<DimensionCategoryItemInput>;
+  /** Optional UUID for the new dimension. */
+  id: string | null | undefined;
+  identifier: string;
+  name: string;
+};
+
 export type CreateEdgeInput = {
   fromRef: NodePortRefInput | null | undefined;
   instanceId: string | number;
@@ -193,6 +201,12 @@ export const enum DecisionLevel {
 export const enum DesiredOutcome {
   Decreasing = 'decreasing',
   Increasing = 'increasing'
+};
+
+export type DimensionCategoryItemInput = {
+  id: string | null | undefined;
+  identifier: string | null | undefined;
+  label: string;
 };
 
 export const enum DimensionKind {
@@ -2091,6 +2105,35 @@ export type InstanceDimensionsQuery = (
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
+);
+
+export type CreateDimensionMutationVariables = Exact<{
+  instanceId: string | number;
+  input: CreateDimensionInput;
+}>;
+
+
+export type CreateDimensionMutation = (
+  { instanceEditor: (
+    { createDimension:
+      | (
+        { id: string, identifier: string, name: string, categories: Array<(
+          { id: string, identifier: string | null, label: string, order: number, previousSibling: string | null, nextSibling: string | null }
+          & { __typename: 'InstanceDimensionCategory' }
+        )> }
+        & { __typename: 'InstanceDimension' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
 );
 
 export type UpdateDimensionMutationVariables = Exact<{
