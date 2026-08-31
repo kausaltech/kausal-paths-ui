@@ -1030,7 +1030,9 @@ export default function NodeInputPortsSection({
             editingPort && (
               <Box sx={{ position: 'relative' }}>
                 <PortBindingSelector
-                  nodes={[...nodeMap.values()]}
+                  // nodeMap is keyed by both id and uuid, so its values hold
+                  // every node twice — dedupe by object identity.
+                  nodes={[...new Set(nodeMap.values())]}
                   port={editingPort}
                   currentNodeId={currentNodeId}
                   datasetsDisabledReason={singleDatasetLimitReason(editingPort)}
