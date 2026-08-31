@@ -204,6 +204,11 @@ export const DATASET_DETAIL_FIELDS = gql`
       id
       portRef {
         nodeUuid
+        # Deliberate: model.nodes(id:) resolves node identifiers, not UUIDs, so
+        # the connected-nodes lookup needs nodeId until the backend accepts
+        # UUIDs there.
+        # eslint-disable-next-line @graphql-eslint/no-deprecated
+        nodeId
         portId
       }
     }

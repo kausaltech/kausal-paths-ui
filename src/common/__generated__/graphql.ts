@@ -1375,7 +1375,7 @@ export type DatasetDetailFieldsFragment = (
     & { __typename: 'DataPoint' }
   )>, portBindings: Array<(
     { id: string, portRef: (
-      { nodeUuid: string, portId: string }
+      { nodeUuid: string, nodeId: string, portId: string }
       & { __typename: 'NodePortRef' }
     ) }
     & { __typename: 'DatasetPortType' }
@@ -1495,7 +1495,7 @@ export type InstanceDatasetQuery = (
           & { __typename: 'DataPoint' }
         )>, portBindings: Array<(
           { id: string, portRef: (
-            { nodeUuid: string, portId: string }
+            { nodeUuid: string, nodeId: string, portId: string }
             & { __typename: 'NodePortRef' }
           ) }
           & { __typename: 'DatasetPortType' }
