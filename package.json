@@ -8,6 +8,7 @@
     "dev:inspect": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "build:webpack": "next build --webpack",
+    "typegen": "next typegen",
     "start": "next start",
     "download-schema": "node scripts/download-graphql-schema.mjs",
     "graphql-codegen": "graphql-codegen --config codegen.ts",

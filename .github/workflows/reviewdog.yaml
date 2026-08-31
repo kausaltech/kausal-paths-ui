@@ -2,6 +2,11 @@ name: reviewdog
 on:
   pull_request:
   workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
+      PRIVATE_SUBMODULE_DEPLOY_KEY:
+        required: true
 
 jobs:
   reviewdog:
@@ -13,8 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          submodules: recursive
+          ssh-key: ${{ secrets.PRIVATE_SUBMODULE_DEPLOY_KEY }}
           fetch-depth: 0
+
+      - name: Check out submodules
+        run: |
+          if ssh_command=$(git config --local core.sshCommand); then
+            export GIT_SSH_COMMAND="$ssh_command"
+          fi
+          git submodule update --init --recursive --checkout
 
       - uses: pnpm/action-setup@v6
 
@@ -22,8 +34,15 @@ jobs:
         with:
           node-version-file: package.json
           cache: pnpm
+          registry-url: https://npm.kausal.tech
+          scope: '@kausal-private'
 
-      - run: pnpm install --frozen-lockfile --no-optional
+      - run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Generate Next.js types
+        run: pnpm typegen
 
       - uses: reviewdog/action-setup@v1
         with:
