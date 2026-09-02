@@ -17,14 +17,11 @@ import { useTranslations } from 'next-intl';
 import { ArrowCounterclockwise, X } from 'react-bootstrap-icons';
 
 import RichTextField from '../RichTextField';
-import { type EditableNodeField, setMockNodeFieldEdit } from '../mockEdits';
 
 /**
  * The field primitives of the node details panel. "Live" fields commit to the
- * backend on blur/change and show per-field save status; "Mock" fields write
- * to the client-side `mockNodeEditsVar` overlay (for backend fields that don't
- * exist yet) and render with the mock tint; "ReadOnly" fields display resolved
- * translations.
+ * backend on blur/change and show per-field save status; "ReadOnly" fields
+ * display resolved translations with an uneditable tint.
  */
 
 export const metaChipSx = {
@@ -33,9 +30,9 @@ export const metaChipSx = {
 };
 
 /**
- * Tint for fields whose edits are not yet persisted to the backend (kept in
- * `mockNodeEditsVar`). Uses the theme's info palette so it's visually distinct
- * from the warning tint we reserve for actual pending/unsaved state.
+ * Tint for uneditable fields (resolved translations). Uses the theme's info
+ * palette so it's visually distinct from the warning tint we reserve for
+ * actual pending/unsaved state.
  */
 const MOCK_TINT_ALPHA = 0.09;
 export function mockBg(theme: Theme) {
@@ -158,99 +155,53 @@ export function LiveTextField({ label, value, onCommit, placeholder }: LiveTextF
   );
 }
 
-type MockRichTextFieldProps = {
-  label: string;
-  field: Extract<EditableNodeField, 'shortDescription'>;
-  nodeId: string;
-  originalValue: string | null;
-  currentValue: string | null | undefined;
-  editorUserName: string;
-  placeholder?: string;
-};
+export type ActionGroupOption = { id: string; uuid: string; name: string; color: string | null };
 
-// Mock rich-text editor. Tiptap is seeded only at mount (see RichTextField),
-// so we re-key the inner component on revert to force a remount that re-reads
-// the original value.
-export function MockRichTextField({
-  label,
-  field,
-  nodeId,
-  originalValue,
-  currentValue,
-  editorUserName,
-  placeholder,
-}: MockRichTextFieldProps) {
-  const value = currentValue ?? originalValue ?? '';
-  const hasEdit = currentValue !== undefined && (currentValue ?? '') !== (originalValue ?? '');
-  const [revertTick, setRevertTick] = useState(0);
-
-  const handleCommit = (html: string | null) => {
-    setMockNodeFieldEdit(nodeId, field, html, originalValue, editorUserName);
-    return Promise.resolve();
-  };
-
-  const handleRevert = () => {
-    setMockNodeFieldEdit(nodeId, field, originalValue, originalValue, editorUserName);
-    setRevertTick((t) => t + 1);
-  };
-
-  return (
-    <Box
-      sx={{
-        '& .ProseMirror': { bgcolor: mockBg },
-      }}
-    >
-      <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
-        {label}
-      </FieldLabel>
-      <RichTextField
-        key={`${field}:${nodeId}:${revertTick}`}
-        label={label}
-        value={value}
-        onCommit={handleCommit}
-        placeholder={placeholder}
-        hideHeader
-        disabled
-      />
-    </Box>
-  );
-}
-
-export type ActionGroupOption = { id: string; name: string; color: string | null };
-
-type ActionGroupMockFieldProps = {
-  nodeId: string;
-  originalValue: string | null;
-  currentValue: string | null | undefined;
+type LiveActionGroupFieldProps = {
+  /** Human-readable id of the node's current group (ActionGroupType.id). */
+  value: string | null;
   options: readonly ActionGroupOption[];
-  editorUserName: string;
+  onCommit: (next: ActionGroupOption | null) => Promise<unknown>;
 };
 
-export function ActionGroupMockField({
-  nodeId,
-  originalValue,
-  currentValue,
-  options,
-  editorUserName,
-}: ActionGroupMockFieldProps) {
+// Select-style field committing on change. Holds the picked option locally
+// until the write settles so the input doesn't snap back while the node data
+// refreshes through the override overlay.
+export function LiveActionGroupField({ value, options, onCommit }: LiveActionGroupFieldProps) {
   const t = useTranslations('model-editor');
-  const effective = currentValue === undefined ? originalValue : currentValue;
-  const selected = options.find((o) => o.id === effective) ?? null;
-  const hasEdit = currentValue !== undefined && (currentValue ?? null) !== (originalValue ?? null);
+  const [pending, setPending] = useState<ActionGroupOption | null | undefined>(undefined);
+  const [status, setStatus] = useState<SaveStatus>('idle');
+
+  useEffect(() => {
+    if (status !== 'saved') return;
+    const id = setTimeout(() => setStatus('idle'), 1500);
+    return () => clearTimeout(id);
+  }, [status]);
+
+  const selected = pending !== undefined ? pending : (options.find((o) => o.id === value) ?? null);
 
   const commit = (next: ActionGroupOption | null) => {
-    setMockNodeFieldEdit(nodeId, 'actionGroup', next?.id ?? null, originalValue, editorUserName);
-  };
-
-  const handleRevert = () => {
-    setMockNodeFieldEdit(nodeId, 'actionGroup', originalValue, originalValue, editorUserName);
+    if ((next?.id ?? null) === (selected?.id ?? null)) return;
+    setPending(next);
+    setStatus('saving');
+    onCommit(next).then(
+      () => {
+        setStatus('saved');
+        setPending(undefined);
+      },
+      () => {
+        setStatus('error');
+        setPending(undefined);
+      }
+    );
   };
 
   return (
     <Box>
-      <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
-        {t('editor-field-action-group')}
-      </FieldLabel>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <FieldLabel>{t('editor-field-action-group')}</FieldLabel>
+        <SaveStatusLabel status={status} />
+      </Box>
       <Autocomplete
         value={selected}
         options={[...options]}
@@ -258,8 +209,7 @@ export function ActionGroupMockField({
         isOptionEqualToValue={(a, b) => a.id === b.id}
         onChange={(_, next) => commit(next)}
         size="small"
-        disabled
-        sx={mockSx()}
+        disabled={status === 'saving'}
         renderOption={(props, option) => (
           <Box component="li" {...props} key={option.id}>
             <Box
@@ -295,7 +245,7 @@ export function ActionGroupMockField({
                     }}
                   />
                 ) : null,
-                sx: { fontSize: 13, color: hasEdit ? 'info.dark' : 'text.primary' },
+                sx: { fontSize: 13 },
               },
             }}
           />

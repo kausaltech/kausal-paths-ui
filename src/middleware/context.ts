@@ -36,6 +36,7 @@ const GET_AVAILABLE_INSTANCES: TypedDocumentNode<
   fragment AvailableInstance on InstanceBasicConfiguration {
     identifier
     isProtected
+    requiresAuthentication
     defaultLanguage
     supportedLanguages
     themeIdentifier
@@ -143,4 +144,18 @@ export async function getInstancesForRequest(req: NextRequest, hostname: string,
     return fetchInstances(hostname, ctx);
   }
   return instanceCache.get(hostname, ctx);
+}
+
+/**
+ * Fetch the instance list for a hostname, bypassing (and repopulating) the
+ * SWR cache. Used when a request references an instance basePath the cached
+ * list doesn't know about — e.g. right after the instance was created.
+ */
+export async function getFreshInstancesForRequest(
+  req: NextRequest,
+  hostname: string,
+  logger: Logger
+) {
+  instanceCache.delete(hostname);
+  return getInstancesForRequest(req, hostname, logger);
 }

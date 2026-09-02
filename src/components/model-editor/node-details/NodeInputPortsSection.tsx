@@ -63,26 +63,21 @@ import { useDimensionNames } from './useDimensionNames';
 type OutputPort = NonNullable<ReturnType<typeof getNodeSpec>>['outputPorts'][number];
 
 /**
- * Node categories whose backend classes only operate on input *nodes* —
- * dataset bindings are ignored (SubtractiveNode) or fail the computation
- * (MultiplicativeNode "must receive at least two inputs"), so datasets are
- * not offered as an input source at all.
+ * Node categories whose backend classes still read their dataset through the
+ * legacy `get_single_dataset` operation chain (GenericNode's default), which
+ * raises when more than one dataset is bound to the node. WeightedSum/Lever-
+ * style subclasses override the chain and are exempt via their own category.
+ *
+ * The additive/mix/multiplicative/subtractive families and most action
+ * classes have been migrated to uniform port bindings (node and dataset
+ * inputs are interchangeable; multi ports aggregate several bindings), so
+ * they are no longer restricted here — the backend's port-capacity check and
+ * constraint solver gate those binds. Legacy action classes (GenericAction,
+ * DatasetAction) can still fail with a second dataset, but the action
+ * category can't distinguish them from migrated ones; that failure now
+ * surfaces as node status instead of silent breakage.
  */
-const NODES_ONLY_CATEGORIES: ReadonlySet<CategoryKey> = new Set(['multiplicative', 'subtractive']);
-
-/**
- * Node categories whose backend classes read their dataset through
- * `get_input_dataset_pl`, which raises when more than one dataset is bound
- * to the node (AdditiveNode family, GenericNode/GenericAction default
- * operation chains). WeightedSum/Lever-style GenericNode subclasses override
- * the operation chain and are exempt.
- */
-const SINGLE_DATASET_CATEGORIES: ReadonlySet<CategoryKey> = new Set([
-  'additive',
-  'mix',
-  'generic',
-  'action',
-]);
+const SINGLE_DATASET_CATEGORIES: ReadonlySet<CategoryKey> = new Set(['generic']);
 
 /**
  * The source node's output ports compatible with `port`. On bare ports (no
@@ -428,13 +423,13 @@ export default function NodeInputPortsSection({
   const updateInputPorts = useUpdateInputPorts();
   const [addPortDialogOpen, setAddPortDialogOpen] = useState(false);
   const [addPortMenuAnchor, setAddPortMenuAnchor] = useState<HTMLElement | null>(null);
+  const [addingPort, setAddingPort] = useState(false);
+  const [addPortError, setAddPortError] = useState<string | null>(null);
   const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
   const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
 
   const currentNode = nodeMap.get(currentNodeId);
   const currentCategory = currentNode ? getCategoryForNode(currentNode) : null;
-  const allowDatasetInputs =
-    currentCategory === null || !NODES_ONLY_CATEGORIES.has(currentCategory);
 
   // Add-port affordances from the node class's declared input roles: a
   // repeatable role can always take another port instance, a non-repeatable
@@ -461,12 +456,17 @@ export default function NodeInputPortsSection({
       key: `role:${decl.role}`,
       label: decl.label ?? decl.role,
       action: () => {
+        if (addingPort) return;
+        setAddingPort(true);
+        setAddPortError(null);
         // Carry the declaration's `multi` — an omitted multi serializes as
         // false, which would turn a multi-role port into a single-input one
         // (bindings replacing instead of appending).
-        void addInputPort({ nodeId: currentNodeId, role: decl.role, multi: decl.multi }).catch(
-          () => {}
-        );
+        void addInputPort({ nodeId: currentNodeId, role: decl.role, multi: decl.multi })
+          .catch((err: unknown) =>
+            setAddPortError(err instanceof Error ? err.message : t('common-save-failed'))
+          )
+          .finally(() => setAddingPort(false));
       },
     })),
     ...(showAuthoredPortAdd
@@ -911,9 +911,19 @@ export default function NodeInputPortsSection({
       })}
       {!readOnly && addPortOptions.length > 0 && (
         <Paper variant="outlined" sx={{ p: 1 }}>
+          {addPortError && (
+            <Alert
+              severity="error"
+              onClose={() => setAddPortError(null)}
+              sx={{ mb: 1, fontSize: 12 }}
+            >
+              {addPortError}
+            </Alert>
+          )}
           <Button
             size="small"
-            startIcon={<Plus />}
+            startIcon={addingPort ? <CircularProgress size={14} color="inherit" /> : <Plus />}
+            disabled={addingPort}
             onClick={(event) => {
               if (addPortOptions.length === 1) addPortOptions[0].action();
               else setAddPortMenuAnchor(event.currentTarget);
@@ -1037,10 +1047,11 @@ export default function NodeInputPortsSection({
             editingPort && (
               <Box sx={{ position: 'relative' }}>
                 <PortBindingSelector
-                  nodes={[...nodeMap.values()]}
+                  // nodeMap is keyed by both id and uuid, so its values hold
+                  // every node twice — dedupe by object identity.
+                  nodes={[...new Set(nodeMap.values())]}
                   port={editingPort}
                   currentNodeId={currentNodeId}
-                  allowDatasets={allowDatasetInputs}
                   datasetsDisabledReason={singleDatasetLimitReason(editingPort)}
                   currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
                     edgeId: e.id,

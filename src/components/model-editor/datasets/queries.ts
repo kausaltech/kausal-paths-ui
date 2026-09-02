@@ -19,6 +19,8 @@ import type {
   DeleteDataPointsMutationVariables,
   DeleteDatasetMetricMutation,
   DeleteDatasetMetricMutationVariables,
+  DeleteDatasetMutation,
+  DeleteDatasetMutationVariables,
   DeleteSourceReferenceMutation,
   DeleteSourceReferenceMutationVariables,
   InstanceDatasetQuery,
@@ -61,6 +63,9 @@ export const DATASET_SUMMARY_FIELDS = gql`
     metrics {
       id
       label
+      quantity {
+        id
+      }
       unitInfo {
         id
         standard
@@ -204,6 +209,11 @@ export const DATASET_DETAIL_FIELDS = gql`
       id
       portRef {
         nodeUuid
+        # Deliberate: model.nodes(id:) resolves node identifiers, not UUIDs, so
+        # the connected-nodes lookup needs nodeId until the backend accepts
+        # UUIDs there.
+        # eslint-disable-next-line @graphql-eslint/no-deprecated
+        nodeId
         portId
       }
     }
@@ -288,6 +298,26 @@ export const CREATE_DATASET: TypedDocumentNode<
     }
   }
   ${DATASET_SUMMARY_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_DATASET: TypedDocumentNode<
+  DeleteDatasetMutation,
+  DeleteDatasetMutationVariables
+> = gql`
+  mutation DeleteDataset($instanceId: ID!, $datasetId: UUID!, $force: Boolean!) {
+    instanceEditor(instanceId: $instanceId) {
+      deleteDataset(datasetId: $datasetId, force: $force) {
+        __typename
+        ... on ModelDeletePayload {
+          ok
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
   ${OPERATION_INFO_FIELDS}
 `;
 

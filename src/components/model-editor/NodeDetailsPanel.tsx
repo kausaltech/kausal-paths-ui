@@ -5,53 +5,27 @@ import { Box, Chip, FormControlLabel, IconButton, Switch, Typography } from '@mu
 import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
-import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { BarChartLine, ExclamationTriangleFill, X, XCircleFill } from 'react-bootstrap-icons';
 
 import {
   type EditorNodeEdgeFragment,
   type EditorNodeFieldsFragment,
   NodeErrorPhase,
-  type NodeExplanationQueryVariables,
   NodeStatus,
   type SetActionEnabledMutation,
   type SetActionEnabledMutationVariables,
 } from '@/common/__generated__/graphql';
-import { useSession } from '@/lib/auth-client';
 import NodeChangeHistorySection from './NodeChangeHistorySection';
 import NodeDetailsSection from './NodeDetailsSection';
 import { useEditorUiActions } from './editor-ui';
-import { mockNodeEditsVar } from './mockEdits';
 import { NodeContentSection } from './node-details/NodeContentSection';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
 import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
+import type { ActionGroupOption } from './node-details/fields';
 import { CollapsibleSection, getStyleForNode } from './node-details/shared';
 import { getNodeGroup, getNodeSpec } from './nodeHelpers';
-import { type NodeStatusEntry, nodeStatusVar } from './queries';
+import { NODE_PARAMETERS, type NodeStatusEntry, nodeStatusVar } from './queries';
 import { useIsEntityReadOnly } from './useIsEditorReadOnly';
-
-type NodeExplanationDocument = TypedDocumentNode<
-  NodeExplanationQuery,
-  NodeExplanationQueryVariables
->;
-
-const GET_NODE_EXPLANATION: NodeExplanationDocument = gql`
-  query NodeExplanation($node: ID!) {
-    node(id: $node) {
-      id
-      explanation
-      parameters {
-        __typename
-        id
-        nodeRelativeId
-        ... on StringParameterType {
-          stringValue: value
-        }
-      }
-    }
-  }
-`;
 
 // Turning an action on/off is a session-level parameter change (same
 // mechanism as the public UI), not an edit to the model itself.
@@ -71,21 +45,6 @@ const SET_ACTION_ENABLED: TypedDocumentNode<
     }
   }
 `;
-
-type NodeExplanationParameter = {
-  __typename: string;
-  id: string;
-  nodeRelativeId: string | null;
-  stringValue?: string | null;
-};
-
-type NodeExplanationQuery = {
-  node: {
-    id: string;
-    explanation: string | null;
-    parameters: NodeExplanationParameter[];
-  } | null;
-};
 
 /**
  * Fault-tolerance status for a node: a severity line plus a list of errors,
@@ -213,7 +172,7 @@ function ActionEnabledToggle({
   );
 }
 
-export type ActionGroupOption = { id: string; name: string; color: string | null };
+export type { ActionGroupOption };
 
 export type NodeDetailsPanelProps = {
   node: EditorNodeFieldsFragment | null;
@@ -236,29 +195,23 @@ export default function NodeDetailsPanel({
 }: NodeDetailsPanelProps) {
   const t = useTranslations('model-editor');
   const { focusNode } = useEditorUiActions();
-  const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const statusEntry = useReactiveVar(nodeStatusVar)[node?.id ?? ''];
-  const { data: session } = useSession();
-  const editorUserName = session?.user?.name ?? session?.user?.email ?? t('common-unknown-user');
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [problemsOpen, setProblemsOpen] = useState(true);
   const [contentOpen, setContentOpen] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
   const [outputOpen, setOutputOpen] = useState(true);
   const [nodeDataOpen, setNodeDataOpen] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
   const readOnly = useIsEntityReadOnly(node);
 
-  const currentEdit = node ? nodeEdits[node.id] : undefined;
   const displayName = node?.name ?? '';
 
-  const { data: explanationData } = useQuery(GET_NODE_EXPLANATION, {
-    variables: { node: node?.id ?? '' },
+  const { data: parametersData } = useQuery(NODE_PARAMETERS, {
+    variables: { nodeId: node?.id ?? '' },
     skip: !node?.id,
   });
-  const explanation = explanationData?.node?.explanation ?? null;
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {
@@ -303,18 +256,19 @@ export default function NodeDetailsPanel({
 
   const inputPorts = spec?.inputPorts ?? [];
   const outputPorts = spec?.outputPorts ?? [];
+  const formulaParam = parametersData?.node?.parameters?.find(
+    (p) => p.nodeRelativeId === 'formula'
+  );
   const formula =
-    explanationData?.node?.parameters?.find(
-      (p) => p.__typename === 'StringParameterType' && p.nodeRelativeId === 'formula'
-    )?.stringValue ?? null;
+    formulaParam?.__typename === 'StringParameterType' ? (formulaParam.stringValue ?? null) : null;
   const previewLabel = t(
     node.__typename === 'ActionNode' ? 'nodes-output-data-show-action' : 'nodes-output-data-show'
   );
   // Guard against parameters of the previously inspected node: the toggle
   // must never send another action's parameter id.
   const enabledParamId =
-    explanationData?.node?.id === node.id
-      ? (explanationData.node.parameters.find((p) => p.nodeRelativeId === 'enabled')?.id ?? null)
+    parametersData?.node?.id === node.id
+      ? (parametersData.node.parameters.find((p) => p.nodeRelativeId === 'enabled')?.id ?? null)
       : null;
 
   const headerStyle = getStyleForNode(node);
@@ -398,12 +352,7 @@ export default function NodeDetailsPanel({
         open={contentOpen}
         onToggle={() => setContentOpen((v) => !v)}
       >
-        <NodeContentSection
-          node={node}
-          editorUserName={editorUserName}
-          currentEdit={currentEdit}
-          readOnly={readOnly}
-        />
+        <NodeContentSection node={node} readOnly={readOnly} />
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -413,8 +362,6 @@ export default function NodeDetailsPanel({
       >
         <NodeDetailsSection
           node={node}
-          editorUserName={editorUserName}
-          currentEdit={currentEdit}
           nodeGroupOptions={nodeGroupOptions}
           actionGroupOptions={actionGroups}
           readOnly={readOnly}
@@ -426,47 +373,6 @@ export default function NodeDetailsPanel({
         open={historyOpen}
         onToggle={() => setHistoryOpen((v) => !v)}
       />
-
-      {explanation && (
-        <CollapsibleSection
-          title={t('nodes-explanation')}
-          open={explanationOpen}
-          onToggle={() => setExplanationOpen((v) => !v)}
-        >
-          <Box
-            sx={{
-              width: '100%',
-              bgcolor: 'grey.100',
-              borderRadius: 0.5,
-            }}
-          >
-            <OverlayScrollbarsComponent
-              defer
-              options={{
-                scrollbars: { autoHide: 'never' },
-                overflow: { x: 'hidden', y: 'scroll' },
-              }}
-              style={{ maxHeight: 300 }}
-            >
-              <Box
-                sx={{
-                  px: 1,
-                  py: 0.5,
-                  fontSize: 12,
-                  lineHeight: 1.5,
-                  wordBreak: 'break-word',
-                  overflowWrap: 'anywhere',
-                  '& p': { m: 0, mb: 1 },
-                  '& p:last-child': { mb: 0 },
-                  '& pre, & code': { whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
-                  '& img, & table': { maxWidth: '100%' },
-                }}
-                dangerouslySetInnerHTML={{ __html: explanation }}
-              />
-            </OverlayScrollbarsComponent>
-          </Box>
-        </CollapsibleSection>
-      )}
 
       <NodeInputPortsSection
         currentNodeId={node.id}

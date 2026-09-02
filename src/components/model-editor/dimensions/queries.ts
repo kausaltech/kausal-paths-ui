@@ -3,8 +3,12 @@ import { type TypedDocumentNode, gql } from '@apollo/client';
 import type {
   CreateDimensionCategoriesMutation,
   CreateDimensionCategoriesMutationVariables,
+  CreateDimensionMutation,
+  CreateDimensionMutationVariables,
   DeleteDimensionCategoryMutation,
   DeleteDimensionCategoryMutationVariables,
+  DeleteDimensionMutation,
+  DeleteDimensionMutationVariables,
   InstanceDimensionsQuery,
   InstanceDimensionsQueryVariables,
   UpdateDimensionCategoriesMutation,
@@ -56,6 +60,47 @@ export const GET_INSTANCE_DIMENSIONS: TypedDocumentNode<
     }
   }
   ${INSTANCE_DIMENSION_FIELDS}
+`;
+
+export const CREATE_DIMENSION: TypedDocumentNode<
+  CreateDimensionMutation,
+  CreateDimensionMutationVariables
+> = gql`
+  mutation CreateDimension($instanceId: ID!, $input: CreateDimensionInput!) {
+    instanceEditor(instanceId: $instanceId) {
+      createDimension(input: $input) {
+        __typename
+        ... on InstanceDimension {
+          ...InstanceDimensionFields
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
+  ${INSTANCE_DIMENSION_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_DIMENSION: TypedDocumentNode<
+  DeleteDimensionMutation,
+  DeleteDimensionMutationVariables
+> = gql`
+  mutation DeleteDimension($instanceId: ID!, $dimensionId: UUID!) {
+    instanceEditor(instanceId: $instanceId) {
+      deleteDimension(dimensionId: $dimensionId) {
+        __typename
+        ... on ModelDeletePayload {
+          ok
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
+  ${OPERATION_INFO_FIELDS}
 `;
 
 export const UPDATE_DIMENSION: TypedDocumentNode<

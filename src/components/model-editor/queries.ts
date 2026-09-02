@@ -57,10 +57,12 @@ export type NodeFieldOverrides = {
   name?: string;
   shortName?: string | null;
   description?: string | null;
+  shortDescription?: string | null;
   color?: string | null;
   isVisible?: boolean;
   isOutcome?: boolean;
   nodeGroup?: string | null;
+  actionGroup?: { id: string; uuid: string; name: string; color: string | null } | null;
 };
 
 export const nodeGraphOverridesVar = makeVar<Record<string, NodeFieldOverrides>>({});
@@ -212,6 +214,7 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
       identifier
       actionGroups {
         id
+        uuid
         name
         color
       }
@@ -859,6 +862,7 @@ export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutati
             name
             shortName
             description
+            shortDescription
             color
             isVisible
             isOutcome
@@ -871,8 +875,15 @@ export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutati
             name
             shortName
             description
+            shortDescription
             color
             isVisible
+            group {
+              id
+              uuid
+              name
+              color
+            }
             editor {
               nodeGroup
             }

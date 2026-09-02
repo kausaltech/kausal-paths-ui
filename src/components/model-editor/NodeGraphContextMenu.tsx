@@ -9,7 +9,6 @@ import {
   DashLg,
   EyeSlash,
   Lightning,
-  Magic,
   PlusLg,
   PlusSquare,
   Trash,
@@ -80,7 +79,6 @@ export type ContextMenuState =
       | {
           kind: 'node';
           nodeId: string;
-          isAction: boolean;
           isProtected: boolean;
           canChange: boolean;
           canDelete: boolean;
@@ -94,7 +92,6 @@ type Props = {
   state: ContextMenuState;
   onClose: () => void;
   onHideEdge: (edgeId: string) => void;
-  onOpenActionWizard: (nodeId: string) => void;
   onDuplicateNode: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
   onNewNode: (flowX: number, flowY: number, kind: NewNodeKind) => void;
@@ -104,7 +101,6 @@ export default function NodeGraphContextMenu({
   state,
   onClose,
   onHideEdge,
-  onOpenActionWizard,
   onDuplicateNode,
   onDeleteNode,
   onNewNode,
@@ -115,12 +111,6 @@ export default function NodeGraphContextMenu({
   const handleHideEdge = () => {
     if (state?.kind !== 'edge') return;
     onHideEdge(state.edgeId);
-    onClose();
-  };
-
-  const handleOpenActionWizard = () => {
-    if (state?.kind !== 'node') return;
-    onOpenActionWizard(state.nodeId);
     onClose();
   };
 
@@ -168,16 +158,6 @@ export default function NodeGraphContextMenu({
             </ListItemIcon>
             <ListItemText>{t('nodes-duplicate-node')}</ListItemText>
           </MenuItem>,
-          ...(state.isAction
-            ? [
-                <MenuItem key="wizard" onClick={handleOpenActionWizard}>
-                  <ListItemIcon>
-                    <Magic size={14} />
-                  </ListItemIcon>
-                  <ListItemText>{t('nodes-action-wizard')}</ListItemText>
-                </MenuItem>,
-              ]
-            : []),
           <Divider key="divider" />,
         ]}
       {!readOnly && state?.kind === 'node' && state.canDelete && (
@@ -232,12 +212,32 @@ export default function NodeGraphContextMenu({
               />
             </MenuItem>
           </SubMenuItem>,
-          <MenuItem key="new-action" onClick={() => handleNewNode('action')}>
-            <ListItemIcon>
-              <Lightning size={14} />
-            </ListItemIcon>
-            <ListItemText>{t('nodes-new-action')}</ListItemText>
-          </MenuItem>,
+          <SubMenuItem
+            key="new-action"
+            icon={<Lightning size={14} />}
+            label={t('nodes-add-action')}
+          >
+            <MenuItem onClick={() => handleNewNode('additive-action')}>
+              <ListItemIcon>
+                <PlusLg size={14} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-additive-action')}
+                secondary={t('nodes-node-type-additive-action-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+            <MenuItem onClick={() => handleNewNode('action')}>
+              <ListItemIcon>
+                <Lightning size={14} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-generic-action')}
+                secondary={t('nodes-node-type-generic-action-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+          </SubMenuItem>,
         ]}
       {readOnly && (state?.kind === 'node' || state?.kind === 'pane') && (
         <MenuItem disabled>

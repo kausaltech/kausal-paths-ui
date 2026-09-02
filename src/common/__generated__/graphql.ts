@@ -114,6 +114,14 @@ export type CreateDimensionCategoryInput = {
   previousSibling: string | number | null | undefined;
 };
 
+export type CreateDimensionInput = {
+  categories: Array<DimensionCategoryItemInput>;
+  /** Optional UUID for the new dimension. */
+  id: string | null | undefined;
+  identifier: string;
+  name: string;
+};
+
 export type CreateEdgeInput = {
   fromRef: NodePortRefInput | null | undefined;
   instanceId: string | number;
@@ -193,6 +201,12 @@ export const enum DecisionLevel {
 export const enum DesiredOutcome {
   Decreasing = 'decreasing',
   Increasing = 'increasing'
+};
+
+export type DimensionCategoryItemInput = {
+  id: string | null | undefined;
+  identifier: string | null | undefined;
+  label: string;
 };
 
 export const enum DimensionKind {
@@ -658,6 +672,25 @@ export type CreateInstanceMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type CreateInstanceEditUrlQueryVariables = Exact<{
+  frameworkId: string | number;
+}>;
+
+
+export type CreateInstanceEditUrlQuery = (
+  { me: (
+    { id: string, editableInstances: Array<(
+      { id: string, identifier: string, frameworkConfig: (
+        { id: string, viewUrl: string | null }
+        & { __typename: 'FrameworkConfig' }
+      ) | null }
+      & { __typename: 'InstanceType' }
+    )> }
+    & { __typename: 'User' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type FrameworkNameQueryVariables = Exact<{
   identifier: string | number;
 }>;
@@ -1083,28 +1116,6 @@ export type EditorDimensionSearchListQuery = (
   & { __typename: 'Query' }
 );
 
-export type NodeExplanationQueryVariables = Exact<{
-  node: string | number;
-}>;
-
-
-export type NodeExplanationQuery = (
-  { node: (
-    { id: string, explanation: string | null, parameters: Array<
-      | (
-        { id: string, nodeRelativeId: string | null }
-        & { __typename: 'BoolParameterType' | 'NumberParameterType' | 'UnknownParameterType' }
-      )
-      | (
-        { id: string, nodeRelativeId: string | null, stringValue: string | null }
-        & { __typename: 'StringParameterType' }
-      )
-    > }
-    & { __typename: 'ActionNode' | 'Node' }
-  ) | null }
-  & { __typename: 'Query' }
-);
-
 export type SetActionEnabledMutationVariables = Exact<{
   parameterId: string | number;
   enabled: boolean;
@@ -1282,7 +1293,10 @@ export type DatasetSummaryFieldsFragment = (
     { id: string, name: string }
     & { __typename: 'DatasetDimension' }
   )>, metrics: Array<(
-    { id: string, label: string, unitInfo: (
+    { id: string, label: string, quantity: (
+      { id: string }
+      & { __typename: 'QuantityKindType' }
+    ) | null, unitInfo: (
       { id: string, standard: string }
       & { __typename: 'UnitType' }
     ) | null }
@@ -1375,7 +1389,7 @@ export type DatasetDetailFieldsFragment = (
     & { __typename: 'DataPoint' }
   )>, portBindings: Array<(
     { id: string, portRef: (
-      { nodeUuid: string, portId: string }
+      { nodeUuid: string, nodeId: string, portId: string }
       & { __typename: 'NodePortRef' }
     ) }
     & { __typename: 'DatasetPortType' }
@@ -1424,7 +1438,10 @@ export type InstanceDatasetsQuery = (
           { id: string, name: string }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, label: string, unitInfo: (
+          { id: string, label: string, quantity: (
+            { id: string }
+            & { __typename: 'QuantityKindType' }
+          ) | null, unitInfo: (
             { id: string, standard: string }
             & { __typename: 'UnitType' }
           ) | null }
@@ -1495,7 +1512,7 @@ export type InstanceDatasetQuery = (
           & { __typename: 'DataPoint' }
         )>, portBindings: Array<(
           { id: string, portRef: (
-            { nodeUuid: string, portId: string }
+            { nodeUuid: string, nodeId: string, portId: string }
             & { __typename: 'NodePortRef' }
           ) }
           & { __typename: 'DatasetPortType' }
@@ -1553,7 +1570,10 @@ export type CreateDatasetMutation = (
           { id: string, name: string }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, label: string, unitInfo: (
+          { id: string, label: string, quantity: (
+            { id: string }
+            & { __typename: 'QuantityKindType' }
+          ) | null, unitInfo: (
             { id: string, standard: string }
             & { __typename: 'UnitType' }
           ) | null }
@@ -1563,6 +1583,33 @@ export type CreateDatasetMutation = (
           & { __typename: 'User' }
         ) | null }
         & { __typename: 'Dataset' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteDatasetMutationVariables = Exact<{
+  instanceId: string | number;
+  datasetId: string;
+  force: boolean;
+}>;
+
+
+export type DeleteDatasetMutation = (
+  { instanceEditor: (
+    { deleteDataset:
+      | (
+        { ok: boolean }
+        & { __typename: 'ModelDeletePayload' }
       )
       | (
         { messages: Array<(
@@ -2115,6 +2162,61 @@ export type InstanceDimensionsQuery = (
   & { __typename: 'Query' }
 );
 
+export type CreateDimensionMutationVariables = Exact<{
+  instanceId: string | number;
+  input: CreateDimensionInput;
+}>;
+
+
+export type CreateDimensionMutation = (
+  { instanceEditor: (
+    { createDimension:
+      | (
+        { id: string, identifier: string, name: string, categories: Array<(
+          { id: string, identifier: string | null, label: string, order: number, previousSibling: string | null, nextSibling: string | null }
+          & { __typename: 'InstanceDimensionCategory' }
+        )> }
+        & { __typename: 'InstanceDimension' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteDimensionMutationVariables = Exact<{
+  instanceId: string | number;
+  dimensionId: string;
+}>;
+
+
+export type DeleteDimensionMutation = (
+  { instanceEditor: (
+    { deleteDimension:
+      | (
+        { ok: boolean }
+        & { __typename: 'ModelDeletePayload' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type UpdateDimensionMutationVariables = Exact<{
   instanceId: string | number;
   input: UpdateDimensionInput;
@@ -2461,7 +2563,7 @@ export type NodeGraphQueryVariables = Exact<{ [key: string]: never; }>;
 export type NodeGraphQuery = (
   { instance: (
     { id: string, identifier: string, actionGroups: Array<(
-      { id: string, name: string, color: string | null }
+      { id: string, uuid: string, name: string, color: string | null }
       & { __typename: 'ActionGroupType' }
     )>, editor: (
       { nodeLayouts: Array<(
@@ -3861,14 +3963,17 @@ export type UpdateNodeMutation = (
     { nodeEditor: (
       { update:
         | (
-          { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, editor: (
+          { id: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, group: (
+            { id: string, uuid: string, name: string, color: string | null }
+            & { __typename: 'ActionGroupType' }
+          ) | null, editor: (
             { nodeGroup: string | null }
             & { __typename: 'NodeEditor' }
           ) | null }
           & { __typename: 'ActionNode' }
         )
         | (
-          { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean, editor: (
+          { id: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, isOutcome: boolean, editor: (
             { nodeGroup: string | null }
             & { __typename: 'NodeEditor' }
           ) | null }
@@ -4192,7 +4297,7 @@ export type AvailableInstancesQueryVariables = Exact<{
 
 export type AvailableInstancesQuery = (
   { availableInstances: Array<(
-    { identifier: string, isProtected: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
+    { identifier: string, isProtected: boolean, requiresAuthentication: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
       { basePath: string }
       & { __typename: 'InstanceHostname' }
     ) }
@@ -4202,7 +4307,7 @@ export type AvailableInstancesQuery = (
 );
 
 export type AvailableInstanceFragment = (
-  { identifier: string, isProtected: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
+  { identifier: string, isProtected: boolean, requiresAuthentication: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
     { basePath: string }
     & { __typename: 'InstanceHostname' }
   ) }

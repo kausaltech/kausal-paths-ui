@@ -125,7 +125,7 @@ export function useNodeCrudActions({
       if (isCreating) return;
       setIsCreating(true);
       const existingIdentifiers = new Set(allNodes.map((n) => n.identifier));
-      const name = kind === 'action' ? 'My Action' : 'My Node';
+      const name = kind === 'action' || kind === 'additive-action' ? 'My Action' : 'My Node';
       createNodeMutation(
         { name, unit: 'kt/a', quantity: 'emissions', kind, existingIdentifiers },
         // Seed the position at the right-click location before the refetch, so

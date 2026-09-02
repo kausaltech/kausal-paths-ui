@@ -1,19 +1,30 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Box, Button, Container, Paper, Stack, Typography } from '@mui/material';
 
 import { authClient } from '@/lib/auth-client';
 import { KAUSAL_PROVIDER_ID } from '@/lib/auth-const';
 
+// Only accept same-origin relative paths as the post-login destination, so a
+// crafted link can't bounce a freshly signed-in user to another site.
+function safeNextPath(next: string | null): string {
+  if (next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\')) {
+    return next;
+  }
+  return '/';
+}
+
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackURL = safeNextPath(searchParams.get('next'));
 
   const handleSignIn = () => {
     void authClient.signIn.social({
       provider: KAUSAL_PROVIDER_ID,
-      callbackURL: '/',
+      callbackURL,
     });
   };
 

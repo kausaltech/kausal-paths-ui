@@ -2,12 +2,11 @@ import { Box, Chip, Tooltip, Typography } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
 
-import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
-import type { MockNodeEdit } from './mockEdits';
+import type { EditorNodeFieldsFragment, NodeConfigInput } from '@/common/__generated__/graphql';
 import {
-  ActionGroupMockField,
   type ActionGroupOption,
   FieldLabel,
+  LiveActionGroupField,
   LiveBooleanField,
   LiveColorField,
   LiveNodeGroupField,
@@ -19,8 +18,6 @@ import { useUpdateNodeMutation } from './useUpdateNodeMutation';
 
 export type NodeDetailsSectionProps = {
   node: EditorNodeFieldsFragment;
-  editorUserName: string;
-  currentEdit: MockNodeEdit | undefined;
   nodeGroupOptions: readonly string[];
   actionGroupOptions: readonly ActionGroupOption[];
   readOnly: boolean;
@@ -28,8 +25,6 @@ export type NodeDetailsSectionProps = {
 
 export default function NodeDetailsSection({
   node,
-  editorUserName,
-  currentEdit,
   nodeGroupOptions,
   actionGroupOptions,
   readOnly,
@@ -40,7 +35,27 @@ export default function NodeDetailsSection({
   const originalIsOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
   const supportsOutcome = node.__typename === 'Node';
   const isActionNode = node.__typename === 'ActionNode';
-  const originalActionGroupId = node.__typename === 'ActionNode' ? (node.group?.id ?? null) : null;
+  const actionGroupId = node.__typename === 'ActionNode' ? (node.group?.id ?? null) : null;
+  // The group is part of the action's type config, and the update mutation
+  // replaces the whole config, so a group change must resend the current
+  // values of every other config field.
+  const actionTypeConfig =
+    node.editor?.spec?.typeConfig?.__typename === 'ActionConfigType'
+      ? node.editor.spec.typeConfig
+      : null;
+  const commitActionGroup = (next: ActionGroupOption | null) => {
+    if (!actionTypeConfig) return Promise.reject(new Error('Missing action type config'));
+    const config: NodeConfigInput = {
+      action: {
+        nodeClass: actionTypeConfig.nodeClass,
+        decisionLevel: actionTypeConfig.decisionLevel ?? null,
+        group: next?.uuid ?? null,
+        parent: actionTypeConfig.parent ?? null,
+        noEffectValue: actionTypeConfig.noEffectValue ?? null,
+      },
+    };
+    return updateNode(node.id, { config });
+  };
 
   // `fieldset disabled` propagates disabled state to every native form control
   // inside, so MUI TextField / Switch / Autocomplete / color input all go
@@ -84,13 +99,12 @@ export default function NodeDetailsSection({
         onCommit={(next) => updateNode(node.id, { nodeGroup: next })}
       />
 
-      {isActionNode && (
-        <ActionGroupMockField
-          nodeId={node.id}
-          originalValue={originalActionGroupId}
-          currentValue={currentEdit?.actionGroup}
+      {isActionNode && actionTypeConfig && (
+        <LiveActionGroupField
+          key={`actionGroup:${node.id}`}
+          value={actionGroupId}
           options={actionGroupOptions}
-          editorUserName={editorUserName}
+          onCommit={commitActionGroup}
         />
       )}
 

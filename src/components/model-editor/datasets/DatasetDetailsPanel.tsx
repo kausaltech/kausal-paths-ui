@@ -481,15 +481,8 @@ export default function DatasetDetailsPanel({
           }}
         >
           <Typography variant="subtitle1">{t('datasets-dimensions')}</Typography>
-          {!readOnly && (
-            <Button
-              size="small"
-              startIcon={<Plus />}
-              onClick={() => onNotice(t('datasets-attaching-dimensions-not-implemented'))}
-            >
-              {t('common-add')}
-            </Button>
-          )}
+          {/* No add button: the backend supports choosing dimensions only at
+              dataset creation, not attaching them afterwards. */}
         </Stack>
         {dataset.dimensions.length === 0 ? (
           <Typography
@@ -513,31 +506,17 @@ export default function DatasetDetailsPanel({
                   }}
                 >
                   <Typography variant="subtitle2">{dim.name}</Typography>
-                  <Stack direction="row">
-                    <Tooltip title={t('common-edit')}>
-                      <IconButton
-                        size="small"
-                        component={Link}
-                        href={`${modelEditorBase}/dimensions/${encodeURIComponent(dim.id)}`}
-                      >
-                        <PencilSquare />
-                      </IconButton>
-                    </Tooltip>
-                    {!readOnly && (
-                      <Tooltip title={t('datasets-detach-dimension')}>
-                        <span>
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              onNotice(t('datasets-detaching-dimensions-not-implemented'))
-                            }
-                          >
-                            <Trash />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    )}
-                  </Stack>
+                  {/* No detach button: the backend supports choosing dimensions
+                      only at dataset creation, not detaching them afterwards. */}
+                  <Tooltip title={t('common-edit')}>
+                    <IconButton
+                      size="small"
+                      component={Link}
+                      href={`${modelEditorBase}/dimensions/${encodeURIComponent(dim.id)}`}
+                    >
+                      <PencilSquare />
+                    </IconButton>
+                  </Tooltip>
                 </Stack>
                 <DimensionCategories dim={dim} usedCategoryUuids={usedCategoryUuids} />
               </Paper>

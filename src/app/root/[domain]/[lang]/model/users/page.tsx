@@ -26,7 +26,7 @@ import {
 import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { PersonPlus, XLg } from 'react-bootstrap-icons';
+import { People, PersonPlus, XLg } from 'react-bootstrap-icons';
 
 import {
   type AddUserToInstanceMutation,
@@ -348,43 +348,26 @@ export default function InstanceUsersPage() {
 
   return (
     <Container maxWidth="md" sx={{ pt: 20, pb: 6, mx: 0 }}>
-      <Box
+      <Stack
+        direction="row"
+        spacing={1}
         sx={{
-          mb: 4,
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 2,
+          alignItems: 'center',
+          mb: 2,
         }}
       >
-        <Box>
-          <Typography
-            variant="overline"
-            sx={{
-              color: 'text.secondary',
-            }}
-          >
-            {instance.name}
-          </Typography>
-          <Typography variant="h1" sx={{ mt: 0.5 }}>
-            {t('users-title')}
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'text.secondary',
-              mt: 1,
-            }}
-          >
-            {t('users-people-with-access')}
-          </Typography>
-        </Box>
-        {isAdminViewer && (
-          <Button variant="contained" startIcon={<PersonPlus size={14} />} onClick={openInvite}>
-            {t('users-invite-users')}
-          </Button>
-        )}
-      </Box>
+        <People size={22} />
+        <Typography variant="h5">{t('users-title')}</Typography>
+      </Stack>
+      <Typography
+        variant="body2"
+        sx={{
+          color: 'text.secondary',
+          mb: 3,
+        }}
+      >
+        {t('users-people-with-access')}
+      </Typography>
 
       {!loading && loadSucceeded && !isAdminViewer && (
         <Alert severity="info" sx={{ mb: 2 }}>
@@ -396,6 +379,20 @@ export default function InstanceUsersPage() {
         <Alert severity="error" sx={{ mb: 2 }}>
           {t('users-failed-to-load', { error: error.message })}
         </Alert>
+      )}
+
+      {isAdminViewer && (
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'flex-end',
+            mb: 2,
+          }}
+        >
+          <Button variant="contained" startIcon={<PersonPlus size={14} />} onClick={openInvite}>
+            {t('users-invite-users')}
+          </Button>
+        </Stack>
       )}
 
       {loading && !data ? (

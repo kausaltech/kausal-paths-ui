@@ -28,11 +28,17 @@ function randomNodeIdentifier(existing: ReadonlySet<string>): string {
 }
 
 /** Which kind of node the "New …" flow creates. */
-export type NewNodeKind = 'additive' | 'subtractive' | 'multiplicative' | 'formula' | 'action';
+export type NewNodeKind =
+  'additive' | 'subtractive' | 'multiplicative' | 'formula' | 'action' | 'additive-action';
 
-// Generic action node class (nodes.actions.simple.GenericAction) — the most
-// general action; the user refines its behavior afterward.
-const GENERIC_ACTION_CLASS = 'simple.GenericAction';
+// Action node classes (nodes/actions/simple.py). GenericAction is the most
+// general action; the user refines its behavior afterward. AdditiveAction adds
+// its effect to its input when enabled; the backend derives its input ports
+// from the output ports (which is why inputPorts stays null below).
+const ACTION_NODE_CLASSES: Record<Extract<NewNodeKind, 'action' | 'additive-action'>, string> = {
+  action: 'simple.GenericAction',
+  'additive-action': 'simple.AdditiveAction',
+};
 
 // Arithmetic node classes (nodes/simple.py). A bare AdditiveNode is marked
 // INCOMPLETE by the backend and returns an empty output; Subtractive and
@@ -50,9 +56,10 @@ const SIMPLE_NODE_CLASSES: Record<
 function configForKind(kind: NewNodeKind): { nodeKind: NodeKind; config: NodeConfigInput } {
   switch (kind) {
     case 'action':
+    case 'additive-action':
       return {
         nodeKind: NodeKind.Action,
-        config: { action: { nodeClass: GENERIC_ACTION_CLASS } } as NodeConfigInput,
+        config: { action: { nodeClass: ACTION_NODE_CLASSES[kind] } } as NodeConfigInput,
       };
     case 'additive':
     case 'subtractive':
@@ -93,8 +100,9 @@ export type CreateNodeResult = {
  * formula "0" (a valid no-input computation, so the model still computes before
  * the user fills in the real expression — an empty formula would crash compute);
  * an arithmetic node (`additive`/`subtractive`/`multiplicative`) uses the
- * corresponding simple node class (see SIMPLE_NODE_CLASSES); an `action` node
- * uses the generic action class. All are refined afterward.
+ * corresponding simple node class (see SIMPLE_NODE_CLASSES); an action kind
+ * (`action`/`additive-action`) uses the corresponding action class (see
+ * ACTION_NODE_CLASSES). All are refined afterward.
  *
  * Mirrors `useDuplicateNode`: the create and the NodeGraph refetch are split by
  * an `onCreated` callback so the caller can seed layout state (the node's
