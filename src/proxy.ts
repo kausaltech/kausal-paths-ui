@@ -390,11 +390,14 @@ async function proxy(req: NextRequest) {
   // `requiresAuthentication` is an instance feature flag (e.g. set on CADS
   // framework instances via the template spec): the whole instance, public
   // exploration UI included, is only available to signed-in users.
+  // TODO: Re-enable `instance.requiresAuthentication` once the flag is set
+  // correctly on instances in the backend; it is currently wrong there.
   const requiresAuth =
     ((instance.isProtected ?? false) ||
-      (instance.requiresAuthentication ?? false) ||
+      // (instance.requiresAuthentication ?? false) ||
       pathWithoutLocale.startsWith('/model')) &&
     !pathWithoutLocale.startsWith('/auth/');
+
   if (requiresAuth) {
     const sessionCookie = getSessionCookie(req);
     if (!sessionCookie) {
