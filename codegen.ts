@@ -9,16 +9,19 @@ type GraphQLOpConfig = TypeScriptDocumentsPluginConfig & TypeScriptPluginConfig;
 
 const tsoConfig = {
   arrayInputCoercion: false,
-  avoidOptionals: true,
+  avoidOptionals: {
+    inputValue: false,
+    defaultValue: false,
+    field: true,
+    object: true,
+  },
+  enumType: 'native',
   immutableTypes: false,
-  mergeFragmentTypes: true,
+  mergeFragmentTypes: false,
   nonOptionalTypename: true,
   onlyOperationTypes: true,
-  constEnums: true,
-  enumsAsTypes: false,
-  useTypeImports: true,
   strictScalars: true,
-  enumType: 'native-const',
+  useTypeImports: true,
   scalars: {
     UUID: 'string',
     RichText: 'string',

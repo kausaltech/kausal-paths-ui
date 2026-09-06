@@ -36,4 +36,6 @@ function testInstance(instanceId: string) {
   });
 }
 
-getIdentifiersToTest().forEach((instance) => testInstance(instance));
+for (const instance of getIdentifiersToTest()) {
+  testInstance(instance);
+}

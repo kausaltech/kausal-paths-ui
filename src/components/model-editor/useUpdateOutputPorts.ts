@@ -76,7 +76,7 @@ export function useUpdateOutputPorts() {
     (nodeId: string, outputPorts: OutputPortInput[], outputDimensions?: string[]) =>
       updatePorts(
         nodeId,
-        { outputPorts, outputDimensions } as UpdateNodeInput,
+        { outputPorts, outputDimensions } satisfies UpdateNodeInput,
         'Failed to update output ports'
       ),
     [updatePorts]
@@ -88,7 +88,7 @@ export function useUpdateInputPorts() {
   const updatePorts = useUpdateNodePorts();
   return useCallback(
     (nodeId: string, inputPorts: InputPortInput[]) =>
-      updatePorts(nodeId, { inputPorts } as UpdateNodeInput, 'Failed to update input ports'),
+      updatePorts(nodeId, { inputPorts } satisfies UpdateNodeInput, 'Failed to update input ports'),
     [updatePorts]
   );
 }

@@ -464,7 +464,7 @@ export function useDataPointEditing({
                   id: c.uuid,
                   label: c.label,
                   identifier: c.identifier,
-                }) as CreateDimensionCategoryInput
+                }) satisfies CreateDimensionCategoryInput
             ),
           },
         });

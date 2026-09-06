@@ -21,7 +21,7 @@ function stripNulls(input: Partial<UpdateNodeInput>): UpdateNodeInput {
   for (const [k, v] of Object.entries(input)) {
     if (v !== null && v !== undefined) out[k] = v;
   }
-  return out as UpdateNodeInput;
+  return out satisfies UpdateNodeInput;
 }
 
 /**

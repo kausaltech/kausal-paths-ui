@@ -56,3 +56,11 @@ jobs:
           reviewdog -reporter=github-check -fail-level=warning -runners eslint || status=$?
           reviewdog -reporter=github-check -fail-level=error -runners typecheck || status=$?
           exit "$status"
+
+      # The kausal_common workspace package resolves its peerDependencies
+      # independently of the root, so loose ranges there can drift onto a
+      # different version than the app uses. `always()` so a lint failure above
+      # doesn't hide this.
+      - name: Check for duplicate dependencies
+        if: always()
+        run: pnpm dedupe --check

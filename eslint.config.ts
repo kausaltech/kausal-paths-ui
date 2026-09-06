@@ -14,7 +14,7 @@ const privateSourceDirs = getPrivateExtensions().map(({ sourceDir }) => sourceDi
 const sourceDirs = ['src', 'kausal_common/src', ...privateSourceDirs];
 
 const nodeConfig = getNodeConfig({
-  dirs: ['kausal_common/configs'],
+  dirs: ['kausal_common/configs', 'e2e-tests'],
   files: ['*.ts', '*.js', 'kausal_common/scripts/*.js'],
 });
 const nextConfig = await getNextEslintConfig(sourceDirs);

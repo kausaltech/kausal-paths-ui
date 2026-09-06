@@ -1,7 +1,7 @@
-import type { Locator, Page, Request } from 'playwright';
+import type { Locator } from 'playwright';
 
 import { expect } from '@/common/base-test.js';
-import { InflightRequests, getIdentifiersToTest, runInstanceTests } from '@/common/context.js';
+import { getIdentifiersToTest, runInstanceTests } from '@/common/context.js';
 
 function testInstance(instanceId: string) {
   runInstanceTests(instanceId, ({ test }) => {
@@ -131,4 +131,6 @@ function testInstance(instanceId: string) {
   });
 }
 
-getIdentifiersToTest().forEach((instance) => testInstance(instance));
+for (const instance of getIdentifiersToTest()) {
+  testInstance(instance);
+}

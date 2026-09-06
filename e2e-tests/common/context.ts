@@ -6,6 +6,7 @@ import type {
   ApolloClient as ApolloClientType,
   DocumentNode,
   OperationVariables,
+  TypedDocumentNode,
 } from '@apollo/client';
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
 import { shouldIgnoreConsoleMessage } from '@e2e-common/console-output.js';
@@ -47,7 +48,7 @@ const API_BASE = getApiBase();
 
 const BASE_URL = process.env.TEST_PAGE_BASE_URL || `http://{instanceId}.localhost:3000`;
 
-const GET_INSTANCE_BASICS = gql`
+const GET_INSTANCE_BASICS: TypedDocumentNode<PlaywrightGetInstanceBasicsQuery, PlaywrightGetInstanceBasicsQueryVariables> = gql`
   query PlaywrightGetInstanceBasics($instance: ID!) @instance(identifier: $instance) {
     instance {
       id
@@ -57,7 +58,7 @@ const GET_INSTANCE_BASICS = gql`
   }
 `;
 
-const GET_INSTANCE_INFO = gql`
+const GET_INSTANCE_INFO: TypedDocumentNode<PlaywrightGetInstanceInfoQuery, PlaywrightGetInstanceInfoQueryVariables> = gql`
   query PlaywrightGetInstanceInfo($instance: ID!, $locale: String!)
   @locale(lang: $locale)
   @instance(identifier: $instance) {
@@ -73,8 +74,10 @@ const GET_INSTANCE_INFO = gql`
       features {
         showRefreshPrompt
       }
-      goals {
-        id
+      model {
+        goals {
+          id
+        }
       }
     }
     scenarios {
@@ -242,7 +245,7 @@ export class InstanceContext {
     if (shouldIgnoreConsoleMessage(msg)) {
       return;
     }
-    console.log(`Console message (${msg.type()}, ${msg.args().length} args):\n`);
+    console.log(`Console message (${msg.type()}, ${msg.args().length.toString()} args):\n`);
     const values: unknown[] = [];
     for (const arg of msg.args()) values.push(await arg.jsonValue());
     console.log(...values);
@@ -255,7 +258,7 @@ export class InstanceContext {
     const status = response.status();
     if (url.endsWith('/api/graphql')) {
       if (!response.ok()) {
-        throw new Error(`GraphQL request failed with status ${status}`);
+        throw new Error(`GraphQL request failed with status ${status.toString()}`);
       }
       let data: Record<string, unknown>;
       try {
@@ -272,13 +275,13 @@ export class InstanceContext {
       }
       if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
         console.log(data.errors);
-        throw new Error(`GraphQL request failed with ${data.errors.length} errors`);
+        throw new Error(`GraphQL request failed with ${data.errors.length.toString()} errors`);
       }
       return;
     }
     if (status >= 400) {
       throw new Error(
-        `Network request ${url} failed with status ${status}: ${response.statusText()}`
+        `Network request ${url} failed with status ${status.toString()}: ${response.statusText()}`
       );
     }
   };
@@ -302,13 +305,13 @@ export class InstanceContext {
 
   // Returns the first page of the given type, or null if no such page exists
   getPageOfType(type: string): PathsPage | null {
-    const item = this.instance.pages.find((page) => page.__typename === type) || null;
+    const item = this.instance.pages.find((page) => page.__typename === type) ?? null;
     return item;
   }
 
   // Returns the page rendered at the instance root, or null if there is none
   getFrontPage(): PathsPage | null {
-    return this.instance.pages.find((page) => page.urlPath === '/') || null;
+    return this.instance.pages.find((page) => page.urlPath === '/') ?? null;
   }
 
   getActionListPage(): ActionListPage | null {
@@ -316,7 +319,7 @@ export class InstanceContext {
       if (item.__typename !== 'ActionListPage') return false;
       return true;
     }
-    const item = this.instance.pages.find(isActionPage) || null;
+    const item = this.instance.pages.find(isActionPage) ?? null;
     return item;
   }
 
@@ -384,7 +387,7 @@ export class InstanceContext {
 
   async waitForLoaded(page: Page, opts: { timeout?: number } = {}) {
     await expect(page.locator('*[aria-busy=true]')).toHaveCount(0, {
-      timeout: opts.timeout || 20000,
+      timeout: opts.timeout ?? 20000,
     });
   }
 
@@ -394,7 +397,7 @@ export class InstanceContext {
       await work();
       await expect
         .poll(() => inflight.inflightRequests().length, {
-          timeout: opts.timeout || 10000,
+          timeout: opts.timeout ?? 10000,
         })
         .toBe(0);
     } finally {
@@ -419,7 +422,7 @@ export class InstanceContext {
   ) {
     const finalOpts = {
       fullPage: true,
-      ...(opts || {}),
+      ...(opts ?? {}),
     };
     if (this.compareScreenshots) {
       await expect(page).toHaveScreenshot(
@@ -446,10 +449,7 @@ export class InstanceContext {
 
     let langRes: ApolloClient.QueryResult<PlaywrightGetInstanceBasicsQuery>;
     try {
-      langRes = await apolloClient.query<
-        PlaywrightGetInstanceBasicsQuery,
-        PlaywrightGetInstanceBasicsQueryVariables
-      >({
+      langRes = await apolloClient.query({
         query: GET_INSTANCE_BASICS,
         variables: { instance: instanceId },
       });
@@ -465,10 +465,7 @@ export class InstanceContext {
     const baseURL = getPageBaseUrlToTest(instanceId);
     let res: ApolloClient.QueryResult<PlaywrightGetInstanceInfoQuery>;
     try {
-      res = await apolloClient.query<
-        PlaywrightGetInstanceInfoQuery,
-        PlaywrightGetInstanceInfoQueryVariables
-      >({
+      res = await apolloClient.query({
         query: GET_INSTANCE_INFO,
         variables: { instance: instanceId, locale: primaryLanguage },
       });

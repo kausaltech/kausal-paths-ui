@@ -1,32 +1,38 @@
 packages:
   - kausal_common
   - private/assistant
+hoistPattern:
+  - "@kausal/themes"
+  - "@kausal-private/themes-private"
 allowBuilds:
-  '@parcel/watcher': false
-  '@sentry-internal/node-cpu-profiler': false
-  '@sentry/cli': false
-  '@sentry/node-cpu-profiler': true
-  '@swc/core': true
+  "@parcel/watcher": false
+  "@sentry-internal/node-cpu-profiler": false
+  "@sentry/cli": false
+  "@sentry/node-cpu-profiler": true
+  "@swc/core": true
   es5-ext: false
   esbuild: false
   libxmljs2: false
   sharp: false
   unrs-resolver: false
-hoistPattern:
-  - '@kausal/themes'
-  - '@kausal-private/themes-private'
+dedupePeers: true
+dedupePeerDependents: true
 linkWorkspacePackages: false
-overrides:
-  graphql: ^16.14.2
+strictPeerDependencies: true
+resolvePeersFromWorkspaceRoot: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-  - 'typescript-eslint'
-  - '@typescript-eslint/*'
-  - 'next'
-  - '@next/*'
-  - '@kausal/themes'
-  - '@kausal-private/themes-private'
+  - "typescript-eslint"
+  - "@typescript-eslint/*"
+  - "next"
+  - "@next/*"
+  - "@kausal/themes"
+  - "@kausal-private/themes-private"
 publicHoistPattern:
-  - '@kausal/themes'
-  - '@kausal-private/themes-private'
+  - "@kausal/themes"
+  - "@kausal-private/themes-private"
 storeDir: ./.pnpm-store
+peerDependencyRules:
+  allowedVersions:
+    react: "19"
+    react-dom: "19"

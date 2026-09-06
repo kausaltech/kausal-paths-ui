@@ -21,9 +21,17 @@
       "User",
       "UserNotFoundError"
     ],
+    "BeginInvocationPayload": [
+      "BeginAssistantInvocationPayload",
+      "OperationInfo"
+    ],
     "BindDatasetPayload": [
       "ConstraintViolations",
       "DatasetPortType",
+      "OperationInfo"
+    ],
+    "CompleteInvocationPayload": [
+      "AssistantInvocationType",
       "OperationInfo"
     ],
     "CreateActionGroupPayload": [
@@ -105,6 +113,14 @@
       "DatasetPortType",
       "Node",
       "NodeEdgeType"
+    ],
+    "FailInvocationPayload": [
+      "AssistantInvocationType",
+      "OperationInfo"
+    ],
+    "InitializeThreadPayload": [
+      "AssistantThreadType",
+      "OperationInfo"
     ],
     "InputPortBindingUnion": [
       "DatasetPortType",
@@ -188,8 +204,16 @@
       "OperationInfo",
       "RegisterUserResult"
     ],
+    "RenameThreadPayload": [
+      "AssistantThreadType",
+      "OperationInfo"
+    ],
     "ResolveDataPointCommentPayload": [
       "DataPointComment",
+      "OperationInfo"
+    ],
+    "SaveMessagePayload": [
+      "AssistantMessageType",
       "OperationInfo"
     ],
     "SetInstanceLockedPayload": [
@@ -198,6 +222,10 @@
     ],
     "SetMetricValidationRulesPayload": [
       "MetricValidationRulesResult",
+      "OperationInfo"
+    ],
+    "SetThreadArchivedPayload": [
+      "AssistantThreadType",
       "OperationInfo"
     ],
     "SnippetInterface": [

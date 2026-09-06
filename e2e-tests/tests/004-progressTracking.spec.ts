@@ -10,7 +10,8 @@ function testInstance(instanceId: string) {
       if (!outcomePage) return;
       test.slow();
 
-      const latestProgressYear = ctx.getProgressYears()[0];
+      // Years are only ever matched against rendered text here, so keep them as strings.
+      const latestProgressYear = String(ctx.getProgressYears()[0]);
 
       await ctx.navigateTo(page, `${ctx.baseURL}${outcomePage.urlPath}`);
 
@@ -33,7 +34,7 @@ function testInstance(instanceId: string) {
       test.slow();
 
       const progressYears = ctx.getProgressYears();
-      const latestProgressYear = progressYears[0];
+      const latestProgressYear = String(progressYears[0]);
       const calculatedEmissions = ctx.i18n.t('calculated-emissions');
       const plannedEmissions = ctx.i18n.t('planned-emissions');
 
@@ -71,16 +72,16 @@ function testInstance(instanceId: string) {
       if (progressYears.length > 1) {
         await test.step('Switch the tracked year', async () => {
           const yearSelector = modal.getByTestId('progress-year-selector');
-          await expect(yearSelector).toContainText(`${latestProgressYear}`);
+          await expect(yearSelector).toContainText(latestProgressYear);
 
-          const previousYear = progressYears[1];
-          await yearSelector.getByRole('button', { name: `${latestProgressYear}` }).click();
+          const previousYear = String(progressYears[1]);
+          await yearSelector.getByRole('button', { name: latestProgressYear }).click();
           await ctx.waitForNetworkIdle(page, { timeout: 15000 }, async () => {
-            await page.getByRole('menuitem', { name: `${previousYear}`, exact: true }).click();
+            await page.getByRole('menuitem', { name: previousYear, exact: true }).click();
             await ctx.waitForLoaded(page);
           });
 
-          await expect(yearSelector).toContainText(`${previousYear}`);
+          await expect(yearSelector).toContainText(previousYear);
           await expect(modal.getByTestId('emissions-card').first()).toContainText(
             `${plannedEmissions} (${previousYear})`
           );
@@ -95,4 +96,6 @@ function testInstance(instanceId: string) {
   });
 }
 
-getIdentifiersToTest().forEach((instance) => testInstance(instance));
+for (const instance of getIdentifiersToTest()) {
+  testInstance(instance);
+}

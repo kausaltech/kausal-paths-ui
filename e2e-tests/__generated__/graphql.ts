@@ -21,7 +21,7 @@ export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
 }>;
 
 
-export type PlaywrightGetInstanceInfoQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, name: string, siteTitle: string, defaultLanguage: string, supportedLanguages: Array<string>, minimumHistoricalYear: number, features: { __typename: 'InstanceFeaturesType', showRefreshPrompt: boolean }, goals: Array<{ __typename: 'InstanceGoalEntry', id: string }> }, scenarios: Array<{ __typename: 'ScenarioType', id: string, name: string, kind: ScenarioKind | null, actualHistoricalYears: Array<number> | null }>, pages: Array<
+export type PlaywrightGetInstanceInfoQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, name: string, siteTitle: string, defaultLanguage: string, supportedLanguages: Array<string>, minimumHistoricalYear: number, features: { __typename: 'InstanceFeaturesType', showRefreshPrompt: boolean }, model: { __typename: 'InstanceModel', goals: Array<{ __typename: 'InstanceGoalEntry', id: string }> } }, scenarios: Array<{ __typename: 'ScenarioType', id: string, name: string, kind: ScenarioKind | null, actualHistoricalYears: Array<number> | null }>, pages: Array<
     | { __typename: 'ActionListPage', urlPath: string, title: string, showInMenus: boolean }
     | { __typename: 'DashboardPage', urlPath: string, title: string, showInMenus: boolean }
     | { __typename: 'InstanceRootPage', urlPath: string, title: string, showInMenus: boolean }

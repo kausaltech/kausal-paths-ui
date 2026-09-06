@@ -59,7 +59,7 @@ function configForKind(kind: NewNodeKind): { nodeKind: NodeKind; config: NodeCon
     case 'additive-action':
       return {
         nodeKind: NodeKind.Action,
-        config: { action: { nodeClass: ACTION_NODE_CLASSES[kind] } } as NodeConfigInput,
+        config: { action: { nodeClass: ACTION_NODE_CLASSES[kind] } } satisfies NodeConfigInput,
       };
     case 'additive':
     case 'subtractive':
