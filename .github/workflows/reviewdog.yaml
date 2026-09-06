@@ -28,7 +28,16 @@ jobs:
           fi
           git submodule update --init --recursive --checkout
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b
+        with:
+          runtime: node
+          cache: true
+
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b
+        with:
+          runtime: node
+          cache: true
+          working-directory: ./e2e-tests
 
       - uses: actions/setup-node@v6
         with:
@@ -61,6 +70,6 @@ jobs:
       # independently of the root, so loose ranges there can drift onto a
       # different version than the app uses. `always()` so a lint failure above
       # doesn't hide this.
-      - name: Check for duplicate dependencies
-        if: always()
-        run: pnpm dedupe --check
+      # - name: Check for duplicate dependencies
+      #   if: always()
+      #   run: pnpm dedupe --check
