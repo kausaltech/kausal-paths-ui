@@ -146,9 +146,8 @@ export default function DatasetEditor({ datasetId }: Props) {
   const connectedNodeIds = useMemo(() => {
     if (!dataset) return [] as string[];
     const ids = new Set<string>();
-    // portRef.nodeId (identifier), not nodeUuid: model.nodes(id:) only
-    // resolves identifiers.
-    for (const binding of dataset.portBindings) ids.add(binding.portRef.nodeId);
+    // model.nodes(id:) accepts node UUIDs as well as identifiers.
+    for (const binding of dataset.portBindings) ids.add(binding.portRef.nodeUuid);
     return [...ids];
   }, [dataset]);
   const connectedNodeCount = connectedNodeIds.length;
