@@ -92,10 +92,6 @@ function transformationSummary(transformation: EditorPortTransformationFragment)
       return transformation.unit.short;
     case 'TagOperationType':
       return transformation.tag;
-    case 'SelectCategoriesType':
-      return `${transformation.dimension}: ${transformation.categories.join(', ') || '—'}`;
-    case 'AssignCategoryType':
-      return `${transformation.dimension}: ${transformation.category}`;
     default:
       return null;
   }

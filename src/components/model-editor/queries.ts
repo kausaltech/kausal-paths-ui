@@ -187,16 +187,6 @@ export const EDITOR_PORT_TRANSFORMATION = gql`
     ... on TagOperationType {
       tag
     }
-    ... on SelectCategoriesType {
-      dimension
-      categories
-      flatten
-      exclude
-    }
-    ... on AssignCategoryType {
-      dimension
-      category
-    }
   }
 `;
 

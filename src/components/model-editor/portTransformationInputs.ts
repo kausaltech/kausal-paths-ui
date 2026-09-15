@@ -74,8 +74,12 @@ export function toDatasetTransformationInputs(
         return { remapLegacyYears: true };
       case 'TagOperationType':
         return { tagOperation: { tag: transformation.tag } };
-      default:
-        throw new Error(`Dataset transformation "${transformation.kind}" cannot be written`);
+      default: {
+        // Every dataset transformation the fragment can carry is written above;
+        // a new schema member fails here at compile time.
+        const unhandled: never = transformation;
+        throw new Error(`Dataset transformation ${JSON.stringify(unhandled)} cannot be written`);
+      }
     }
   });
 }
@@ -98,22 +102,6 @@ export function toEdgeTransformationInputs(
       case 'AssignDimensionType':
         return {
           assignDimension: {
-            dimension: transformation.dimension,
-            category: transformation.category,
-          },
-        };
-      case 'SelectCategoriesType':
-        return {
-          selectCategories: {
-            dimension: transformation.dimension,
-            categories: transformation.categories,
-            exclude: transformation.exclude,
-            flatten: transformation.flatten,
-          },
-        };
-      case 'AssignCategoryType':
-        return {
-          assignCategory: {
             dimension: transformation.dimension,
             category: transformation.category,
           },
