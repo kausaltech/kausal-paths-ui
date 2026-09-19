@@ -1,5 +1,7 @@
 import { headers } from 'next/headers';
 
+import { getSessionCookie } from 'better-auth/cookies';
+
 import { getLogger } from '@common/logging/logger';
 
 import { auth } from './auth';
@@ -30,7 +32,10 @@ export async function getAuthSession() {
  * cookie already if the token was near expiry.
  */
 export async function getAccessToken(): Promise<string | null> {
-  const session = await getAuthSession();
+  const requestHeaders = await headers();
+  if (!getSessionCookie(requestHeaders)) return null;
+
+  const session = await auth.api.getSession({ headers: requestHeaders });
   return (session as { accessToken?: string } | null)?.accessToken ?? null;
 }
 
@@ -49,10 +54,12 @@ export async function getAccessToken(): Promise<string | null> {
  * "proceed unauthenticated or redirect to sign-in".
  */
 export async function getFreshAccessToken(): Promise<string | null> {
+  const requestHeaders = await headers();
+  if (!getSessionCookie(requestHeaders)) return null;
   try {
     const result = await auth.api.getAccessToken({
       body: { useAccountCookie: true },
-      headers: await headers(),
+      headers: requestHeaders,
     });
     return result.accessToken ?? null;
   } catch (error) {
