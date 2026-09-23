@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import type { Item } from '@glideapps/glide-data-grid';
+import { useLocale } from 'next-intl';
 
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
 import {
@@ -52,6 +53,7 @@ export function useDatasetImport({
   filterPins,
   onStage,
 }: UseDatasetImportArgs): UseDatasetImportResult {
+  const locale = useLocale();
   const [session, setSession] = useState<{
     matrix: string[][];
     detected: ReturnType<typeof detectDimensionalPaste>;
@@ -131,6 +133,7 @@ export function useDatasetImport({
       const plan = buildImportPlan(commit.matrix, commit.detected, schema, commit.mapping, {
         pinnedCategoryByDimension: commit.pinnedCategoryByDimension,
         metricId: commit.metricId,
+        locale,
       });
 
       const existingByKey = new Map<string, { id: string; value: number | null }>();
@@ -208,7 +211,7 @@ export function useDatasetImport({
       onStage({ categories: stagedCategories, rows: stagedRows, edits, years: plan.newYears });
       setSession(null);
     },
-    [dataset, buildSchema, onStage]
+    [dataset, buildSchema, onStage, locale]
   );
 
   return {

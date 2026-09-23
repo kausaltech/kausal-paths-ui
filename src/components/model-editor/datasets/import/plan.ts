@@ -14,6 +14,8 @@
  *  - Inaction is lossless: red rows default to creating a new category, never
  *    to discard.
  */
+import { parseLocaleNumber } from '@common/components/data-grid/parse-number';
+
 import {
   type CategoryCandidate,
   type CategoryMatch,
@@ -62,6 +64,8 @@ export interface FixedContext {
   pinnedCategoryByDimension: Record<string, string>;
   /** Metric to attribute every value to (no per-row metric column yet). */
   metricId: string;
+  /** UI locale; decides whether "1.500" is 1.5 or 1500 (see parseLocaleNumber). */
+  locale: string;
 }
 
 export type CellAction = 'create' | 'overwrite';
@@ -112,30 +116,12 @@ function weakest(a: MatchClass, b: MatchClass): MatchClass {
 }
 
 /**
- * Parse a value cell, tolerating the locale variants Excel emits
- * ("1.234,56" / "1,234.56" / "1234.56"). Mirrors the grid's coercePasteValue.
- * Returns null for blanks / non-numeric.
+ * Parse a value cell as Excel emits it in the user's locale ("1.234,56",
+ * "1,234.56", "1'234.56"), by the same rules as the grid's paste — see
+ * `parseLocaleNumber`. Returns null for blanks and non-numeric cells.
  */
-export function parseNumericValue(raw: string): number | null {
-  const stripped = raw.trim().replace(/\s/g, '');
-  if (stripped === '') return null;
-  const hasComma = stripped.includes(',');
-  const hasDot = stripped.includes('.');
-  let normalised: string;
-  if (hasComma && hasDot) {
-    normalised =
-      stripped.lastIndexOf('.') > stripped.lastIndexOf(',')
-        ? stripped.replace(/,/g, '')
-        : stripped.replace(/\./g, '').replace(',', '.');
-  } else if (hasComma) {
-    normalised = /^-?\d{1,3}(,\d{3})+$/.test(stripped)
-      ? stripped.replace(/,/g, '')
-      : stripped.replace(',', '.');
-  } else {
-    normalised = stripped;
-  }
-  const num = Number(normalised);
-  return Number.isFinite(num) ? num : null;
+export function parseNumericValue(raw: string, locale: string): number | null {
+  return parseLocaleNumber(raw, locale) ?? null;
 }
 
 /** Stable key for a data point: metric + sorted category uuids + year. */
@@ -212,7 +198,7 @@ export function buildImportPlan(
 
     const cells: PlannedCell[] = [];
     for (const { col, year } of detected.yearColumns) {
-      const value = parseNumericValue(row[col] ?? '');
+      const value = parseNumericValue(row[col] ?? '', fixed.locale);
       if (value === null) continue;
       let action: CellAction = 'create';
       let previousValue: number | null | undefined;
