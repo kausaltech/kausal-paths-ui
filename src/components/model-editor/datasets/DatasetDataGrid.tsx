@@ -18,6 +18,8 @@ import {
 import '@glideapps/glide-data-grid/dist/index.css';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { useGlideNumberEditing } from '@common/components/data-grid/glide-number-editing';
+
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import { AddRowsModal } from './AddRowsModal';
@@ -665,43 +667,11 @@ export default function DatasetDataGrid({
     [editing]
   );
 
-  // Multi-cell paste: Glide's default for Number cells doesn't handle
-  // locale-formatted strings ("1,234.56" / "1234,56") or empty cells; coerce
-  // here so pasted spreadsheet ranges land cleanly. Non-Number targets fall
-  // through to `applyEdit`'s guards (dim/Metric columns are read-only).
-  const coercePasteValue = useCallback<NonNullable<DataEditorProps['coercePasteValue']>>(
-    (val, cell) => {
-      if (cell.kind !== GridCellKind.Number) return undefined;
-      const stripped = val.trim().replace(/\s/g, '');
-      if (stripped === '') {
-        return { ...cell, data: undefined, displayData: '' };
-      }
-      const hasComma = stripped.includes(',');
-      const hasDot = stripped.includes('.');
-      let normalised: string;
-      if (hasComma && hasDot) {
-        // Rightmost separator is the decimal; the other is thousands.
-        if (stripped.lastIndexOf('.') > stripped.lastIndexOf(',')) {
-          normalised = stripped.replace(/,/g, '');
-        } else {
-          normalised = stripped.replace(/\./g, '').replace(',', '.');
-        }
-      } else if (hasComma) {
-        // Ambiguous: "1,500" could be thousands or decimal. Treat as
-        // thousands only when the whole string is groups-of-three
-        // (e.g. "1,500", "1,500,000"); otherwise treat as decimal ("1,5").
-        normalised = /^-?\d{1,3}(,\d{3})+$/.test(stripped)
-          ? stripped.replace(/,/g, '')
-          : stripped.replace(',', '.');
-      } else {
-        normalised = stripped;
-      }
-      const num = Number(normalised);
-      if (!Number.isFinite(num)) return undefined;
-      return { ...cell, data: num, displayData: formatNumber(num) };
-    },
-    []
-  );
+  // Number typing and paste. Glide's stock number editor drops the key that
+  // opens it and loses keys typed before it has focus; the shared hook fixes
+  // both and parses pasted spreadsheet values ("1.234,5" / "1,234.5") by the UI
+  // locale rather than guessing from the string.
+  const numbers = useGlideNumberEditing({ locale, getCellContent, formatNumber });
 
   const onColumnResize = useCallback<NonNullable<DataEditorProps['onColumnResize']>>(
     (column, newSize) => {
@@ -892,7 +862,9 @@ export default function DatasetDataGrid({
           getCellContent={getCellContent}
           onCellEdited={readOnly ? undefined : onCellEdited}
           onCellsEdited={readOnly ? undefined : onCellsEdited}
-          coercePasteValue={readOnly ? undefined : coercePasteValue}
+          coercePasteValue={readOnly ? undefined : numbers.coercePasteValue}
+          provideEditor={numbers.provideEditor}
+          onKeyDown={numbers.onKeyDown}
           // Dimensional pastes (a year-header table) open the import modal;
           // everything else falls through to Glide's positional paste.
           onPaste={readOnly ? false : importer.onPaste}

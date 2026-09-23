@@ -27,7 +27,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
 import { extractYear } from '../dataset-grid-data';
@@ -95,6 +95,7 @@ export default function ImportModal({
   onCommit,
 }: ImportModalProps) {
   const t = useTranslations('model-editor');
+  const locale = useLocale();
   const planDimensions = useMemo<PlanDimension[]>(
     () =>
       dataset.dimensions.map((d) => ({
@@ -162,8 +163,18 @@ export default function ImportModal({
     return buildImportPlan(matrix, detected, schema, mapping, {
       pinnedCategoryByDimension,
       metricId,
+      locale,
     });
-  }, [matrix, detected, schema, mapping, pinnedCategoryByDimension, metricId, mappedDimCount]);
+  }, [
+    matrix,
+    detected,
+    schema,
+    mapping,
+    pinnedCategoryByDimension,
+    metricId,
+    mappedDimCount,
+    locale,
+  ]);
 
   const triage = useMemo(
     () => (plan ? collectTriageItems(plan, planDimensions) : []),
