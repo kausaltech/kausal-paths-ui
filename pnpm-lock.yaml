@@ -452,6 +452,9 @@ importers:
       '@emotion/styled':
         specifier: '>=11'
         version: 11.14.1(@emotion/react@11.14.0)(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1)
+      '@glideapps/glide-data-grid':
+        specifier: '>=6'
+        version: 6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.2.8)(react-responsive-carousel@3.2.23)(react@19.2.8)(supports-color@8.1.1)
       '@kausal/themes':
         specifier: '*'
         version: 0.8.23
