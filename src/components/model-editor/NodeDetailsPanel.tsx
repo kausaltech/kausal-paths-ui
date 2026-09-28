@@ -122,10 +122,13 @@ function NodeProblemsContent({
 function ActionEnabledToggle({
   isEnabled,
   paramId,
+  isCustomizable,
 }: {
   isEnabled: boolean;
   /** Global id of the action's `enabled` parameter; null until known. */
   paramId: string | null;
+  /** Whether the backend allows changing the `enabled` parameter. */
+  isCustomizable: boolean;
 }) {
   const t = useTranslations('model-editor');
   // Keep the switch at its requested position until the refetched node data
@@ -138,7 +141,7 @@ function ActionEnabledToggle({
 
   const checked = pending ?? isEnabled;
   const handleChange = (next: boolean) => {
-    if (!paramId || loading) return;
+    if (!paramId || !isCustomizable || loading) return;
     setPending(next);
     void setParameter({ variables: { parameterId: paramId, enabled: next } }).finally(() => {
       setPending(null);
@@ -160,7 +163,7 @@ function ActionEnabledToggle({
           <Switch
             size="small"
             checked={checked}
-            disabled={!paramId || loading}
+            disabled={!paramId || !isCustomizable || loading}
             onChange={(e) => handleChange(e.target.checked)}
           />
         }
@@ -266,10 +269,10 @@ export default function NodeDetailsPanel({
   );
   // Guard against parameters of the previously inspected node: the toggle
   // must never send another action's parameter id.
-  const enabledParamId =
+  const enabledParam =
     parametersData?.node?.id === node.id
-      ? (parametersData.node.parameters.find((p) => p.nodeRelativeId === 'enabled')?.id ?? null)
-      : null;
+      ? parametersData.node.parameters.find((p) => p.nodeRelativeId === 'enabled')
+      : undefined;
 
   const headerStyle = getStyleForNode(node);
 
@@ -334,7 +337,11 @@ export default function NodeDetailsPanel({
       </Box>
 
       {node.__typename === 'ActionNode' && (
-        <ActionEnabledToggle isEnabled={node.isEnabled} paramId={enabledParamId} />
+        <ActionEnabledToggle
+          isEnabled={node.isEnabled}
+          paramId={enabledParam?.id ?? null}
+          isCustomizable={enabledParam?.isCustomizable ?? false}
+        />
       )}
 
       {statusEntry && statusEntry.status !== NodeStatus.Ok && (

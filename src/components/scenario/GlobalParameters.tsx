@@ -41,16 +41,13 @@ const GlobalParameters = ({ onScenarioCustomized }: { onScenarioCustomized: () =
         {t('all-settings')}
       </Typography>
       <Grid container spacing={1.5} sx={{ mt: 1, ml: 0.5, mr: 0.5 }}>
-        {parameters.map(
-          (param) =>
-            param.isCustomizable && (
-              <ParameterWidget
-                key={param.id}
-                parameter={param}
-                onScenarioCustomized={onScenarioCustomized}
-              />
-            )
-        )}
+        {parameters.map((param) => (
+          <ParameterWidget
+            key={param.id}
+            parameter={param}
+            onScenarioCustomized={onScenarioCustomized}
+          />
+        ))}
       </Grid>
     </Box>
   );
