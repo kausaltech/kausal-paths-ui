@@ -71,6 +71,7 @@ type NumberWidgetProps = {
   label: string;
   unit: string;
   step: number | null;
+  disabled: boolean;
 };
 
 const NumberWidget = (props: NumberWidgetProps) => {
@@ -87,6 +88,7 @@ const NumberWidget = (props: NumberWidgetProps) => {
     label,
     unit,
     step: defaultStep,
+    disabled,
   } = props;
 
   const [value, setValue] = useState(initialValue);
@@ -182,6 +184,7 @@ const NumberWidget = (props: NumberWidgetProps) => {
           size="small"
           onChange={handleInputChange}
           onBlur={handleBlur}
+          disabled={disabled}
           slotProps={{
             input: {
               inputProps: {
@@ -209,7 +212,7 @@ const NumberWidget = (props: NumberWidgetProps) => {
           min={min}
           max={max}
           step={step}
-          disabled={loading}
+          disabled={loading || disabled}
           id={id}
           name={id}
           marks={marks}
@@ -327,6 +330,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
           label={parameter.label ?? ''}
           unit={parameter.unit?.htmlShort ?? ''}
           step={parameter.step}
+          disabled={!parameter.isCustomizable || disabled}
         />
       );
 
