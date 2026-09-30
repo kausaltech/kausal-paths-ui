@@ -4,7 +4,6 @@ import { Fragment, useMemo, useState } from 'react';
 import { Box, Container } from '@mui/material';
 
 import SVG from 'react-inlinesvg';
-import { Collapse, Nav, NavItem, Navbar, NavbarBrand } from 'reactstrap';
 
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
@@ -13,6 +12,7 @@ import { getThemeStaticURL } from '@common/themes/theme';
 import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
 import NavDropdown, { type NavDropdownListItem } from '@/components/common/NavDropdown';
+import { Nav, NavItem, Navbar, NavbarCollapse } from '@/components/common/NavParts';
 import Icon from '@/components/common/icon';
 import LanguageSelector from '@/components/general/LanguageSelector';
 import { useSiteWithSetter } from '@/context/site';
@@ -131,7 +131,7 @@ const HomeLink = styled(Link)<{ $hideLogoOnMobile?: boolean }>`
     max-height: ${({ theme }) => theme.spaces.s600};
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .org-logo {
       display: block;
       max-width: 12rem;
@@ -262,12 +262,12 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
       <BrandNavWrapper>
         <Container fixed maxWidth="xl" sx={{ backgroundColor: 'theme.brandNavBackground' }}>
           <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container={false}>
-            <NavbarBrand tag="span" className="me-auto">
+            <span className="navbar-brand me-auto">
               <HomeLink href="/">
                 {orgLogo}
                 <SiteTitle>{siteTitle}</SiteTitle>
               </HomeLink>
-            </NavbarBrand>
+            </span>
             <Nav navbar className="ml-auto d-none d-md-flex" style={{ alignItems: 'center' }}>
               <LanguageSelector mobile={false} />
             </Nav>
@@ -290,7 +290,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
       <BotNavWrapper>
         <Container fixed maxWidth="xl">
           <BotNav expand="md" id="global-navigation-bar" container={false}>
-            <Collapse isOpen={isOpen} navbar>
+            <NavbarCollapse isOpen={isOpen}>
               <Nav navbar className="me-auto">
                 {navItems &&
                   navItems.map((page) =>
@@ -325,7 +325,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
                   </NavItem>
                 </Nav>
               ) : null}
-            </Collapse>
+            </NavbarCollapse>
           </BotNav>
         </Container>
       </BotNavWrapper>

@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 
-import { Global, css, useTheme } from '@emotion/react';
+import { Button, Drawer, Fade, IconButton, Menu, MenuItem } from '@mui/material';
+import { useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
 
 import type {
@@ -9,16 +10,6 @@ import type {
   EChartsOption,
 } from 'echarts';
 import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  Fade,
-  Modal,
-  ModalBody,
-  ModalHeader,
-} from 'reactstrap';
 
 import { Chart } from '@common/components/Chart';
 import styled from '@common/themes/styled';
@@ -141,37 +132,32 @@ const StyledYearSelector = styled.div`
   margin-bottom: ${({ theme }) => theme.spaces.s100};
 `;
 
-// Style modal as a drawer to the right
-const StyledModal = styled(Modal)`
-  height: 100%;
-  margin-top: 0;
-  margin-right: 0;
-  margin-bottom: 0;
-
-  .modal-content {
-    border-radius: ${({ theme }) => theme.cardBorderRadius};
-    border-top-right-radius: 0;
-    height: 100%;
-    border-bottom-right-radius: 0;
-  }
-
-  .modal-body {
-    flex: 1;
-    overflow-y: auto;
+const StyledDrawer = styled(Drawer)`
+  .MuiDrawer-paper {
+    width: 100%;
+    max-width: 800px;
+    border-top-left-radius: ${({ theme }) => theme.cardBorderRadius};
+    border-bottom-left-radius: ${({ theme }) => theme.cardBorderRadius};
   }
 `;
 
-// Slide the modal in from the right
-const globalModalCss = css`
-  .progress-tracking-modal {
-    .modal.fade .modal-dialog {
-      transform: translate(50px, 0);
-    }
+const StyledDrawerHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spaces.s100};
+  padding: ${({ theme }) => theme.spaces.s100};
+  border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey030};
+`;
 
-    .modal.show .modal-dialog {
-      transform: none;
-    }
-  }
+const StyledDrawerTitle = styled.h5`
+  margin: 0;
+`;
+
+const StyledDrawerBody = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: ${({ theme }) => theme.spaces.s100};
 `;
 
 function getStripeGradient(color?: string) {
@@ -506,7 +492,9 @@ export const ProgressIndicator = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const formatNumber = useNumberFormatter();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [yearMenuAnchor, setYearMenuAnchor] = useState<HTMLElement | null>(null);
+  const drawerTitleId = useId();
+  const yearMenuId = useId();
   const [drillDownState, setDrillDownState] = useState<DrillDownState>(null);
   const site = useSite();
 
@@ -602,16 +590,13 @@ export const ProgressIndicator = ({
     setTimeout(() => {
       onSelectedYearChange(latestProgressData.year);
       setDrillDownState(null);
-      setDropdownOpen(false);
+      setYearMenuAnchor(null);
     }, 400);
-  }
-
-  function toggleDropdown() {
-    setDropdownOpen((isOpen) => !isOpen);
   }
 
   function handleYearSelect(year: number) {
     onSelectedYearChange(year);
+    setYearMenuAnchor(null);
   }
 
   function handleChartClick(dataPoint: [number, number]) {
@@ -636,7 +621,6 @@ export const ProgressIndicator = ({
 
   return (
     <>
-      <Global styles={globalModalCss} />
       <StyledContainer data-testid="progress-indicator">
         <StyledTitle>
           {t('calculated-emissions')} ({latestProgressData.year})
@@ -671,23 +655,32 @@ export const ProgressIndicator = ({
         )}
       </StyledContainer>
 
-      <StyledModal
-        isOpen={isModalOpen}
-        toggle={handleCloseModal}
-        data-testid="progress-tracking-modal"
-        role="dialog"
-        aria-modal="true"
-        size="lg"
-        centered
-        wrapClassName="progress-tracking-modal"
+      <StyledDrawer
+        anchor="right"
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        slotProps={{
+          paper: {
+            role: 'dialog',
+            'aria-modal': true,
+            'aria-labelledby': drawerTitleId,
+            // @ts-expect-error data attributes aren't in the paper's prop types
+            'data-testid': 'progress-tracking-modal',
+          },
+        }}
       >
-        <ModalHeader toggle={() => onModalOpenChange(false)}>
-          {drillDownState
-            ? drillDownState.label
-            : `${t('calculated-emissions')} (${selectedEmissions?.year ?? ''})`}
-        </ModalHeader>
-        <ModalBody>
-          <Fade key={drillDownState?.categoryId ?? 'default'}>
+        <StyledDrawerHeader>
+          <StyledDrawerTitle id={drawerTitleId}>
+            {drillDownState
+              ? drillDownState.label
+              : `${t('calculated-emissions')} (${selectedEmissions?.year ?? ''})`}
+          </StyledDrawerTitle>
+          <IconButton onClick={handleCloseModal} aria-label={t('close')}>
+            <Icon name="times" />
+          </IconButton>
+        </StyledDrawerHeader>
+        <StyledDrawerBody>
+          <Fade in appear key={drillDownState?.categoryId ?? 'default'}>
             <div>
               {drillDownState ? (
                 <div>
@@ -702,16 +695,32 @@ export const ProgressIndicator = ({
                 <>
                   {observedYears.length > 1 && (
                     <StyledYearSelector data-testid="progress-year-selector">
-                      <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-                        <DropdownToggle caret>{selectedYear}</DropdownToggle>
-                        <DropdownMenu>
-                          {observedYears.map(({ year }) => (
-                            <DropdownItem key={year} onClick={() => handleYearSelect(year)}>
-                              {year}
-                            </DropdownItem>
-                          ))}
-                        </DropdownMenu>
-                      </Dropdown>
+                      <Button
+                        variant="outlined"
+                        endIcon={<Icon name="angleDown" />}
+                        onClick={(e) => setYearMenuAnchor(e.currentTarget)}
+                        aria-haspopup="menu"
+                        aria-expanded={!!yearMenuAnchor}
+                        aria-controls={yearMenuAnchor ? yearMenuId : undefined}
+                      >
+                        {selectedYear}
+                      </Button>
+                      <Menu
+                        id={yearMenuId}
+                        anchorEl={yearMenuAnchor}
+                        open={!!yearMenuAnchor}
+                        onClose={() => setYearMenuAnchor(null)}
+                      >
+                        {observedYears.map(({ year }) => (
+                          <MenuItem
+                            key={year}
+                            selected={year === selectedYear}
+                            onClick={() => handleYearSelect(year)}
+                          >
+                            {year}
+                          </MenuItem>
+                        ))}
+                      </Menu>
                     </StyledYearSelector>
                   )}
                   {!!selectedEmissions && (
@@ -752,8 +761,8 @@ export const ProgressIndicator = ({
               )}
             </div>
           </Fade>
-        </ModalBody>
-      </StyledModal>
+        </StyledDrawerBody>
+      </StyledDrawer>
     </>
   );
 };

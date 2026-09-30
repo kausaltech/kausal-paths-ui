@@ -1,12 +1,17 @@
 import { darken, readableColor } from 'polished';
-import { Badge as BSSBadge } from 'reactstrap';
 
 import styled from '@common/themes/styled';
+import { transientOptions } from '@common/themes/styles/styled';
 
 type BadgeColor = 'neutralLight' | 'neutralDark' | 'brandLight' | 'brandDark';
 
-const StyledBadge = styled(BSSBadge)<{ $color: BadgeColor; $isLink: boolean }>`
-  background-color: ${(props) => props.theme[props.$color]} !important;
+// Laid out like Bootstrap's `.badge`
+const StyledBadge = styled('span', transientOptions)<{ $color: BadgeColor; $isLink: boolean }>`
+  display: inline-block;
+  font-size: 0.75em;
+  line-height: 1;
+  vertical-align: baseline;
+  background-color: ${(props) => props.theme[props.$color]};
   color: ${(props) =>
     readableColor(
       props.theme[props.$color],
@@ -24,8 +29,7 @@ const StyledBadge = styled(BSSBadge)<{ $color: BadgeColor; $isLink: boolean }>`
   text-align: left;
 
   &:hover {
-    background-color: ${(props) =>
-      props.$isLink && darken(0.05, props.theme[props.$color])} !important;
+    background-color: ${(props) => props.$isLink && darken(0.05, props.theme[props.$color])};
   }
 
   &.lg {

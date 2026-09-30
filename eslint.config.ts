@@ -31,6 +31,25 @@ const config: ConfigWithExtends[] = defineConfig(
       },
     },
   },
+  {
+    // reactstrap was retired in favour of MUI.
+    name: 'no-reactstrap',
+    files: sourceDirs.map((dir) => `${dir}/**/*.@(ts|tsx|js|jsx)`),
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'reactstrap',
+              message:
+                'reactstrap was retired. Use @mui/material or the shared components in @/components/common.',
+            },
+          ],
+        },
+      ],
+    },
+  },
   getGlobalIgnores(),
   globalIgnores(
     ['kausal_common/src/components/paths', 'kausal_common/src/utils/paths'],

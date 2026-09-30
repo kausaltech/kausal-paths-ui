@@ -3,7 +3,6 @@ import Script from 'next/script';
 
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
-import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
 import { useTheme } from '@common/themes';
@@ -14,6 +13,7 @@ import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
 import type { GlobalNavProps } from '@/components/common/GlobalNav';
 import NavDropdown from '@/components/common/NavDropdown';
+import { Nav, NavItem, Navbar, NavbarCollapse } from '@/components/common/NavParts';
 import LanguageSelector from '@/components/general/LanguageSelector';
 import { useSite } from '@/context/site';
 
@@ -138,7 +138,7 @@ const NavbarToggler = styled.button`
   }
 `;
 
-const StyledCollapse = styled(Collapse)`
+const StyledCollapse = styled(NavbarCollapse)`
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: flex;
     background-color: var(--stzh-color-white);
@@ -238,7 +238,7 @@ function GlobalNav(props: GlobalNavProps) {
               className="header__appnav-inner"
               container={false}
             >
-              <StyledCollapse isOpen={isOpen} navbar>
+              <StyledCollapse isOpen={isOpen}>
                 <Nav navbar className="stzh-appnav__items sc-stzh-appnav sc-stzh-appnav-s me-auto">
                   {navItems &&
                     navItems.map((page) =>

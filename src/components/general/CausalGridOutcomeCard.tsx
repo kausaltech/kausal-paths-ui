@@ -3,8 +3,6 @@ import { forwardRef } from 'react';
 import { Card } from '@mui/material';
 import { css } from '@emotion/react';
 
-import { CardBody, CardTitle } from 'reactstrap';
-
 import styled from '@common/themes/styled';
 import { transientOptions } from '@common/themes/styles/styled';
 
@@ -31,16 +29,6 @@ const StyledCard = styled(Card, transientOptions)<{ $selected?: boolean }>`
   border-radius: ${({ theme }) => theme.cardBorderRadius};
   background-color: ${({ theme }) => theme.themeColors.white};
 
-  & .card-body {
-    position: relative;
-    z-index: 1;
-    padding: ${({ theme }) => theme.spaces.s050};
-  }
-
-  & .card-title {
-    margin-bottom: 1.75rem;
-  }
-
   &::after {
     position: absolute;
     left: 0;
@@ -60,6 +48,16 @@ const StyledCard = styled(Card, transientOptions)<{ $selected?: boolean }>`
             ${UNSELECTED_ICON}
           `};
   }
+`;
+
+const CardBody = styled.div`
+  position: relative;
+  z-index: 1;
+  padding: ${({ theme }) => theme.spaces.s050};
+`;
+
+const CardTitle = styled.div`
+  margin-bottom: 1.75rem;
 `;
 
 const CausalGridOutcomeCard = forwardRef<HTMLDivElement, Props>(

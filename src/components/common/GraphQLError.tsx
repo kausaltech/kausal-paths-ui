@@ -1,10 +1,11 @@
-import { Button } from '@mui/material';
+import { useId, useState } from 'react';
+
+import { Alert, Button, Card, CardContent, Collapse } from '@mui/material';
 
 import type { ErrorLike } from '@apollo/client/core';
 import { CombinedGraphQLErrors, CombinedProtocolErrors, LinkError } from '@apollo/client/errors';
 import * as Sentry from '@sentry/nextjs';
 import type { GraphQLFormattedError } from 'graphql';
-import { Alert, Card, CardBody, UncontrolledCollapse } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
 
@@ -18,6 +19,8 @@ const GraphQLError = (props: GraphQLErrorProps) => {
   const { error } = props;
   const { t } = useTranslation('common');
   const { t: tErrors } = useTranslation('errors');
+  const [showDetails, setShowDetails] = useState(false);
+  const detailsId = useId();
   let errorDetailMsg: string | null = null;
 
   Sentry.captureException(error);
@@ -32,17 +35,24 @@ const GraphQLError = (props: GraphQLErrorProps) => {
   }
 
   return (
-    <Alert color="warning">
+    <Alert severity="warning">
       <h3>{t('error-loading-data')}</h3>
       {errorDetailMsg}
       {!isProductionDeployment() && graphQLErrors?.length ? (
         <>
-          <Button size="small" variant="outlined" id="toggler" className="mt-2 mb-2">
+          <Button
+            size="small"
+            variant="outlined"
+            sx={{ my: 1 }}
+            onClick={() => setShowDetails(!showDetails)}
+            aria-expanded={showDetails}
+            aria-controls={detailsId}
+          >
             {t('show-error')}
           </Button>
-          <UncontrolledCollapse toggler="#toggler">
+          <Collapse in={showDetails} id={detailsId}>
             <Card>
-              <CardBody>
+              <CardContent>
                 <small>
                   {graphQLErrors?.map((err, idx) => (
                     <pre key={idx}>
@@ -62,9 +72,9 @@ const GraphQLError = (props: GraphQLErrorProps) => {
                     </pre>
                   ))}
                 </small>
-              </CardBody>
+              </CardContent>
             </Card>
-          </UncontrolledCollapse>
+          </Collapse>
         </>
       ) : null}
     </Alert>

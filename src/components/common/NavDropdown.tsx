@@ -2,9 +2,15 @@ import { type ReactNode } from 'react';
 import Link from 'next/link';
 
 import { transparentize } from 'polished';
-import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
 import styled from '@common/themes/styled';
+
+import {
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+} from '@/components/common/Dropdowns';
 
 const NavLink = styled.div`
   a {
@@ -123,7 +129,7 @@ function NavDropdown(props: NavDropdownProps) {
       <StyledDropdownToggle nav caret>
         <NavHighlighter className={`highlighter ${active && 'active'}`}>{children}</NavHighlighter>
       </StyledDropdownToggle>
-      <DropdownMenu direction="left">
+      <DropdownMenu>
         {items &&
           items.map((child) => (
             <DropdownItem key={child.id}>
