@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 
 import { Card, CardContent, Container } from '@mui/material';
@@ -16,12 +15,13 @@ import type {
   NodePageQueryVariables,
   OutcomeNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { ActionLink } from '@/common/links';
 import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
+import Loader from '@/components/common/Loader';
 import Icon from '@/components/common/icon';
 import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
@@ -60,6 +60,7 @@ const NodeBodyText = styled.div`
 `;
 
 const ContentWrapper = styled.div`
+  position: relative;
   padding: 1.5rem;
   margin: 0.5rem 0;
   background-color: ${({ theme }) => theme.cardBackground.secondary};
@@ -122,21 +123,16 @@ export default function NodePage() {
   const slug = params.slug;
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
+  // Scenario and parameter mutations refetch all active queries, including this one
+  const { loading, error, data } = useQuery(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
       scenarios: null,
     },
   });
 
-  const activeScenario = useReactiveVar(activeScenarioVar);
-
-  useEffect(() => {
-    if (!activeScenario?.id) return;
-    void refetch();
-  }, [activeScenario?.id, refetch]);
-
-  if (loading) {
+  // Full-page loader only on initial load; refetches keep the page mounted
+  if (loading && !data) {
     return <ContentLoader fullPage />;
   }
   if (error || !data) {
@@ -178,6 +174,7 @@ export default function NodePage() {
               </div>
               {node.metricDim && (
                 <ContentWrapper>
+                  {loading && <Loader />}
                   <DimensionalNodeVisualisation
                     title={node.name}
                     key={node.id}
