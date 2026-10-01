@@ -137,7 +137,13 @@ const DimensionRow = styled.div`
   align-items: flex-start;
   column-gap: ${({ theme }) => theme.spaces.s300};
   row-gap: ${({ theme }) => theme.spaces.s100};
+`;
+
+// Separates the controls from the chart below them
+const ControlsContainer = styled.div`
+  padding-bottom: ${({ theme }) => theme.spaces.s200};
   margin-bottom: ${({ theme }) => theme.spaces.s200};
+  border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey030};
 `;
 
 const ControlsLabel = styled.div`
@@ -164,8 +170,6 @@ const FilterPanel = styled.div<{ $mobileOrder: number; $desktopOrder: number }>`
   flex-basis: 100%;
   order: ${({ $mobileOrder }) => $mobileOrder};
   padding: ${({ theme }) => theme.spaces.s100};
-  border: ${({ theme }) => theme.inputBorderWidth} solid ${({ theme }) => theme.graphColors.grey030};
-  border-radius: ${({ theme }) => theme.inputBorderRadius};
   background-color: ${({ theme }) => theme.themeColors.white};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.values.md}px) {
@@ -311,7 +315,7 @@ const DimensionControls = <D extends ControlDimension>({
   const openDim = openIdx >= 0 ? dimensions[openIdx] : null;
 
   return (
-    <div>
+    <ControlsContainer>
       {withBreakdown && (
         <ControlsLabel id={breakdownLabelId}>{t('common.plot-break-down-by')}</ControlsLabel>
       )}
@@ -391,7 +395,7 @@ const DimensionControls = <D extends ControlDimension>({
           </FilterPanel>
         )}
       </DimensionRow>
-    </div>
+    </ControlsContainer>
   );
 };
 
@@ -823,12 +827,8 @@ export default function DimensionalNodeVisualisation({
   // Define colors for the categories
   const defaultColor = color || theme.graphColors.blue050;
   // Colors are assigned over the *unfiltered* series of the sliced dimension, so that
-  // a category keeps its color regardless of which categories are filtered out. The
-  // group vs. category mode follows the visible slice (a filter on a grouped dimension
-  // shows its categories instead of its groups).
-  const colorSlice = slicedDim
-    ? metrics.default.sliceBy(slicedDim.id, true, {}, !sliceConfig.categories[slicedDim.id])
-    : slice;
+  // a category keeps its color regardless of which categories are filtered out
+  const colorSlice = slicedDim ? metrics.default.sliceBy(slicedDim.id, true, {}) : slice;
   const seriesColors = new Map<string, string>();
 
   if (colorSlice.categoryValues.length > 1) {

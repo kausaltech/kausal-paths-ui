@@ -661,13 +661,9 @@ export class DimensionalMetric {
     const byYear: Map<number, Map<string, number>> = new Map();
     const dim = this.dimensions.find((dim) => dim.id === dimensionId)!;
 
-    if (dim.groups.length) {
-      if (categoryChoice?.[dim.id]) {
-        useGroups = false;
-      }
-    } else {
-      useGroups = false;
-    }
+    // Grouped dimensions are sliced by their groups, also when they are filtered;
+    // the categories inside groups are not shown to users
+    if (!dim.groups.length) useGroups = false;
 
     this.rows.forEach((row) => {
       const { year } = row;
@@ -791,7 +787,7 @@ export class DimensionalMetric {
   async downloadData(config: SliceConfig, format: 'xlsx' | 'csv') {
     let slice: MetricSlice;
     if (config.dimensionId) {
-      slice = this.sliceBy(config.dimensionId, false, config.categories, false);
+      slice = this.sliceBy(config.dimensionId, false, config.categories);
     } else {
       slice = this.flatten(config.categories);
     }
