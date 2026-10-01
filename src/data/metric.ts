@@ -330,10 +330,48 @@ export class DimensionalMetric {
     return undefined;
   }
 
+  getGroupLabel(dimId: string, groupId: string) {
+    return this.dimensions.find((dim) => dim.id === dimId)?.groupsById.get(groupId)?.label;
+  }
+
+  /**
+   * Get the ids of the categories and groups of a dimension that would have
+   * (non-null, non-zero) data with the filters of the *other* dimensions applied.
+   */
+  private getCatsWithData(dimId: string, config: MetricCategoryChoice) {
+    const otherFilters = { ...config, [dimId]: undefined };
+    const ids = new Set<string>();
+    this.rows.forEach((row) => {
+      if (row.value === null || row.value === 0) return;
+      if (!this.rowMatchesChoice(row, otherFilters)) return;
+      const cat = row.dimCats[dimId];
+      ids.add(cat.id);
+      if (cat.group) ids.add(cat.group);
+    });
+    return ids;
+  }
+
+  private selectableDimensions: MetricDimension[] | undefined;
+
+  /**
+   * Dimensions worth offering as breakdown and filter controls: those with at
+   * least two categories (or groups, for grouped dimensions) that have data.
+   * Breaking down or filtering by any other dimension wouldn't change the chart.
+   */
+  getSelectableDimensions() {
+    this.selectableDimensions ??= this.dimensions.filter((dim) => {
+      const withData = this.getCatsWithData(dim.id, {});
+      const options = dim.groups.length ? dim.groups : dim.categories;
+      return options.filter((opt) => withData.has(opt.id)).length >= 2;
+    });
+    return this.selectableDimensions;
+  }
+
   getOptionsForDimension(dimId: string, config: MetricCategoryChoice) {
     const dim = this.data.dimensions.find((dim) => dim.id === dimId)!;
     const choice = config[dimId];
-    let opts: { id: string; label: string; selected: boolean }[];
+    const withData = this.getCatsWithData(dimId, config);
+    let opts: { id: string; label: string; selected: boolean; hasData: boolean }[];
 
     if (dim.groups.length) {
       const selected = choice?.groups ?? [];
@@ -341,6 +379,7 @@ export class DimensionalMetric {
         id: grp.id,
         label: grp.label,
         selected: selected.some((grpId) => grp.id === grpId),
+        hasData: withData.has(grp.id),
       }));
     } else {
       const selected = choice?.categories ?? [];
@@ -348,6 +387,7 @@ export class DimensionalMetric {
         id: cat.id,
         label: cat.label,
         selected: selected.some((catId) => cat.id === catId),
+        hasData: withData.has(cat.id),
       }));
     }
     return opts;
@@ -383,28 +423,15 @@ export class DimensionalMetric {
     return out;
   }
 
-  getSliceableDims(selection: SliceConfig) {
-    return this.dimensions.filter((dim) => !selection.categories[dim.id]);
-  }
-
+  /**
+   * Update the category filter of a dimension. The dimension to slice by is
+   * the user's choice and is kept as is, even if it's the one being filtered.
+   */
   updateChoice(dim: MetricDimension, old: SliceConfig, newChoice: readonly { id: string }[]) {
-    let dimensionId = old.dimensionId;
-    let sliceableDims = this.getSliceableDims(old);
-    if (dimensionId === dim.id) {
-      dimensionId = sliceableDims.find((sd) => sd.id !== dim.id)?.id;
-      if (!dimensionId && dim.groups.length) {
-        dimensionId = dim.id;
-      }
-    }
-    const val = {
+    return {
+      ...old,
       categories: this.choiceToCats(dim, old.categories, newChoice),
-      dimensionId,
     };
-    if (!dimensionId) {
-      sliceableDims = this.getSliceableDims(val);
-      if (sliceableDims.length) val.dimensionId = sliceableDims[0].id;
-    }
-    return val;
   }
 
   /**
@@ -423,7 +450,7 @@ export class DimensionalMetric {
     const choice: MetricCategoryChoice = {};
     matchingDims.forEach((gdim) => {
       const metricDim = metricDims.get(gdim.dimension)!;
-      let out: CatDimChoice | undefined;
+      let out: CatDimChoice;
       if (gdim.groups) {
         const grpMap: Map<string, MetricCategoryGroup> = new Map(
           metricDim.groups.map((grp) => [grp.originalId, grp])
@@ -445,7 +472,9 @@ export class DimensionalMetric {
           categories: catMatches.map((cat) => cat.id),
         };
       }
-      if (out) choice[metricDim.id] = out;
+      // An empty choice would still mark the dimension as filtered (and thus
+      // unsliceable) without actually filtering anything, so skip it.
+      if (out.categories.length) choice[metricDim.id] = out;
     });
     return choice;
   }
@@ -514,8 +543,10 @@ export class DimensionalMetric {
    * grouping is controlled by the `sliceConfig` state below.
    */
   getDefaultSliceConfig(activeGoal: InstanceGoal | null) {
+    // Prefer a dimension that actually splits the data into several series
+    const selectableDims = this.getSelectableDimensions();
     const defaultConfig: SliceConfig = {
-      dimensionId: this.dimensions[0]?.id,
+      dimensionId: (selectableDims[0] ?? this.dimensions[0])?.id,
       categories: {},
     };
 
@@ -530,8 +561,9 @@ export class DimensionalMetric {
      * dimension.
      */
     if (defaultConfig.dimensionId && Object.hasOwn(cubeDefault, defaultConfig.dimensionId)) {
-      const firstPossible = this.dimensions.find((dim) => !Object.hasOwn(cubeDefault, dim.id));
-      defaultConfig.dimensionId = firstPossible?.id;
+      const firstPossible = selectableDims.find((dim) => !Object.hasOwn(cubeDefault, dim.id));
+      // If the goal filters every dimension, slicing by a filtered one is still allowed
+      if (firstPossible) defaultConfig.dimensionId = firstPossible.id;
     }
     return defaultConfig;
   }
