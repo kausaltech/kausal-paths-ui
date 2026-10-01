@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 
 import { Box, Container, Skeleton } from '@mui/material';
 import { useTheme } from '@mui/material';
@@ -10,7 +10,7 @@ import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 
 import type { PageQuery, PageQueryVariables } from '@/common/__generated__/graphql';
-import { activeGoalVar } from '@/common/cache';
+import { activeGoalVar, scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -78,6 +78,14 @@ function Page(props: PageProps) {
   const data = queryResp.data ?? previousData;
   const { t } = useTranslation();
   const theme = useTheme();
+
+  // Content and dashboard pages have no scenario panel, so don't leave the scenario editor open
+  const currentPage = data?.page;
+  const closeScenarioEditor =
+    currentPage?.__typename === 'StaticPage' || currentPage?.__typename === 'DashboardPage';
+  useEffect(() => {
+    if (closeScenarioEditor) scenarioEditorDrawerOpenVar(false);
+  }, [currentPage?.id, closeScenarioEditor]);
 
   if (error) {
     logApolloError(error, { component: 'Page' });
