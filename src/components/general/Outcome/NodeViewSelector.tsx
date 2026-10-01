@@ -4,8 +4,8 @@ import { Box, FormControl, MenuItem, Select } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 
 import {
+  ArrowRightCircle,
   BarChartLineFill,
-  Diagram3Fill,
   InfoCircleFill,
   PieChartFill,
   Table,
@@ -24,6 +24,13 @@ const StyledMenuItem = styled(MenuItem)`
   svg.bi {
     margin-right: 0.5rem;
     fill: ${({ theme }) => theme.textColor.tertiary};
+  }
+`;
+
+const NodePageMenuItem = styled(StyledMenuItem)`
+  svg.bi {
+    margin-right: 0;
+    margin-left: 0.5rem;
   }
 `;
 
@@ -87,12 +94,6 @@ const NodeViewSelector = ({
       label: t('common.details'),
       show: true,
     },
-    {
-      id: 'node-page',
-      icon: <Diagram3Fill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />,
-      label: t('common.node-open'),
-      show: true,
-    },
   ];
 
   const items = allItems.filter((item) => item.show);
@@ -120,11 +121,19 @@ const NodeViewSelector = ({
           }}
           size="small"
         >
-          {items.map((item) => (
-            <StyledMenuItem key={item.id} value={item.id}>
+          {items.map((item, index) => (
+            <StyledMenuItem key={item.id} value={item.id} divider={index === items.length - 1}>
               {item.icon} {item.label}
             </StyledMenuItem>
           ))}
+          <NodePageMenuItem value="node-page">
+            {t('common.node-open')}
+            <ArrowRightCircle
+              aria-hidden="true"
+              focusable="false"
+              color={theme.textColor.tertiary}
+            />
+          </NodePageMenuItem>
         </Select>
       </FormControl>
     </Box>
