@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 
 import { Card, CardContent, Container } from '@mui/material';
@@ -15,7 +16,7 @@ import type {
   NodePageQueryVariables,
   OutcomeNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { yearRangeVar } from '@/common/cache';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { ActionLink } from '@/common/links';
 import ContentLoader from '@/components/common/ContentLoader';
@@ -78,6 +79,9 @@ const BodyText = styled.div`
 
 const GET_NODE_PAGE_CONTENT: TypedDocumentNode<NodePageQuery, NodePageQueryVariables> = gql`
   query NodePage($node: ID!, $scenarios: [String!]) {
+    activeScenario {
+      id
+    }
     node(id: $node) {
       id
       name
@@ -122,14 +126,30 @@ export default function NodePage() {
   const { t } = useTranslation();
   const slug = params.slug;
   const yearRange = useReactiveVar(yearRangeVar);
+  const activeScenario = useReactiveVar(activeScenarioVar);
 
   // Scenario and parameter mutations refetch all active queries, including this one
-  const { loading, error, data } = useQuery(GET_NODE_PAGE_CONTENT, {
+  const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
       scenarios: null,
     },
   });
+
+  // SSR runs this query without the user's session, so the hydrated data can be
+  // for the default scenario. ScenarioSelector then corrects activeScenarioVar
+  // without refetching, so refetch here when the data's scenario disagrees.
+  // Mutations already refetch (the query is loading by the time they update the var).
+  // Refetch at most once per scenario so a lagging backend can't cause a loop.
+  const dataScenarioId = data?.activeScenario.id;
+  const refetchedForScenarioRef = useRef<string | null>(null);
+  useEffect(() => {
+    const scenarioId = activeScenario?.id;
+    if (loading || !dataScenarioId || !scenarioId || dataScenarioId === scenarioId) return;
+    if (refetchedForScenarioRef.current === scenarioId) return;
+    refetchedForScenarioRef.current = scenarioId;
+    void refetch();
+  }, [loading, dataScenarioId, activeScenario?.id, refetch]);
 
   // Full-page loader only on initial load; refetches keep the page mounted
   if (loading && !data) {
