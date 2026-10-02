@@ -1,5 +1,4 @@
 import { useLocale } from 'next-intl';
-import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
@@ -8,6 +7,12 @@ import { transientOptions } from '@common/themes/styles/styled';
 import { useInstance } from '@/common/instance';
 import { getLanguageCodeLabel, getLanguageName } from '@/common/languages';
 import { Link } from '@/common/links';
+import {
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+} from '@/components/common/Dropdowns';
 import Icon from '@/components/common/icon';
 
 const Selector = styled(UncontrolledDropdown, transientOptions)<{ $mobile: boolean }>`

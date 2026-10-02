@@ -92,18 +92,18 @@ function useIsPanelStuck(ref: React.RefObject<HTMLDivElement | null>) {
   const isPanelMini = isScrollingDown && isPanelFixed && hasScrolledPastPanelEnd;
 
   useLayoutEffect(() => {
+    // Document-relative offset. The wrapper stays in flow while the panel is fixed
+    // (the placeholder holds its place), so this is valid in both states.
     function handleChangePosition() {
       if (ref.current) {
-        setPosition((position) => ({
-          ...position,
-          top: ref.current?.getBoundingClientRect().top ?? position.top + window.pageYOffset,
-        }));
+        const top = ref.current.getBoundingClientRect().top + window.scrollY;
+        setPosition((position) => ({ ...position, top }));
       }
     }
 
     if (ref.current) {
       setPosition({
-        top: ref.current.getBoundingClientRect().top + window.pageYOffset,
+        top: ref.current.getBoundingClientRect().top + window.scrollY,
         initialHeight: ref.current.getBoundingClientRect().height,
       });
     }

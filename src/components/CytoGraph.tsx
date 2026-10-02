@@ -12,13 +12,18 @@ import Cytoscape, {
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 import { readableColor } from 'polished';
-import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
 import styled from '@common/themes/styled';
 import { sanitizeHtmlUnit } from '@common/utils/format';
 
 import type { CytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
+import {
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+} from '@/components/common/Dropdowns';
 import SelectDropdown from './common/SelectDropdown';
 import Icon from './common/icon';
 
@@ -161,8 +166,8 @@ const DownloadSelector = (props: {
   const { handleExport } = props;
   const { t } = useTranslation();
   return (
-    <UncontrolledDropdown size="md">
-      <DropdownToggle caret size="md">
+    <UncontrolledDropdown>
+      <DropdownToggle caret>
         <Icon name="download" />
         {` ${t('download-data')}`}
       </DropdownToggle>

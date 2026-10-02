@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
 
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Fade } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
-import { Fade } from 'reactstrap';
 
 import styled from '@common/themes/styled';
 
@@ -135,7 +134,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
       : measureDatapointYears;
 
   return (
-    <Fade>
+    <Fade in appear>
       <VisualizationContainer>
         {!!metricDim && (
           <StyledCard>

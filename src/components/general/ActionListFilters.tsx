@@ -84,6 +84,18 @@ const SortButtons = styled(ToggleButtonGroup)`
   }
 `;
 
+// The filters sit on a brandDark background, where the theme's brandDark
+// checked track would vanish; invert the checked state instead.
+const ActiveActionsSwitch = styled(Switch)`
+  && .MuiSwitch-switchBase.Mui-checked {
+    color: ${(props) => props.theme.brandDark};
+
+    & + .MuiSwitch-track {
+      background-color: ${(props) => props.theme.themeColors.white};
+    }
+  }
+`;
+
 type ActionListFiltersProps = {
   hasEfficiency: boolean;
   impactOverviews: { id: string; label: string }[];
@@ -234,7 +246,7 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
         <Grid size={{ xs: 12, md: 'auto' }} sx={{ display: 'flex', alignItems: 'flex-end' }}>
           <FormControlLabel
             control={
-              <Switch
+              <ActiveActionsSwitch
                 checked={showOnlyActiveActions}
                 onChange={(e) => setShowOnlyActiveActions(e.target.checked)}
               />

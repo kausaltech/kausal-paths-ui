@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
+
+import { Collapse } from '@mui/material';
 
 import {
   Buildings,
@@ -10,7 +12,6 @@ import {
   People,
   Signpost,
 } from 'react-bootstrap-icons';
-import { Collapse } from 'reactstrap';
 
 import styled from '@common/themes/styled';
 
@@ -196,6 +197,7 @@ const CausalCard = (props: CausalCardProps) => {
   const { maxYear } = useSite();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const contentId = useId();
   const impactAtTargetYear = node.impactMetric
     ? getImpactMetricValue({ impactMetric: node.impactMetric }, endYear)
     : 0;
@@ -212,7 +214,8 @@ const CausalCard = (props: CausalCardProps) => {
           <button
             className="btn btn-link"
             onClick={() => setIsOpen(!isOpen)}
-            aria-controls={`card-content-${node.id}`}
+            aria-expanded={isOpen}
+            aria-controls={contentId}
           >
             <NodeIcon node={node} />
             <h4>{node.name}</h4>
@@ -223,7 +226,7 @@ const CausalCard = (props: CausalCardProps) => {
             )}
           </button>
         </CardHeader>
-        <Collapse isOpen={isOpen} id={`card-content-${node.id}`} aria-hidden={!isOpen}>
+        <Collapse in={isOpen} id={contentId}>
           <CardContent>
             <ImpactFigures>
               <ImpactDisplay
