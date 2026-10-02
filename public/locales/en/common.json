@@ -90,6 +90,7 @@
   "front-page": "Front page",
   "actions-count": "Showing {shown} of {total} actions",
   "actions-count-active": "Showing {shown} of {total} active actions",
+  "actions-show-only-included-in-scenario": "Show only actions included in this scenario",
   "actions-as-graph": "Graph",
   "actions-as-list": "List",
   "actions-as-efficiency": "Efficiency",

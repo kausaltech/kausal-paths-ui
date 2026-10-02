@@ -80,6 +80,7 @@
   "front-page": "Sākumlapa",
   "actions-count": "Rāda {shown} no {total} darbībām",
   "actions-count-active": "Rāda {shown} no {total} aktīvām darbībām",
+  "actions-show-only-included-in-scenario": "Rādīt tikai šajā scenārijā iekļautās darbības",
   "actions-as-graph": "Diagramma",
   "actions-as-list": "Saraksts",
   "actions-as-efficiency": "Efektivitāte",

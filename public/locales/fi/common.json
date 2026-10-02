@@ -88,6 +88,7 @@
   "will_be_implemented": "Toteutetaan",
   "actions-count": "Näytetään {shown}/{total} toimenpidettä",
   "actions-count-active": "Näytetään {shown}/{total} aktiivista toimenpidettä",
+  "actions-show-only-included-in-scenario": "Näytä vain tähän skenaarioon sisältyvät toimenpiteet",
   "actions-as-graph": "Kaaviona",
   "actions-as-list": "Listana",
   "actions-as-efficiency": "Vaikuttavuus",

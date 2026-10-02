@@ -83,6 +83,7 @@
   "front-page": "Úvodní stránka",
   "actions-count": "Zobrazeno {shown} z {total} akcí",
   "actions-count-active": "Zobrazeno {shown} z {total} aktivních akcí",
+  "actions-show-only-included-in-scenario": "Zobrazit pouze akce zahrnuté v tomto scénáři",
   "actions-as-graph": "Graf",
   "actions-as-list": "Seznam",
   "actions-as-efficiency": "Efektivita",

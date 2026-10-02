@@ -84,6 +84,7 @@
   "actions-as-list": "Lista av åtgärder",
   "actions-count": "Visar {shown} av {total} åtgärder",
   "actions-count-active": "Visar {shown} av {total} aktiva åtgärder",
+  "actions-show-only-included-in-scenario": "Visa endast åtgärder som ingår i detta scenario",
   "actions-sort-impact": "Påverkan",
   "mac-axis-impact": "påverkan",
   "efficiency": "Nettokostnad per besparad energi eller utsläpp",

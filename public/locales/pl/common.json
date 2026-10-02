@@ -83,6 +83,7 @@
   "front-page": "Strona główna",
   "actions-count": "Wyświetlono {shown} z {total} działań",
   "actions-count-active": "Wyświetlono {shown} z {total} aktywnych działań",
+  "actions-show-only-included-in-scenario": "Pokaż tylko działania uwzględnione w tym scenariuszu",
   "actions-as-graph": "Wykres",
   "actions-as-list": "Lista",
   "actions-as-efficiency": "Efektywność",

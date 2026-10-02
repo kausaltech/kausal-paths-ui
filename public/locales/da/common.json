@@ -83,6 +83,7 @@
   "front-page": "Forside",
   "actions-count": "Viser {shown} af {total} handlinger",
   "actions-count-active": "Viser {shown} af {total} aktive handlinger",
+  "actions-show-only-included-in-scenario": "Vis kun handlinger, der er inkluderet i dette scenarie",
   "actions-as-graph": "Graf",
   "actions-as-list": "Liste",
   "actions-as-efficiency": "Effektivitet",

@@ -187,6 +187,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     undefined
   );
   const [actionGroup, setActionGroup] = useState<string>('ALL_ACTIONS');
+  const [showOnlyActiveActions, setShowOnlyActiveActions] = useState(false);
 
   const {
     usableActions,
@@ -209,6 +210,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     userSelectedOverviewId,
     yearRange,
     actionGroup,
+    showOnlyActiveActions,
   });
 
   // If some actions have groups, hide actions without a group set
@@ -296,6 +298,8 @@ function ActionListPage({ page }: ActionListPageProps) {
             actionGroups={actionGroups}
             actionGroup={actionGroup}
             setActionGroup={setActionGroup}
+            showOnlyActiveActions={showOnlyActiveActions}
+            setShowOnlyActiveActions={setShowOnlyActiveActions}
             sortBy={sortBy}
             sortOptions={sortOptions}
             handleChangeSort={handleChangeSort}
@@ -317,7 +321,9 @@ function ActionListPage({ page }: ActionListPageProps) {
                 <span>{t('loading')}</span>
               ) : (
                 <span>
-                  {listType === 'graph'
+                  {/* The graph only ever plots active actions, and the active-only
+                      filter restricts the list to them too. */}
+                  {listType === 'graph' || showOnlyActiveActions
                     ? t('actions-count-active', {
                         shown: displayedActiveActionsCount,
                         total: totalActiveActionsCount,

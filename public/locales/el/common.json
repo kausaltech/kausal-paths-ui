@@ -94,6 +94,7 @@
   "front-page": "Πρώτη σελίδα",
   "actions-count": "Εμφάνιση {shown} από {total} ενέργειες",
   "actions-count-active": "Εμφάνιση {shown} από {total} ενεργές ενέργειες",
+  "actions-show-only-included-in-scenario": "Εμφάνιση μόνο των ενεργειών που περιλαμβάνονται σε αυτό το σενάριο",
   "actions-as-graph": "Γράφημα",
   "actions-as-list": "Λίστα",
   "actions-as-efficiency": "Αποδοτικότητα",

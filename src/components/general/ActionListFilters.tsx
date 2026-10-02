@@ -2,10 +2,12 @@ import {
   Box,
   CircularProgress,
   FormControl,
+  FormControlLabel,
   FormLabel,
   Grid,
   MenuItem,
   Select,
+  Switch,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
@@ -92,6 +94,8 @@ type ActionListFiltersProps = {
   actionGroups: { id: string; name: string }[];
   actionGroup: string;
   setActionGroup: (value: string) => void;
+  showOnlyActiveActions: boolean;
+  setShowOnlyActiveActions: (value: boolean) => void;
   sortBy: { key: SortActionsBy; label: string };
   sortOptions: { key: SortActionsBy; label: string; isHidden?: boolean }[];
   handleChangeSort: (value: SortActionsBy) => void;
@@ -109,6 +113,8 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
     actionGroups,
     actionGroup,
     setActionGroup,
+    showOnlyActiveActions,
+    setShowOnlyActiveActions,
     sortBy,
     sortOptions,
     handleChangeSort,
@@ -223,6 +229,19 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
               </SortButtons>
             </StyledFormControl>
           </Box>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 'auto' }} sx={{ display: 'flex', alignItems: 'flex-end' }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showOnlyActiveActions}
+                onChange={(e) => setShowOnlyActiveActions(e.target.checked)}
+              />
+            }
+            label={t('actions-show-only-included-in-scenario')}
+            sx={{ m: 0 }}
+          />
         </Grid>
       </Grid>
     </SettingsForm>
