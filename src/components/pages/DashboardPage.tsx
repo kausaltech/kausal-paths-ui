@@ -214,7 +214,8 @@ function DashboardVisualization({
                       impact?.impacts.map((impact) => ({
                         id: impact.action.id,
                         name: impact.action.shortName ?? impact.action.name,
-                        isEnabled: impact.action.isEnabled,
+                        // Enabled in the block's scenario, not the visitor's
+                        isEnabled: impact.isEnabled,
                         value: impact.value,
                         color: impact.action.color ?? undefined,
                         group: impact.action.group ?? undefined,
