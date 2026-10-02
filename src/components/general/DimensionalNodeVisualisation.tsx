@@ -875,14 +875,14 @@ export default function DimensionalNodeVisualisation({
   // Let's create UI for selecting dimensions and categories
   // Dimensions with fewer than two categories with data can't change the chart, so they're left out
   const controlDims = metrics.default.getSelectableDimensions();
-  const hasGroups = controlDims.some((dim) => dim.groups.length); // Typically direct & indirect emissions
 
   const dimensionOptions = controlDims.map((dim) =>
     metrics.default.getOptionsForDimension(dim.id, sliceConfig.categories)
   );
 
+  // Filters are useful for any selectable dimension; the breakdown choice only with several
   const controls =
-    withControls && (controlDims.length > 1 || hasGroups) ? (
+    withControls && controlDims.length > 0 ? (
       <DimensionControls
         dimensions={controlDims}
         options={dimensionOptions}
