@@ -20,8 +20,8 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
           name
           color
         }
-        isEnabled
       }
+      isEnabled
       value
       year
     }
