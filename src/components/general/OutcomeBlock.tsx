@@ -82,7 +82,8 @@ export default function OutcomeBlock(props: OutcomeBlockProps) {
     window.history.pushState(null, '', `?${nextQuery.toString()}`);
   }, [lastActiveNodeId, searchParams]);
 
-  if (loading || !outcomeNode) {
+  // Skeleton only on initial load; refetches keep cards mounted to preserve open levels and scroll
+  if (!outcomeNode) {
     return <OutcomeBlockLoader />;
   }
 
@@ -122,7 +123,7 @@ export default function OutcomeBlock(props: OutcomeBlockProps) {
           parentColor={theme.graphColors.blue050}
           activeNodeId={index < visibleNodes.length - 1 ? visibleNodes[index + 1].id : undefined}
           setLastActiveNodeId={setLastActiveNodeId}
-          refetching={false}
+          refetching={loading}
         />
       ))}
     </Fragment>

@@ -4,14 +4,6 @@
       "InputPortType",
       "OperationInfo"
     ],
-    "AddNodeInputPortPayload": [
-      "InputPortType",
-      "OperationInfo"
-    ],
-    "AddNodeOutputPortPayload": [
-      "OperationInfo",
-      "OutputPortType"
-    ],
     "AddOutputPortPayload": [
       "OperationInfo",
       "OutputPortType"
@@ -159,37 +151,31 @@
       "UnknownParameterType"
     ],
     "PortTransformation": [
-      "AssignCategoryType",
       "AssignDimensionType",
       "DropNullsType",
       "EnsureUnitType",
       "FilterColumnType",
       "FilterDimensionType",
       "FilterTemporalType",
-      "FlattenType",
       "IndexTemporalType",
       "RemapLegacyYearsType",
       "RenameColumnType",
       "RenameItemType",
-      "SelectCategoriesType",
       "SelectMetricType",
       "SetForecastFromType",
       "TagOperationType"
     ],
     "PortTransformationUnion": [
-      "AssignCategoryType",
       "AssignDimensionType",
       "DropNullsType",
       "EnsureUnitType",
       "FilterColumnType",
       "FilterDimensionType",
       "FilterTemporalType",
-      "FlattenType",
       "IndexTemporalType",
       "RemapLegacyYearsType",
       "RenameColumnType",
       "RenameItemType",
-      "SelectCategoriesType",
       "SelectMetricType",
       "SetForecastFromType",
       "TagOperationType"
@@ -327,11 +313,6 @@
     "UpdateNodeLayoutsPayload": [
       "OperationInfo",
       "UpdateNodeLayoutsResult"
-    ],
-    "UpdateNodePayload": [
-      "ActionNode",
-      "Node",
-      "OperationInfo"
     ],
     "UpdateOutputPortPayload": [
       "OperationInfo",

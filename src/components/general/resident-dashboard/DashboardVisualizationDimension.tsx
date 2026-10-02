@@ -48,6 +48,8 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
       left: 'right',
       top: 'center',
       type: 'scroll',
+      // Sectors can't be hidden by clicking legend items
+      selectedMode: false,
       textStyle: {
         width: 200,
         overflow: 'break',

@@ -37,11 +37,13 @@ type UseActionListDataProps = {
   userSelectedOverviewId: string | null | undefined;
   yearRange: [number, number];
   actionGroup: string;
+  /** Drop actions that are disabled in the current scenario. */
+  showOnlyActiveActions: boolean;
 };
 
 type UseActionListDataResult = {
   usableActions: ActionWithEfficiency[];
-  /** Actions left after the type filter — the list view shows these (active + disabled). */
+  /** Actions left after the type and active-only filters — the list view shows these. */
   displayedActionsCount: number;
   /** All actions before the type filter — the list view's denominator. */
   totalActionsCount: number;
@@ -75,6 +77,7 @@ export function useActionListData({
   userSelectedOverviewId,
   yearRange,
   actionGroup,
+  showOnlyActiveActions,
 }: UseActionListDataProps): UseActionListDataResult {
   const filteredActions = useMemo(
     () =>
@@ -288,10 +291,12 @@ export function useActionListData({
           }
           return out;
         })
-        .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
+        .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id)
+        .filter((action) => !showOnlyActiveActions || isActionActive(action)),
     [
       activeOverviewDetail,
       actionGroup,
+      showOnlyActiveActions,
       yearRange,
       filteredActions,
       costBenefitByActionId,
@@ -300,7 +305,8 @@ export function useActionListData({
   );
 
   // Numerators: what each view shows after the type filter. The list shows every
-  // usable action (active and disabled); the graph shows only the active ones.
+  // usable action (active and disabled, unless the active-only filter is on); the
+  // graph shows only the active ones.
   // Both honour the list's ungrouped-hiding rule so the counts match what renders.
   const { displayedActionsCount, displayedActiveActionsCount } = useMemo(() => {
     const hasAnyGroup = usableActions.some((a) => a.group);

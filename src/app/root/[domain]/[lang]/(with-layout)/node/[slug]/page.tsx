@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 
 import { Card, CardContent, Container } from '@mui/material';
@@ -22,6 +22,7 @@ import { ActionLink } from '@/common/links';
 import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
+import Loader from '@/components/common/Loader';
 import Icon from '@/components/common/icon';
 import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
@@ -60,6 +61,7 @@ const NodeBodyText = styled.div`
 `;
 
 const ContentWrapper = styled.div`
+  position: relative;
   padding: 1.5rem;
   margin: 0.5rem 0;
   background-color: ${({ theme }) => theme.cardBackground.secondary};
@@ -77,6 +79,9 @@ const BodyText = styled.div`
 
 const GET_NODE_PAGE_CONTENT: TypedDocumentNode<NodePageQuery, NodePageQueryVariables> = gql`
   query NodePage($node: ID!, $scenarios: [String!]) {
+    activeScenario {
+      id
+    }
     node(id: $node) {
       id
       name
@@ -121,7 +126,9 @@ export default function NodePage() {
   const { t } = useTranslation();
   const slug = params.slug;
   const yearRange = useReactiveVar(yearRangeVar);
+  const activeScenario = useReactiveVar(activeScenarioVar);
 
+  // Scenario and parameter mutations refetch all active queries, including this one
   const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
@@ -129,14 +136,23 @@ export default function NodePage() {
     },
   });
 
-  const activeScenario = useReactiveVar(activeScenarioVar);
-
+  // SSR runs this query without the user's session, so the hydrated data can be
+  // for the default scenario. ScenarioSelector then corrects activeScenarioVar
+  // without refetching, so refetch here when the data's scenario disagrees.
+  // Mutations already refetch (the query is loading by the time they update the var).
+  // Refetch at most once per scenario so a lagging backend can't cause a loop.
+  const dataScenarioId = data?.activeScenario.id;
+  const refetchedForScenarioRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!activeScenario?.id) return;
+    const scenarioId = activeScenario?.id;
+    if (loading || !dataScenarioId || !scenarioId || dataScenarioId === scenarioId) return;
+    if (refetchedForScenarioRef.current === scenarioId) return;
+    refetchedForScenarioRef.current = scenarioId;
     void refetch();
-  }, [activeScenario?.id, refetch]);
+  }, [loading, dataScenarioId, activeScenario?.id, refetch]);
 
-  if (loading) {
+  // Full-page loader only on initial load; refetches keep the page mounted
+  if (loading && !data) {
     return <ContentLoader fullPage />;
   }
   if (error || !data) {
@@ -178,6 +194,7 @@ export default function NodePage() {
               </div>
               {node.metricDim && (
                 <ContentWrapper>
+                  {loading && <Loader />}
                   <DimensionalNodeVisualisation
                     title={node.name}
                     key={node.id}

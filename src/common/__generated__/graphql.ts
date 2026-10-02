@@ -170,20 +170,21 @@ export enum DatasetRuleEnforcement {
 }
 
 /** Exactly one transformation of a dataset binding. Order in the containing list is execution order. */
-export type DatasetTransformationInput =
-  {   assignDimension: AssignDimensionInput; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never;   dropNulls: boolean; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never;   ensureUnit: EnsureUnitInput; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never;   filterColumn: FilterColumnInput; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never;   filterDimension: FilterDimensionInput; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never;   filterTemporal: FilterTemporalInput; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never;   indexTemporal: boolean; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never;   remapLegacyYears: boolean; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never;   renameColumn: RenameColumnInput; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never;   renameItem: RenameItemInput; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never;   selectMetric: boolean; setForecastFrom?: never; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never;   setForecastFrom: SetForecastFromInput; tagOperation?: never; }
-  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never;   tagOperation: TagOperationInput; };
+export type DatasetTransformationInput = {
+  assignDimension?: AssignDimensionInput | null | undefined;
+  dropNulls?: boolean | null | undefined;
+  ensureUnit?: EnsureUnitInput | null | undefined;
+  filterColumn?: FilterColumnInput | null | undefined;
+  filterDimension?: FilterDimensionInput | null | undefined;
+  filterTemporal?: FilterTemporalInput | null | undefined;
+  indexTemporal?: boolean | null | undefined;
+  remapLegacyYears?: boolean | null | undefined;
+  renameColumn?: RenameColumnInput | null | undefined;
+  renameItem?: RenameItemInput | null | undefined;
+  selectMetric?: boolean | null | undefined;
+  setForecastFrom?: SetForecastFromInput | null | undefined;
+  tagOperation?: TagOperationInput | null | undefined;
+};
 
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
@@ -211,9 +212,10 @@ export enum DimensionKind {
 }
 
 /** Exactly one transformation of an edge binding. Order in the containing list is execution order. Only the dimension-reshaping transformations are accepted until edges execute the shared transform pipeline. */
-export type EdgeTransformationInput =
-  {   assignDimension: AssignDimensionInput; filterDimension?: never; }
-  |  { assignDimension?: never;   filterDimension: FilterDimensionInput; };
+export type EdgeTransformationInput = {
+  assignDimension?: AssignDimensionInput | null | undefined;
+  filterDimension?: FilterDimensionInput | null | undefined;
+};
 
 export type EnsureUnitInput = {
   unit: string;
@@ -268,11 +270,12 @@ export enum InstanceMemberRole {
   Viewer = 'VIEWER'
 }
 
-export type NodeConfigInput =
-  {   action: ActionConfigInput; formula?: never; pipeline?: never; simple?: never; }
-  |  { action?: never;   formula: FormulaConfigInput; pipeline?: never; simple?: never; }
-  |  { action?: never; formula?: never;   pipeline: PipelineConfigInput; simple?: never; }
-  |  { action?: never; formula?: never; pipeline?: never;   simple: SimpleConfigInput; };
+export type NodeConfigInput = {
+  action?: ActionConfigInput | null | undefined;
+  formula?: FormulaConfigInput | null | undefined;
+  pipeline?: PipelineConfigInput | null | undefined;
+  simple?: SimpleConfigInput | null | undefined;
+};
 
 export enum NodeErrorPhase {
   Computation = 'COMPUTATION',
@@ -533,7 +536,7 @@ export type NodePageQueryVariables = Exact<{
 }>;
 
 
-export type NodePageQuery = { __typename: 'Query', node:
+export type NodePageQuery = { __typename: 'Query', activeScenario: { __typename: 'ScenarioType', id: string }, node:
     | { __typename: 'ActionNode', id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, inputNodes: Array<
         | { __typename: 'ActionNode', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
         | { __typename: 'Node', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
@@ -2194,7 +2197,7 @@ export type OutcomeNodeQuery = { __typename: 'Query', node:
         >, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null }>, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null }
    | null, activeScenario: { __typename: 'ScenarioType', id: string } };
 
-export type ScenarioActionImpactsFieldsFragment = { __typename: 'ScenarioActionImpacts', scenario: { __typename: 'ScenarioType', id: string }, impacts: Array<{ __typename: 'ActionImpactType', value: number, year: number, action: { __typename: 'ActionNode', id: string, name: string, shortName: string | null, color: string | null, isEnabled: boolean, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null } }> };
+export type ScenarioActionImpactsFieldsFragment = { __typename: 'ScenarioActionImpacts', scenario: { __typename: 'ScenarioType', id: string }, impacts: Array<{ __typename: 'ActionImpactType', isEnabled: boolean, value: number, year: number, action: { __typename: 'ActionNode', id: string, name: string, shortName: string | null, color: string | null, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null } }> };
 
 export type DashboardCardVisualizationsFragment = { __typename: 'DashboardCardBlock', id: string | null, visualizations: Array<
     | { __typename: 'ActionImpactBlock', title: string, scenarioId: string, id: string | null }
@@ -2250,7 +2253,7 @@ export type DashboardPageFieldsFragment = { __typename: 'DashboardPage', id: str
     | { __typename: 'CharBlock', id: string | null }
     | { __typename: 'ChoiceBlock', id: string | null }
     | { __typename: 'CurrentProgressBarBlock', id: string | null }
-    | { __typename: 'DashboardCardBlock', title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: { __typename: 'ImageObjectType', id: string, url: string } | null, node: { __typename: 'Node', id: string, name: string }, unit: { __typename: 'UnitType', id: string, short: string, htmlShort: string, htmlLong: string }, goalValues: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number } | null> | null, scenarioValues: Array<{ __typename: 'ScenarioValue', value: number | null, year: number, scenario: { __typename: 'ScenarioType', id: string, name: string } } | null> | null, metricDimensionCategoryValues: Array<{ __typename: 'MetricDimensionCategoryValue', value: number | null, year: number, dimension: { __typename: 'MetricDimensionType', kind: DimensionKind, label: string, id: string, originalId: string | null }, category: { __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null } } | null> | null, scenarioActionImpacts: Array<{ __typename: 'ScenarioActionImpacts', scenario: { __typename: 'ScenarioType', id: string }, impacts: Array<{ __typename: 'ActionImpactType', value: number, year: number, action: { __typename: 'ActionNode', id: string, name: string, shortName: string | null, color: string | null, isEnabled: boolean, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null } }> } | null> | null, callToAction: { __typename: 'CallToActionBlock', title: string, content: string, linkUrl: string }, visualizations: Array<
+    | { __typename: 'DashboardCardBlock', title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: { __typename: 'ImageObjectType', id: string, url: string } | null, node: { __typename: 'Node', id: string, name: string }, unit: { __typename: 'UnitType', id: string, short: string, htmlShort: string, htmlLong: string }, goalValues: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number } | null> | null, scenarioValues: Array<{ __typename: 'ScenarioValue', value: number | null, year: number, scenario: { __typename: 'ScenarioType', id: string, name: string } } | null> | null, metricDimensionCategoryValues: Array<{ __typename: 'MetricDimensionCategoryValue', value: number | null, year: number, dimension: { __typename: 'MetricDimensionType', kind: DimensionKind, label: string, id: string, originalId: string | null }, category: { __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null } } | null> | null, scenarioActionImpacts: Array<{ __typename: 'ScenarioActionImpacts', scenario: { __typename: 'ScenarioType', id: string }, impacts: Array<{ __typename: 'ActionImpactType', isEnabled: boolean, value: number, year: number, action: { __typename: 'ActionNode', id: string, name: string, shortName: string | null, color: string | null, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null } }> } | null> | null, callToAction: { __typename: 'CallToActionBlock', title: string, content: string, linkUrl: string }, visualizations: Array<
         | { __typename: 'ActionImpactBlock', title: string, scenarioId: string, id: string | null }
         | { __typename: 'BlockQuoteBlock', id: string | null }
         | { __typename: 'BooleanBlock', id: string | null }
@@ -2335,7 +2338,7 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'CharBlock', id: string | null }
         | { __typename: 'ChoiceBlock', id: string | null }
         | { __typename: 'CurrentProgressBarBlock', id: string | null }
-        | { __typename: 'DashboardCardBlock', title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: { __typename: 'ImageObjectType', id: string, url: string } | null, node: { __typename: 'Node', id: string, name: string }, unit: { __typename: 'UnitType', id: string, short: string, htmlShort: string, htmlLong: string }, goalValues: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number } | null> | null, scenarioValues: Array<{ __typename: 'ScenarioValue', value: number | null, year: number, scenario: { __typename: 'ScenarioType', id: string, name: string } } | null> | null, metricDimensionCategoryValues: Array<{ __typename: 'MetricDimensionCategoryValue', value: number | null, year: number, dimension: { __typename: 'MetricDimensionType', kind: DimensionKind, label: string, id: string, originalId: string | null }, category: { __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null } } | null> | null, scenarioActionImpacts: Array<{ __typename: 'ScenarioActionImpacts', scenario: { __typename: 'ScenarioType', id: string }, impacts: Array<{ __typename: 'ActionImpactType', value: number, year: number, action: { __typename: 'ActionNode', id: string, name: string, shortName: string | null, color: string | null, isEnabled: boolean, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null } }> } | null> | null, callToAction: { __typename: 'CallToActionBlock', title: string, content: string, linkUrl: string }, visualizations: Array<
+        | { __typename: 'DashboardCardBlock', title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: { __typename: 'ImageObjectType', id: string, url: string } | null, node: { __typename: 'Node', id: string, name: string }, unit: { __typename: 'UnitType', id: string, short: string, htmlShort: string, htmlLong: string }, goalValues: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number } | null> | null, scenarioValues: Array<{ __typename: 'ScenarioValue', value: number | null, year: number, scenario: { __typename: 'ScenarioType', id: string, name: string } } | null> | null, metricDimensionCategoryValues: Array<{ __typename: 'MetricDimensionCategoryValue', value: number | null, year: number, dimension: { __typename: 'MetricDimensionType', kind: DimensionKind, label: string, id: string, originalId: string | null }, category: { __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null } } | null> | null, scenarioActionImpacts: Array<{ __typename: 'ScenarioActionImpacts', scenario: { __typename: 'ScenarioType', id: string }, impacts: Array<{ __typename: 'ActionImpactType', isEnabled: boolean, value: number, year: number, action: { __typename: 'ActionNode', id: string, name: string, shortName: string | null, color: string | null, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null } }> } | null> | null, callToAction: { __typename: 'CallToActionBlock', title: string, content: string, linkUrl: string }, visualizations: Array<
             | { __typename: 'ActionImpactBlock', title: string, scenarioId: string, id: string | null }
             | { __typename: 'BlockQuoteBlock', id: string | null }
             | { __typename: 'BooleanBlock', id: string | null }

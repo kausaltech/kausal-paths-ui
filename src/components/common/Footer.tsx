@@ -481,7 +481,7 @@ function SiteFooter(props: SiteFooterProps) {
                       aria-label={funder.name}
                     >
                       <SVG
-                        src={funder.logo}
+                        src={getThemeStaticURL(funder.logo)}
                         preserveAspectRatio="xMidYMid meet"
                         title={funder.name}
                         aria-hidden="true"
@@ -505,7 +505,7 @@ function SiteFooter(props: SiteFooterProps) {
                         aria-label={logo.name}
                       >
                         <SVG
-                          src={logo.logo}
+                          src={getThemeStaticURL(logo.logo)}
                           preserveAspectRatio="xMidYMid meet"
                           title={logo.name}
                           style={{ display: 'block' }}
@@ -515,7 +515,7 @@ function SiteFooter(props: SiteFooterProps) {
                       </a>
                     ) : (
                       <SVG
-                        src={logo.logo}
+                        src={getThemeStaticURL(logo.logo)}
                         preserveAspectRatio="xMidYMid meet"
                         title={logo.name}
                         aria-hidden="true"
