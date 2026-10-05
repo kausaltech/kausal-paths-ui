@@ -12,12 +12,6 @@ type InstanceFixedConfigToBeRemoved = {
 };
 
 const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
-  'cork-nzc': {
-    watchLink: {
-      title: 'Benefits Dashboard',
-      url: 'https://cork-planner.watch-test.kausal.tech/',
-    },
-  },
   'augsburg-bisko': {
     watchLink: {
       title: 'Das Blue City Klimaschutzprogramm',
@@ -27,7 +21,13 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
   'bayreuth-bisko': {
     watchLink: {
       title: 'Monitoring Bayreuth',
-      url: 'https://monitoring.bayreuth.de/',
+      url: 'https://monitoring.bayreuth.de/klima/thg-monitor',
+    },
+  },
+  'cork-nzc': {
+    watchLink: {
+      title: 'Benefits Dashboard',
+      url: 'https://cork-planner.watch-test.kausal.tech/',
     },
   },
   'duesseldorf-bisko': {
