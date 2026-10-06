@@ -1,10 +1,11 @@
 import type React from 'react';
 import { Fragment, useMemo, useState } from 'react';
 
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 
 import SVG from 'react-inlinesvg';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 import { getThemeStaticURL } from '@common/themes/theme';
@@ -260,7 +261,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   return (
     <Fragment>
       <BrandNavWrapper>
-        <Container fixed maxWidth="xl" sx={{ backgroundColor: 'theme.brandNavBackground' }}>
+        <ContentContainer sx={{ backgroundColor: 'theme.brandNavBackground' }}>
           <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container={false}>
             <span className="navbar-brand me-auto">
               <HomeLink href="/">
@@ -285,10 +286,10 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
               )}
             </NavbarToggler>
           </TopNav>
-        </Container>
+        </ContentContainer>
       </BrandNavWrapper>
       <BotNavWrapper>
-        <Container fixed maxWidth="xl">
+        <ContentContainer>
           <BotNav expand="md" id="global-navigation-bar" container={false}>
             <NavbarCollapse isOpen={isOpen}>
               <Nav navbar className="me-auto">
@@ -327,7 +328,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
               ) : null}
             </NavbarCollapse>
           </BotNav>
-        </Container>
+        </ContentContainer>
       </BotNavWrapper>
     </Fragment>
   );

@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 
-import { Box, Container, useTheme } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { logApolloError } from '@common/logging/apollo';
 import styled from '@common/themes/styled';
 
@@ -98,7 +99,7 @@ export default function OutcomePage(props: OutcomePageProps) {
       >
         {showSettingsPanel && <ScenarioPanel />}
       </PageHero>
-      <Container fixed maxWidth="xl" sx={{ py: 1 }}>
+      <ContentContainer sx={{ py: 1 }}>
         <Box
           sx={{
             my: 3,
@@ -114,7 +115,7 @@ export default function OutcomePage(props: OutcomePageProps) {
             />
           )}
         </Box>
-      </Container>
+      </ContentContainer>
     </Box>
   );
 }

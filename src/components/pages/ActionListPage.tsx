@@ -1,18 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
 
-import {
-  Box,
-  CircularProgress,
-  Container,
-  FormControl,
-  FormLabel,
-  MenuItem,
-  Select,
-} from '@mui/material';
+import { Box, CircularProgress, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
 
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
+import ContentContainer from '@common/components/ContentContainer';
 import styled from '@common/themes/styled';
 
 import { type PageQuery } from '@/common/__generated__/graphql';
@@ -274,9 +267,9 @@ function ActionListPage({ page }: ActionListPageProps) {
   const displayError = error ?? impactOverviewsError;
   if (displayError) {
     return (
-      <Container fixed maxWidth="xl" sx={{ pt: 5 }}>
+      <ContentContainer sx={{ pt: 5 }}>
         <GraphQLError error={displayError} />
-      </Container>
+      </ContentContainer>
     );
   }
 
@@ -311,9 +304,7 @@ function ActionListPage({ page }: ActionListPageProps) {
 
       {hasMultipleViews && (
         <ViewSelectorBar className="text-light">
-          <Container
-            fixed
-            maxWidth="xl"
+          <ContentContainer
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <ActionCount>
@@ -372,11 +363,11 @@ function ActionListPage({ page }: ActionListPageProps) {
                 </Select>
               </FormControl>
             </Box>
-          </Container>
+          </ContentContainer>
         </ViewSelectorBar>
       )}
 
-      <Container fixed maxWidth="xl" sx={{ mb: 5, mt: hasMultipleViews ? 0 : 4 }}>
+      <ContentContainer sx={{ mb: 5, mt: hasMultipleViews ? 0 : 4 }}>
         {impactOverviewsPending ? (
           // Hold the list/graph render until the active overview's detail arrives,
           // so column headers and per-row values appear atomically. During switches
@@ -418,7 +409,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             yearRange={yearRange}
           />
         )}
-      </Container>
+      </ContentContainer>
     </>
   );
 }

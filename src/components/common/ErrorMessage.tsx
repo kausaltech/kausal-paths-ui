@@ -1,11 +1,13 @@
-import { Container, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
+
+import ContentContainer from '@common/components/ContentContainer';
 
 export default function ErrorMessage({ message }: { message: string }) {
   return (
-    <Container fixed maxWidth="xl">
+    <ContentContainer>
       <Typography variant="h2" className="p-5">
         {message}
       </Typography>
-    </Container>
+    </ContentContainer>
   );
 }

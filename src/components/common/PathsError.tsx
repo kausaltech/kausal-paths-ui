@@ -1,9 +1,10 @@
 'use client';
 
-import { Button, Card, CardContent, Container, Grid } from '@mui/material';
+import { Button, Card, CardContent, Grid } from '@mui/material';
 
 import * as Sentry from '@sentry/nextjs';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { isProductionDeployment } from '@common/env';
 import { getLogger } from '@common/logging';
 import { useTheme } from '@common/themes';
@@ -116,7 +117,7 @@ export default function PathsError({ statusCode, title: titleProp, err }: PathsE
 
   return (
     <ErrorBackground className="mb-5">
-      <Container fixed maxWidth="xl">
+      <ContentContainer>
         <Grid container spacing={2}>
           <Grid size={{ md: 6 }} offset={{ md: 3 }}>
             <StyledCard>
@@ -134,7 +135,7 @@ export default function PathsError({ statusCode, title: titleProp, err }: PathsE
             </StyledCard>
           </Grid>
         </Grid>
-      </Container>
+      </ContentContainer>
     </ErrorBackground>
   );
 }

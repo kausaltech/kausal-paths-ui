@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Alert, CircularProgress, Container } from '@mui/material';
+import { Alert, CircularProgress } from '@mui/material';
 
 import { remove } from 'lodash-es';
 import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
@@ -160,7 +161,7 @@ const StyledOutcomeCardSelectorContainer = styled.div`
   padding-bottom: 20px;
 `;
 
-const StyledImpactsContainer = styled(Container)`
+const StyledImpactsContainer = styled(ContentContainer)`
   margin-bottom: ${({ theme }) => theme.spaces.s300};
 `;
 
@@ -269,9 +270,9 @@ const CausalGrid = ({
 
   if (nodes.length === 0) {
     return (
-      <Container fixed maxWidth="xl" className="pt-5">
+      <ContentContainer className="pt-5">
         <Alert color="warning">Action has no nodes</Alert>
-      </Container>
+      </ContentContainer>
     );
   }
 
@@ -367,7 +368,7 @@ const CausalGrid = ({
     >
       <GridSection>
         {!!nodeOutcomeCards && nodeOutcomeCards.length > 1 && (
-          <StyledImpactsContainer fixed>
+          <StyledImpactsContainer maxWidth="lg">
             <StyledOutcomeCardContainer>
               <hr />
               <h5>{t('outcomes')}</h5>
@@ -506,7 +507,7 @@ const CausalGrid = ({
         )}
       </GridSection>
       <GoalSection>
-        <Container fixed maxWidth="xl">
+        <ContentContainer>
           <ArcherElement id={lastNode.id}>
             <div>
               <GoalCard>
@@ -534,8 +535,8 @@ const CausalGrid = ({
               </GoalCard>
             </div>
           </ArcherElement>
-        </Container>
-        <Container fixed maxWidth="xl" sx={{ mb: 5 }}>
+        </ContentContainer>
+        <ContentContainer sx={{ mb: 5 }}>
           {lastNode.metric && (
             <NodePlotCard>
               <NodePlot
@@ -551,7 +552,7 @@ const CausalGrid = ({
               />
             </NodePlotCard>
           )}
-        </Container>
+        </ContentContainer>
       </GoalSection>
     </ArcherContainer>
   );
