@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Collapse,
-  Container,
   Grid,
   Typography,
   useMediaQuery,
@@ -15,6 +14,7 @@ import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { Sliders } from 'react-bootstrap-icons';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { logApolloError } from '@common/logging/apollo';
 import { useTheme } from '@common/themes';
 
@@ -219,7 +219,7 @@ const ScenarioPanel = () => {
           },
         }}
       >
-        <Container fixed maxWidth="xl" disableGutters={!isPanelFixed}>
+        <ContentContainer disableGutters={!isPanelFixed}>
           <Box sx={{ p: 1, backgroundColor: panelBackground }}>
             <Collapse
               key={isPanelFixed ? 'fixed' : 'relative'}
@@ -306,7 +306,7 @@ const ScenarioPanel = () => {
               {availableNormalizations.length > 0 && <NormalizationWidget />}
             </Box>
           </Collapse>
-        </Container>
+        </ContentContainer>
       </Box>
     </div>
   );

@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import { Container, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 
 import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client/react';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
@@ -159,9 +160,9 @@ export default function ActionPage() {
 
   if (error) {
     return (
-      <Container className="pt-5">
+      <ContentContainer className="pt-5">
         <GraphQLError error={error} />
-      </Container>
+      </ContentContainer>
     );
   }
 
@@ -223,7 +224,7 @@ export default function ActionPage() {
   return (
     <>
       <HeaderSection>
-        <Container fixed maxWidth="xl">
+        <ContentContainer>
           <PageHeader>
             <ScenarioPanel />
             <HeaderCard>
@@ -275,21 +276,21 @@ export default function ActionPage() {
               </Grid>
             </HeaderCard>
           </PageHeader>
-        </Container>
+        </ContentContainer>
       </HeaderSection>
-      <Container fixed maxWidth="xl" sx={{ position: 'relative' }}>
+      <ContentContainer sx={{ position: 'relative' }}>
         {loading && <Loader />}
         {!!actionPlot && <ActionPlotCard>{actionPlot}</ActionPlotCard>}
-      </Container>
+      </ContentContainer>
 
       {!!action.body?.length && (
-        <Container fixed maxWidth="xl">
+        <ContentContainer>
           <ActionBodyContainer>
             {action.body.map((block, i) => (
               <StreamField key={i} block={block} />
             ))}
           </ActionBodyContainer>
-        </Container>
+        </ContentContainer>
       )}
 
       {selectedOutcomeNode && !theme.settings.hideActionGrid && (

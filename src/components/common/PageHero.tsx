@@ -1,6 +1,7 @@
-import { Card, Container, type SxProps } from '@mui/material';
+import { Card, type SxProps } from '@mui/material';
 import type { Theme } from '@emotion/react';
 
+import ContentContainer from '@common/components/ContentContainer';
 import styled from '@common/themes/styled';
 
 const StyledHeroSection = styled.div`
@@ -62,7 +63,7 @@ export const PageHero = ({
 
   return (
     <StyledHeroSection>
-      <Container fixed maxWidth="xl" sx={{ py: 3 }}>
+      <ContentContainer sx={{ py: 3 }}>
         {hasHeroCard && (
           <StyledHeroCard sx={CardStyles}>
             {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
@@ -72,7 +73,7 @@ export const PageHero = ({
           </StyledHeroCard>
         )}
         {children}
-      </Container>
+      </ContentContainer>
     </StyledHeroSection>
   );
 };

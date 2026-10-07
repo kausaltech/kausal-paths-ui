@@ -3,11 +3,12 @@
 import { useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 
-import { Card, CardContent, Container } from '@mui/material';
+import { Card, CardContent } from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { logApolloError } from '@common/logging/apollo';
 import styled from '@common/themes/styled';
 
@@ -159,22 +160,26 @@ export default function NodePage() {
     if (error) {
       logApolloError(error);
     }
-    return <Container className="pt-5">{error && <GraphQLError error={error} />}</Container>;
+    return (
+      <ContentContainer className="pt-5">
+        {error && <GraphQLError error={error} />}
+      </ContentContainer>
+    );
   }
 
   const { node } = data;
   if (!node) {
     return (
-      <Container className="pt-5">
+      <ContentContainer className="pt-5">
         <ErrorMessage message={t('page-not-found')} />
-      </Container>
+      </ContentContainer>
     );
   }
 
   return (
     <>
       <HeaderSection $color={node.color || undefined}>
-        <Container fixed maxWidth="xl">
+        <ContentContainer>
           <PageHeader>
             <ScenarioPanel />
             <HeaderCard>
@@ -207,25 +212,25 @@ export default function NodePage() {
               )}
             </HeaderCard>
           </PageHeader>
-        </Container>
+        </ContentContainer>
       </HeaderSection>
       {node.description && (
         <NodeBodyText>
-          <Container fixed maxWidth="xl">
+          <ContentContainer>
             <Card>
               <CardContent>
                 <BodyText dangerouslySetInnerHTML={{ __html: node.description }} />
               </CardContent>
             </Card>
-          </Container>
+          </ContentContainer>
         </NodeBodyText>
       )}
-      <Container fixed maxWidth="xl">
+      <ContentContainer>
         <NodeLinks
           outputNodes={node.outputNodes as unknown as OutcomeNodeFieldsFragment[]}
           inputNodes={node.inputNodes as unknown as OutcomeNodeFieldsFragment[]}
         />
-      </Container>
+      </ContentContainer>
     </>
   );
 }

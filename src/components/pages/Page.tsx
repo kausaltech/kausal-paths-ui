@@ -1,11 +1,12 @@
 import { Suspense, useEffect } from 'react';
 
-import { Box, Container, Skeleton } from '@mui/material';
+import { Box, Skeleton } from '@mui/material';
 import { useTheme } from '@mui/material';
 
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import type { Theme } from '@kausal/themes/types';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 
@@ -29,7 +30,7 @@ export type PageRefetchCallback = useQuery.Result<PageQuery, PageQueryVariables>
 const PageLoader = ({ theme }: { theme: Theme }) => {
   return (
     <Box sx={{ py: 4, backgroundColor: theme.brandDark }} aria-busy="true">
-      <Container fixed maxWidth="xl">
+      <ContentContainer>
         <Box
           sx={{
             height: '400px',
@@ -42,7 +43,7 @@ const PageLoader = ({ theme }: { theme: Theme }) => {
             sx={{ backgroundColor: theme.graphColors.grey050, mb: 2 }}
           />
         </Box>
-      </Container>
+      </ContentContainer>
     </Box>
   );
 };
@@ -127,9 +128,9 @@ function Page(props: PageProps) {
     pageContent = <StaticPage page={page} refetch={refetch} />;
   } else if (page.__typename === 'InstanceRootPage') {
     pageContent = (
-      <Container fixed maxWidth="xl">
+      <ContentContainer>
         {page.body?.map((block) => (block ? <StreamField key={block.id} block={block} /> : null))}
-      </Container>
+      </ContentContainer>
     );
   } else {
     console.error('Invalid page type: ', page.__typename);

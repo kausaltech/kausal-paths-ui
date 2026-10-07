@@ -93,7 +93,6 @@
     "react-medium-image-zoom": "^5.4.9",
     "react-range": "^1.10.0",
     "react-select": "^5.10.2",
-    "reactstrap": "^9.2.3",
     "rxjs": "^7.8.2",
     "set-cookie-parser": "^3.1.2",
     "slugify": "^1.6.9"

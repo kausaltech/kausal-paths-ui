@@ -1,7 +1,8 @@
-import { Box, Card, CardContent, CardMedia, Container, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Stack, Typography } from '@mui/material';
 
 import { readableColor } from 'polished';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { useTheme } from '@common/themes';
 
 import {
@@ -264,7 +265,7 @@ function DashboardPage({ page }: Props) {
       )}
 
       <Box sx={{ py: 3, backgroundColor: backgroundColor }}>
-        <Container fixed maxWidth="lg">
+        <ContentContainer maxWidth="lg">
           <Stack spacing={3}>
             {!page.introParagraph && (
               <Typography variant="h1" color={textColor}>
@@ -320,7 +321,7 @@ function DashboardPage({ page }: Props) {
                 )
             )}
           </Stack>
-        </Container>
+        </ContentContainer>
       </Box>
     </>
   );

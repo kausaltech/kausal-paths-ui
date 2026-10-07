@@ -1,9 +1,8 @@
-import { Container } from '@mui/material';
-
 import type { Theme } from '@kausal/themes/types';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
 
+import ContentContainer from '@common/components/ContentContainer';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 import { getThemeStaticURL } from '@common/themes/theme';
@@ -346,7 +345,7 @@ function SiteFooter(props: SiteFooterProps) {
 
   return (
     <StyledFooter className="site-footer">
-      <Container fixed maxWidth="xl">
+      <ContentContainer>
         <FooterNav aria-label={t('nav-footer')}>
           <Branding>
             {theme.themeLogoWhiteUrl ? (
@@ -465,9 +464,9 @@ function SiteFooter(props: SiteFooterProps) {
             </BaseLink>
           </BaseColumn>
         </BaseSection>
-      </Container>
+      </ContentContainer>
       <SecondFooter>
-        <Container>
+        <ContentContainer>
           <FooterExtras>
             {fundingInstruments?.length > 0 && (
               <FundingInstruments>
@@ -531,7 +530,7 @@ function SiteFooter(props: SiteFooterProps) {
               <FooterStatement dangerouslySetInnerHTML={{ __html: footerStatement }} />
             )}
           </FooterExtras>
-        </Container>
+        </ContentContainer>
       </SecondFooter>
     </StyledFooter>
   );
