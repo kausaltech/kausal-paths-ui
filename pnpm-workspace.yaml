@@ -32,7 +32,12 @@ publicHoistPattern:
   - "@kausal/themes"
   - "@kausal-private/themes-private"
 storeDir: ./.pnpm-store
+overrides:
+  "nanoid@<3.3.18": "^3.3.20"
+  "uuid@<11.1.1": "^11.1.1"
+  "@graphql-tools/utils@<12.0.1": "^12.0.3"
 peerDependencyRules:
   allowedVersions:
     react: "19"
     react-dom: "19"
+    yargs: "17"
