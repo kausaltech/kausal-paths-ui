@@ -21,7 +21,7 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
   'bayreuth-bisko': {
     watchLink: {
       title: 'Monitoring Bayreuth',
-      url: 'https://monitoring.bayreuth.de/klima/thg-monitor',
+      url: 'https://monitoring.bayreuth.de/klima/',
     },
   },
   'cork-nzc': {
