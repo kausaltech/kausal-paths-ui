@@ -3,8 +3,9 @@ import { type Edge, MarkerType } from '@xyflow/react';
 import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
+  NodeGraphQuery,
 } from '@/common/__generated__/graphql';
-import { type ElkNodeType, type HiddenContextRef, getNodeStyle } from './ElkNode';
+import { type ElkNodeType, type HiddenContextRef, getNodeStyle, hookHandleId } from './ElkNode';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 
 /**
@@ -206,4 +207,64 @@ export function convertToElk(
     .filter((edge): edge is Edge => edge !== null);
 
   return { nodes: elkNodes, edges: elkEdges };
+}
+
+export type ActionHook = NonNullable<NodeGraphQuery['instance']['editor']>['hooks'][number];
+
+const HOOK_COLOR = '#4caf50';
+
+const HOOK_MARKER: Edge['markerEnd'] = {
+  type: MarkerType.ArrowClosed,
+  width: 12,
+  height: 12,
+  color: HOOK_COLOR,
+};
+
+/**
+ * Edges for the actions acting on a node's output port (hooks). An action does
+ * not feed the node's calculation; its output is added to the node's output.
+ * So the edge ends beside the output port it acts on, dashed, in the action
+ * colour. These edges are drawn only: they stay out of the ELK layout, which
+ * places nodes by their calculation edges.
+ */
+export function convertHooks(
+  hooks: readonly ActionHook[],
+  nodes: readonly EditorNodeFieldsFragment[]
+): Edge[] {
+  const nodesByUuid = new Map(nodes.map((n) => [n.uuid, n]));
+  return hooks.flatMap((hook): Edge[] => {
+    const action = nodesByUuid.get(hook.actionId);
+    const target = nodesByUuid.get(hook.targetNodeId);
+    if (!action || !target || !hook.targetPortId || !hook.fromPortId) return [];
+    return [
+      {
+        id: `hook:${hook.actionId}:${hook.fromPortId}:${hook.targetPortId}`,
+        source: action.id,
+        sourceHandle: hook.fromPortId,
+        target: target.id,
+        targetHandle: hookHandleId(hook.targetPortId),
+        style: { stroke: HOOK_COLOR, strokeDasharray: '5 4' },
+        markerEnd: HOOK_MARKER,
+        selectable: false,
+        data: { kind: 'hook' },
+      },
+    ];
+  });
+}
+
+/** Ids of the output ports of each node that an action acts on, by node id. */
+export function hookedPortsByNodeId(
+  hooks: readonly ActionHook[],
+  nodes: readonly EditorNodeFieldsFragment[]
+): Map<string, string[]> {
+  const nodesByUuid = new Map(nodes.map((n) => [n.uuid, n]));
+  const ports = new Map<string, string[]>();
+  for (const hook of hooks) {
+    const target = nodesByUuid.get(hook.targetNodeId);
+    if (!target || !hook.targetPortId) continue;
+    const list = ports.get(target.id) ?? [];
+    if (!list.includes(hook.targetPortId)) list.push(hook.targetPortId);
+    ports.set(target.id, list);
+  }
+  return ports;
 }

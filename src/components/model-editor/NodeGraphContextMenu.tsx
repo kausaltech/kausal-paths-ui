@@ -85,6 +85,7 @@ export type ContextMenuState =
         }
       | { kind: 'edge'; edgeId: string }
       | { kind: 'pane'; flowX: number; flowY: number }
+      | { kind: 'port'; nodeId: string; portId: string }
     ))
   | null;
 
@@ -95,6 +96,8 @@ type Props = {
   onDuplicateNode: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
   onNewNode: (flowX: number, flowY: number, kind: NewNodeKind) => void;
+  /** Start the action wizard on a node's output port; null port = the node's only one, or ask. */
+  onNewActionOn: (nodeId: string, portId: string | null) => void;
 };
 
 export default function NodeGraphContextMenu({
@@ -104,6 +107,7 @@ export default function NodeGraphContextMenu({
   onDuplicateNode,
   onDeleteNode,
   onNewNode,
+  onNewActionOn,
 }: Props) {
   const t = useTranslations('model-editor');
   const readOnly = useIsEditorReadOnly();
@@ -125,6 +129,25 @@ export default function NodeGraphContextMenu({
     onDeleteNode(state.nodeId);
     onClose();
   };
+
+  const handleNewActionOn = () => {
+    if (state?.kind === 'node') onNewActionOn(state.nodeId, null);
+    if (state?.kind === 'port') onNewActionOn(state.nodeId, state.portId);
+    onClose();
+  };
+
+  const newActionItem = (
+    <MenuItem key="new-action-on" onClick={handleNewActionOn}>
+      <ListItemIcon>
+        <Lightning size={14} />
+      </ListItemIcon>
+      <ListItemText
+        primary={t('action-from-ports-menu')}
+        secondary={t('action-from-ports-menu-desc')}
+        slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+      />
+    </MenuItem>
+  );
 
   const handleNewNode = (kind: NewNodeKind) => {
     if (state?.kind !== 'pane') return;
@@ -148,6 +171,13 @@ export default function NodeGraphContextMenu({
           <ListItemText>{t('nodes-hide-edge')}</ListItemText>
         </MenuItem>
       )}
+      {/* Acting on a node leaves the node itself unchanged, so this is offered on
+          protected and framework nodes too. */}
+      {!readOnly &&
+        (state?.kind === 'node' || state?.kind === 'port') && [
+          newActionItem,
+          state.kind === 'node' ? <Divider key="new-action-divider" /> : null,
+        ]}
       {!readOnly &&
         state?.kind === 'node' &&
         state.canChange &&

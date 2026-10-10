@@ -1,7 +1,7 @@
 import { Suspense, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { Box, CircularProgress, Drawer } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Drawer } from '@mui/material';
 
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
 import { AssistantIntegration } from '@paths-assistant/client';
@@ -21,6 +21,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useTranslations } from 'next-intl';
 
 import type {
   EditorNodeEdgeFragment,
@@ -41,6 +42,9 @@ import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeDisplaySettingsMenu from './NodeDisplaySettingsMenu';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
+import ActionWizard from './action-wizard/ActionWizard';
+import { actionWizardVar, openActionWizard } from './action-wizard/state';
+import { usePickMode } from './action-wizard/usePickMode';
 import { nodeNamesByUuidVar } from './constraintViolations';
 import { EditorUiProvider, useCreateEditorUiController } from './editor-ui';
 import {
@@ -51,10 +55,13 @@ import {
   saveUserPosition,
 } from './layoutCache';
 import {
+  type ActionHook,
   computeSnippedEdgeIds,
   computeUpstreamNodeIds,
+  convertHooks,
   convertToElk,
   getNodeBorderColor,
+  hookedPortsByNodeId,
 } from './nodeGraphTransforms';
 import { GET_NODE_GRAPH, type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
@@ -80,6 +87,8 @@ type FlowCanvasProps = {
   nodeMap: ReadonlyMap<string, EditorNodeFieldsFragment>;
   layoutedNodes: ElkNodeType[];
   layoutedEdges: Edge[];
+  /** Hook edges: drawn, but kept out of the layout (see `convertHooks`). */
+  hookEdges: Edge[];
   persistedPositions: Readonly<Record<string, CachedPosition>>;
   inspectedNodeId: string | null;
   layoutResetCounter: number;
@@ -104,6 +113,7 @@ const FlowCanvas = memo(function FlowCanvas({
   nodeMap,
   layoutedNodes,
   layoutedEdges,
+  hookEdges,
   persistedPositions,
   inspectedNodeId,
   layoutResetCounter,
@@ -131,8 +141,9 @@ const FlowCanvas = memo(function FlowCanvas({
   }, [layoutedNodes, setNodes]);
 
   const displayedEdges = useMemo<Edge[]>(() => {
-    if (!inspectedNodeId) return layoutedEdges;
-    return layoutedEdges.map((edge): Edge => {
+    if (!inspectedNodeId) return [...layoutedEdges, ...hookEdges];
+    return [...layoutedEdges, ...hookEdges].map((edge): Edge => {
+      if (edge.data?.kind === 'hook') return edge;
       const otherId =
         edge.source === inspectedNodeId
           ? edge.target
@@ -150,7 +161,7 @@ const FlowCanvas = memo(function FlowCanvas({
         zIndex: 10,
       };
     });
-  }, [inspectedNodeId, layoutedEdges, nodeMap]);
+  }, [hookEdges, inspectedNodeId, layoutedEdges, nodeMap]);
 
   useEffect(() => {
     setEdges(displayedEdges);
@@ -245,6 +256,7 @@ const FlowCanvas = memo(function FlowCanvas({
 function FlowEditor(props: {
   nodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
+  hooks: readonly ActionHook[];
   nodeLayouts: readonly {
     nodeId: string;
     x: number;
@@ -368,8 +380,29 @@ function FlowEditor(props: {
   }, [props.edges, autoSnippedEdgeIds, nodeMap, visibleNodeUuids]);
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
-    return convertToElk(visibleNodes, visibleEdges, snippedConnectionsByNodeId);
-  }, [snippedConnectionsByNodeId, visibleEdges, visibleNodes]);
+    const converted = convertToElk(visibleNodes, visibleEdges, snippedConnectionsByNodeId);
+    const hookedPorts = hookedPortsByNodeId(props.hooks, visibleNodes);
+    if (hookedPorts.size === 0) return converted;
+    return {
+      ...converted,
+      nodes: converted.nodes.map((node) =>
+        hookedPorts.has(node.id)
+          ? { ...node, data: { ...node.data, hookedPortIds: hookedPorts.get(node.id) } }
+          : node
+      ),
+    };
+  }, [props.hooks, snippedConnectionsByNodeId, visibleEdges, visibleNodes]);
+
+  const hookEdges = useMemo(
+    () => convertHooks(props.hooks, visibleNodes),
+    [props.hooks, visibleNodes]
+  );
+
+  const t = useTranslations('model-editor');
+  const pickMode = usePickMode(props.nodes, nodeMap, {
+    noOutput: t('action-from-ports-pick-no-output'),
+    noFit: t('action-from-ports-pick-no-fit'),
+  });
 
   const instance = useInstance();
   const instanceId = instance.id;
@@ -486,13 +519,50 @@ function FlowEditor(props: {
     [inspectNode]
   );
 
+  const handleOutputPortContextMenu = useCallback(
+    (nodeId: string, portId: string, event: React.MouseEvent) => {
+      setContextMenu({
+        kind: 'port',
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+        nodeId,
+        portId,
+      });
+    },
+    []
+  );
+
   const interactionCtx = useMemo(
     () => ({
       highlightedNodeIds,
       activeNodeId: inspectedNodeId,
       onHiddenContextClick: handleSnippedNodeClick,
+      dimmedNodeIds: pickMode.dimmedNodeIds,
+      onOutputPortContextMenu: handleOutputPortContextMenu,
     }),
-    [highlightedNodeIds, inspectedNodeId, handleSnippedNodeClick]
+    [
+      highlightedNodeIds,
+      inspectedNodeId,
+      handleSnippedNodeClick,
+      pickMode.dimmedNodeIds,
+      handleOutputPortContextMenu,
+    ]
+  );
+
+  // The wizard takes the right edge of the canvas, where the details drawer opens.
+  const wizardOpen = useReactiveVar(actionWizardVar).open;
+  useEffect(() => {
+    if (wizardOpen) inspectNode(null, 'user');
+  }, [wizardOpen, inspectNode]);
+
+  const { pick: pickNode } = pickMode;
+  const handleCanvasNodeClick = useCallback(
+    (nodeId: string | null) => {
+      // While the action wizard waits for a pick, a node click goes to it.
+      if (nodeId !== null && pickNode(nodeId)) return;
+      inspectNode(nodeId, 'user');
+    },
+    [inspectNode, pickNode]
   );
 
   const inspectedNode = inspectedNodeId ? (nodeMap.get(inspectedNodeId) ?? null) : null;
@@ -508,10 +578,11 @@ function FlowEditor(props: {
                 nodeMap={nodeMap}
                 layoutedNodes={layoutedNodes}
                 layoutedEdges={layoutedEdges}
+                hookEdges={hookEdges}
                 persistedPositions={persistedPositions}
                 inspectedNodeId={inspectedNodeId}
                 layoutResetCounter={layoutResetCounter}
-                onInspectNode={(nodeId) => inspectNode(nodeId, 'user')}
+                onInspectNode={handleCanvasNodeClick}
                 onResetLayout={handleResetLayout}
                 onEdgeContextMenu={onEdgeContextMenu}
                 onNodeContextMenu={onNodeContextMenu}
@@ -525,7 +596,38 @@ function FlowEditor(props: {
                 onDuplicateNode={crud.duplicateNode}
                 onDeleteNode={crud.requestDeleteNode}
                 onNewNode={crud.createNodeAt}
+                onNewActionOn={openActionWizard}
               />
+              <ActionWizard
+                nodeMap={nodeMap}
+                actionGroups={props.actionGroups}
+                onCreated={(actionId) => {
+                  void focusNode(actionId, { origin: 'user', highlight: true });
+                }}
+              />
+              {pickMode.active && (
+                <Alert
+                  severity={pickMode.refusal ? 'warning' : 'info'}
+                  action={
+                    <Button color="inherit" size="small" onClick={pickMode.cancel}>
+                      {t('action-from-ports-pick-cancel')}
+                    </Button>
+                  }
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 7,
+                    boxShadow: 3,
+                  }}
+                >
+                  {pickMode.refusal ??
+                    (pickMode.kind === 'target'
+                      ? t('action-from-ports-pick-target')
+                      : t('action-from-ports-pick-source'))}
+                </Alert>
+              )}
               <Drawer
                 variant="persistent"
                 anchor="right"
@@ -664,6 +766,7 @@ export default function NodeGraphEditor() {
           <FlowEditor
             nodes={nodesWithOverrides}
             edges={editor.edges}
+            hooks={editor.hooks}
             nodeLayouts={editor.nodeLayouts}
             outcomeNodeIds={editor.graphLayout.outcomeIds}
             actionGroups={data.instance.actionGroups}

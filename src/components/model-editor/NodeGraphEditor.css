@@ -19,6 +19,12 @@
   right: -3px;
 }
 
+/* Where an action's hook arrives: on the output port it acts on (see ElkNode). */
+.react-flow__handle.target.hook-handle {
+  left: auto;
+  right: -3px;
+}
+
 .react-flow__edge-path {
   stroke: #b0bec5;
   stroke-width: 1;

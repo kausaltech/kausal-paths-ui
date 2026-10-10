@@ -74,6 +74,12 @@ export function toDatasetTransformationInputs(
         return { remapLegacyYears: true };
       case 'TagOperationType':
         return { tagOperation: { tag: transformation.tag } };
+      case 'InterpolateType':
+        return { interpolate: true };
+      case 'BackfillType':
+        return { backfill: true };
+      case 'ExtendType':
+        return { extend: true };
       default: {
         // Every dataset transformation the fragment can carry is written above;
         // a new schema member fails here at compile time.

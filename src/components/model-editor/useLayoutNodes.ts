@@ -269,7 +269,9 @@ export default function useLayoutNodes(
     // can lag by a frame when the previous `setNodes(layoutedNodes)` hasn't
     // been reconciled yet, causing stale `data` (e.g. out-of-date node names).
     const nodes = sourceNodes as ElkNodeType[];
-    const edges = getEdges();
+    // Hook edges are drawn only; the layout places nodes by their calculation edges
+    // (see `convertHooks`), and ELK has no port for a hook's arrival point.
+    const edges = getEdges().filter((edge) => edge.data?.kind !== 'hook');
 
     // Re-hydrate the position cache when the instance — or the viewed slice —
     // changes: draft and published each carry their own persisted layout, so

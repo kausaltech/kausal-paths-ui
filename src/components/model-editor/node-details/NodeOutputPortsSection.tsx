@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
-import { InfoSquare, X as XIcon } from 'react-bootstrap-icons';
+import { InfoSquare, Lightning, X as XIcon } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -26,6 +26,7 @@ import type {
   OutputPortInput,
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
+import { openActionWizard } from '../action-wizard/state';
 import type { getNodeSpec } from '../nodeHelpers';
 import { QUANTITY_SUGGESTIONS } from '../quantities';
 import { useUpdateOutputPorts } from '../useUpdateOutputPorts';
@@ -331,6 +332,18 @@ export default function NodeOutputPortsSection({
                   >
                     {quantityAndUnit}
                   </Typography>
+                </Tooltip>
+              )}
+              {!readOnly && (
+                <Tooltip title={t('action-from-ports-menu')} placement="left">
+                  <IconButton
+                    size="small"
+                    aria-label={t('action-from-ports-menu')}
+                    onClick={() => openActionWizard(nodeId, port.id)}
+                    sx={{ ml: 'auto', p: 0.25 }}
+                  >
+                    <Lightning size={12} />
+                  </IconButton>
                 </Tooltip>
               )}
             </Box>
