@@ -1,4 +1,4 @@
-import { type FC, Fragment, type ReactElement, createContext, memo, use } from 'react';
+import { type FC, Fragment, type ReactElement, createContext, memo, use, useEffect } from 'react';
 
 import { Box, Tooltip, Typography } from '@mui/material';
 
@@ -10,6 +10,7 @@ import {
   Position,
   type ReactFlowState,
   useStore,
+  useUpdateNodeInternals,
 } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
 import {
@@ -47,6 +48,10 @@ export type NodeGraphInteraction = {
   highlightedNodeIds: ReadonlySet<string>;
   activeNodeId: string | null;
   onHiddenContextClick: (id: string) => void;
+  /** Nodes drawn faded, e.g. those that cannot be picked in the action wizard's pick mode. */
+  dimmedNodeIds?: ReadonlySet<string>;
+  /** Right-click on an output port dot. */
+  onOutputPortContextMenu?: (nodeId: string, portId: string, event: React.MouseEvent) => void;
 };
 
 const defaultInteraction: NodeGraphInteraction = {
@@ -54,6 +59,11 @@ const defaultInteraction: NodeGraphInteraction = {
   activeNodeId: null,
   onHiddenContextClick: () => {},
 };
+
+/** The React Flow handle a hook arrives at: beside the target's output port, not at an input. */
+export function hookHandleId(targetPortId: string): string {
+  return `hook:${targetPortId}`;
+}
 
 export const NodeGraphInteractionContext = createContext<NodeGraphInteraction>(defaultInteraction);
 
@@ -338,6 +348,8 @@ export type ElkNodeData = {
   nodeHeight?: number;
   sourceHandles: HandleData[];
   targetHandles: HandleData[];
+  /** Output ports that an action acts on; each gets an invisible handle for the hook edge. */
+  hookedPortIds?: string[];
 };
 
 export type ElkNodeType = Node<ElkNodeData, 'elk'>;
@@ -345,9 +357,21 @@ export type ElkNodeType = Node<ElkNodeData, 'elk'>;
 const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType>) => {
   const t = useTranslations('model-editor');
   const showContent = useStore(zoomSelector);
-  const { highlightedNodeIds, activeNodeId, onHiddenContextClick } = use(
-    NodeGraphInteractionContext
-  );
+  const {
+    highlightedNodeIds,
+    activeNodeId,
+    onHiddenContextClick,
+    dimmedNodeIds,
+    onOutputPortContextMenu,
+  } = use(NodeGraphInteractionContext);
+  const dimmed = dimmedNodeIds?.has(id) ?? false;
+  // A hook handle appears when an action starts acting on this node; React Flow
+  // measures handles once per node, so it has to be told to look again.
+  const updateNodeInternals = useUpdateNodeInternals();
+  const hookedPortKey = data.hookedPortIds?.join(',') ?? '';
+  useEffect(() => {
+    updateNodeInternals(id);
+  }, [hookedPortKey, id, updateNodeInternals]);
   const display = useReactiveVar(nodeDisplaySettingsVar);
   const statusEntry = useReactiveVar(nodeStatusVar)[id];
   const statusSeverity = getStatusSeverity(statusEntry?.status);
@@ -492,6 +516,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
       {showContent ? (
         <Box
           sx={{
+            opacity: dimmed ? 0.35 : 1,
             display: 'flex',
             flexDirection: 'column',
             borderRadius: '4px',
@@ -635,14 +660,37 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
       {data.sourceHandles.map((handle, i) => {
         const top =
           handle.top ?? (sourceCount > 1 ? `${((i + 1) / (sourceCount + 1)) * 100}%` : '50%');
+        const style = sourceCount > 1 ? { top, position: 'absolute' as const } : undefined;
         return (
-          <Handle
-            key={handle.id}
-            id={handle.id}
-            type="source"
-            position={Position.Right}
-            style={sourceCount > 1 ? { top, position: 'absolute' } : undefined}
-          />
+          <Fragment key={handle.id}>
+            <Handle
+              id={handle.id}
+              type="source"
+              position={Position.Right}
+              style={style}
+              onContextMenu={
+                onOutputPortContextMenu
+                  ? (event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onOutputPortContextMenu(id, handle.id, event);
+                    }
+                  : undefined
+              }
+            />
+            {data.hookedPortIds?.includes(handle.id) && (
+              // Where a hook edge arrives: on the output port it acts on, since
+              // an action adds to the node's output rather than feeding it.
+              <Handle
+                id={hookHandleId(handle.id)}
+                type="target"
+                position={Position.Right}
+                className="hook-handle"
+                isConnectable={false}
+                style={{ ...style, opacity: 0, pointerEvents: 'none' }}
+              />
+            )}
+          </Fragment>
         );
       })}
     </>

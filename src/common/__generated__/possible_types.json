@@ -1,5 +1,10 @@
 {
   "possibleTypes": {
+    "AddActionHookPayload": [
+      "ActionNode",
+      "Node",
+      "OperationInfo"
+    ],
     "AddInputPortPayload": [
       "InputPortType",
       "OperationInfo"
@@ -13,6 +18,10 @@
       "User",
       "UserNotFoundError"
     ],
+    "AnyNodeType": [
+      "ActionNode",
+      "Node"
+    ],
     "BeginInvocationPayload": [
       "BeginAssistantInvocationPayload",
       "OperationInfo"
@@ -24,6 +33,11 @@
     ],
     "CompleteInvocationPayload": [
       "AssistantInvocationType",
+      "OperationInfo"
+    ],
+    "CreateActionFromPortsPayload": [
+      "ConstraintViolations",
+      "CreateActionFromPortsResult",
       "OperationInfo"
     ],
     "CreateActionGroupPayload": [
@@ -76,12 +90,22 @@
       "Node",
       "OperationInfo"
     ],
+    "CreatePortDatasetPayload": [
+      "ConstraintViolations",
+      "Dataset",
+      "OperationInfo"
+    ],
     "CreateScenarioPayload": [
       "OperationInfo",
       "ScenarioType"
     ],
     "CreateSourceReferencePayload": [
       "DatasetSourceReference",
+      "OperationInfo"
+    ],
+    "DeleteActionHookPayload": [
+      "ActionNode",
+      "Node",
       "OperationInfo"
     ],
     "DeleteDataPointsPayload": [
@@ -152,12 +176,15 @@
     ],
     "PortTransformation": [
       "AssignDimensionType",
+      "BackfillType",
       "DropNullsType",
       "EnsureUnitType",
+      "ExtendType",
       "FilterColumnType",
       "FilterDimensionType",
       "FilterTemporalType",
       "IndexTemporalType",
+      "InterpolateType",
       "RemapLegacyYearsType",
       "RenameColumnType",
       "RenameItemType",
@@ -167,12 +194,15 @@
     ],
     "PortTransformationUnion": [
       "AssignDimensionType",
+      "BackfillType",
       "DropNullsType",
       "EnsureUnitType",
+      "ExtendType",
       "FilterColumnType",
       "FilterDimensionType",
       "FilterTemporalType",
       "IndexTemporalType",
+      "InterpolateType",
       "RemapLegacyYearsType",
       "RenameColumnType",
       "RenameItemType",

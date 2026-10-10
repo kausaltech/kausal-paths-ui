@@ -61,8 +61,9 @@ The hook now accepts `instanceId` and runs this sequence whenever
    - **missing** — ID is not
 4. If `missing` is empty: apply cached positions directly, skip ELK,
    call `fitView`, and mark the version applied. No network of ELK work.
-5. If anything is missing: run ELK on the full visible graph, then for
-   each node:
+5. If anything is missing: run ELK on the full visible graph (its calculation
+   edges only: hook edges, an action acting on a node's output, are drawn but not
+   laid out), then for each node:
    - `source === 'user'` → keep the cached position
    - otherwise → use ELK's fresh position
 6. Persist every non-user position back with `source: 'auto'`, both locally
