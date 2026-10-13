@@ -1,7 +1,7 @@
 import { Suspense, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { Box, CircularProgress, Drawer } from '@mui/material';
+import { Alert, Box, CircularProgress, Drawer, Snackbar } from '@mui/material';
 
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
 import { AssistantIntegration } from '@paths-assistant/client';
@@ -10,6 +10,7 @@ import {
   type EdgeMouseHandler,
   MarkerType,
   type NodeMouseHandler,
+  type OnConnect,
   type OnNodeDrag,
 } from '@xyflow/react';
 import {
@@ -21,6 +22,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useTranslations } from 'next-intl';
 
 import type {
   EditorNodeEdgeFragment,
@@ -57,6 +59,7 @@ import {
   getNodeBorderColor,
 } from './nodeGraphTransforms';
 import { GET_NODE_GRAPH, type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
+import { useCreateEdge } from './useCreateEdge';
 import { useEditorApolloContext } from './useEditorApolloContext';
 import { useEditorPublishState } from './useEditorPublishState';
 import { useGraphNavigation } from './useGraphNavigation';
@@ -114,9 +117,13 @@ const FlowCanvas = memo(function FlowCanvas({
   onPaneContextMenu,
   onSaveLayouts,
 }: FlowCanvasProps) {
+  const t = useTranslations('model-editor');
   const searchParams = useSearchParams();
   const { setEdges, setNodes } = useReactFlow<ElkNodeType>();
   const readOnly = useIsEditorReadOnly();
+  const createEdge = useCreateEdge();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   // Captured once so later URL changes don't alter initial viewport behaviour.
   const [initialFitView] = useState(() => searchParams.get('node') === null);
   const [savedViewport] = useState(() => loadViewport(instanceId));
@@ -210,12 +217,38 @@ const FlowCanvas = memo(function FlowCanvas({
     [instanceId, onSaveLayouts]
   );
 
+  const handleConnect = useCallback<OnConnect>(
+    (connection) => {
+      if (readOnly || isConnecting) return;
+      const source = nodeMap.get(connection.source);
+      const target = nodeMap.get(connection.target);
+      if (!source || !target || !connection.sourceHandle || !connection.targetHandle) {
+        setConnectionError(t('nodes-failed-create-edge'));
+        return;
+      }
+      setIsConnecting(true);
+      setConnectionError(null);
+      void createEdge({
+        fromNodeUuid: source.uuid,
+        toNodeUuid: target.uuid,
+        fromPort: connection.sourceHandle,
+        toPort: connection.targetHandle,
+      })
+        .catch((err: unknown) => {
+          setConnectionError(err instanceof Error ? err.message : t('nodes-failed-create-edge'));
+        })
+        .finally(() => setIsConnecting(false));
+    },
+    [createEdge, isConnecting, nodeMap, readOnly, t]
+  );
+
   return (
     <ReactFlow
       defaultNodes={layoutedNodes}
       defaultEdges={displayedEdges}
       onNodeClick={handleNodeClick}
       onNodeDragStop={handleNodeDragStop}
+      onConnect={handleConnect}
       onEdgeClick={handleEdgeClick}
       onEdgeContextMenu={onEdgeContextMenu}
       onNodeContextMenu={onNodeContextMenu}
@@ -227,6 +260,7 @@ const FlowCanvas = memo(function FlowCanvas({
       // The published view is a read-only preview — dragging would persist
       // positions into the draft layout from the wrong slice.
       nodesDraggable={!readOnly}
+      nodesConnectable={!readOnly && !isConnecting}
       nodeDragThreshold={NODE_POINTER_THRESHOLD}
       nodeClickDistance={NODE_POINTER_THRESHOLD}
       minZoom={0.2}
@@ -238,6 +272,15 @@ const FlowCanvas = memo(function FlowCanvas({
         <NodeDisplaySettingsMenu onResetLayout={onResetLayout} />
       </Controls>
       <MiniMap nodeStrokeWidth={3} />
+      <Snackbar
+        open={connectionError !== null}
+        onClose={() => setConnectionError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" variant="filled" onClose={() => setConnectionError(null)}>
+          {connectionError}
+        </Alert>
+      </Snackbar>
     </ReactFlow>
   );
 });
