@@ -2,6 +2,7 @@ import { type Dispatch, type SetStateAction, useCallback, useMemo, useState } fr
 
 import { useMutation } from '@apollo/client/react';
 import { type EditableGridCell, GridCellKind } from '@glideapps/glide-data-grid';
+import { useTranslations } from 'next-intl';
 
 import type {
   CreateDataPointInput,
@@ -102,6 +103,7 @@ export function useDataPointEditing({
   onClearSelection,
 }: Params) {
   const instance = useInstance();
+  const t = useTranslations('model-editor');
   const { baseRows, years, rows, rowById, columnIds } = grid;
 
   const [saving, setSaving] = useState(false);
@@ -741,18 +743,16 @@ export function useDataPointEditing({
 
     const failureCount = failures.size;
     if (failureCount > 0) {
-      setError(
-        unexpected ??
-          `Saved with ${failureCount} error${failureCount === 1 ? '' : 's'}. Hover failed cells for details.`
-      );
+      setError(unexpected ?? t('datasets-save-with-errors', { count: failureCount }));
     } else if (deleteError !== null) {
-      setError(`Saved, but some rows/years couldn't be deleted: ${deleteError}`);
+      setError(t('datasets-save-delete-failed', { error: deleteError }));
     } else if (anchorError !== null) {
-      setError(`Saved, but some added rows/years couldn't be persisted: ${anchorError}`);
+      setError(t('datasets-save-anchor-failed', { error: anchorError }));
     } else if (refetchError !== null) {
-      setError(`Saved, but refreshing the data failed: ${refetchError}`);
+      setError(t('datasets-save-refetch-failed', { error: refetchError }));
     }
   }, [
+    t,
     pendingEdits,
     saving,
     instance.id,

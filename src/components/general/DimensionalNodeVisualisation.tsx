@@ -148,6 +148,9 @@ const ToolsMenu = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const t = useTranslations();
+  // The download follows the chart: zero-valued categories are kept only when
+  // the instance shows them in graphs.
+  const filterZero = !useInstance().features.showZerosInGraphs;
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -205,13 +208,13 @@ const ToolsMenu = ({
         }}
       >
         <ListSubheader> {` ${t('common.download-data')}`}</ListSubheader>
-        <MenuItem onClick={() => void cube.downloadData(sliceConfig, 'xlsx')}>
+        <MenuItem onClick={() => void cube.downloadData(sliceConfig, 'xlsx', filterZero)}>
           <ListItemIcon>
             <FiletypeXls />
           </ListItemIcon>
           <ListItemText>XLS</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => void cube.downloadData(sliceConfig, 'csv')}>
+        <MenuItem onClick={() => void cube.downloadData(sliceConfig, 'csv', filterZero)}>
           <ListItemIcon>
             <FiletypeCsv />
           </ListItemIcon>
@@ -329,8 +332,13 @@ export default function DimensionalNodeVisualisation({
   // Get the dimension that is currently sliced by
   const slicedDim = metrics.default.dimensions.find((dim) => dim.id === sliceConfig.dimensionId);
 
+  // Categories whose values are all zero are dropped unless the instance asks
+  // to show them (`showZerosInGraphs`); then they stay in the graph, legend and
+  // tooltip, even though their bars have no height. Categories with no data at
+  // all are dropped either way.
+  const filterZero = !instance.features.showZerosInGraphs;
   const slice: MetricSlice = slicedDim
-    ? metrics.default.sliceBy(slicedDim.id, true, sliceConfig.categories)
+    ? metrics.default.sliceBy(slicedDim.id, true, sliceConfig.categories, true, filterZero)
     : metrics.default.flatten(sliceConfig.categories);
 
   const goals = metrics.default.getGoalsForChoice(sliceConfig.categories);
@@ -485,7 +493,10 @@ export default function DimensionalNodeVisualisation({
   const defaultColor = color || theme.graphColors.blue050;
   // Colors are assigned over the *unfiltered* series of the sliced dimension, so that
   // a category keeps its color regardless of which categories are filtered out
-  const colorSlice = slicedDim ? metrics.default.sliceBy(slicedDim.id, true, {}) : slice;
+  // Same zero handling as `slice`, so a zero-valued category gets its own color.
+  const colorSlice = slicedDim
+    ? metrics.default.sliceBy(slicedDim.id, true, {}, true, filterZero)
+    : slice;
   const seriesColors = new Map<string, string>();
 
   if (colorSlice.categoryValues.length > 1) {

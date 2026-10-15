@@ -22,7 +22,12 @@ import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import { AddRowsModal } from './AddRowsModal';
 import { AddYearsModal } from './AddYearsModal';
-import { CellContextMenu, ColumnFilterMenu } from './DatasetDataGridMenus';
+import {
+  CellContextMenu,
+  CellErrorPopper,
+  ColumnFilterMenu,
+  type PopperInstance,
+} from './DatasetDataGridMenus';
 import { DatasetDataGridProgressOverlay } from './DatasetDataGridProgressOverlay';
 import { DatasetDataGridToolbar } from './DatasetDataGridToolbar';
 import {
@@ -764,6 +769,66 @@ export default function DatasetDataGrid({
     setGridSelection(EMPTY_SELECTION);
   }
 
+  // Failed-save detail. A failed cell is tinted ERROR_BG and the save toast
+  // points the user at it; the error text itself is shown in a popper over the
+  // hovered failed cell or, so keyboard users can reach it, over the selected
+  // one. Hover wins when both apply.
+  const [hoveredCell, setHoveredCell] = useState<Item | null>(null);
+  // Visible (scrollable) region, in DataEditor column/row indices. Only the
+  // cell range is kept, not the sub-cell scroll offsets, so smooth scrolling
+  // re-renders on cell boundaries rather than every frame.
+  const [visibleRange, setVisibleRange] = useState<Rectangle | null>(null);
+  const errorPopperRef = useRef<PopperInstance>(null);
+  const cellError = useCallback(
+    ([col, row]: Item): string | null => {
+      const colId = columnIds[col];
+      const gridRow = rows[row];
+      if (!colId || !gridRow || !isYearColId(colId)) return null;
+      return pendingEdits.get(pendingKey(gridRow.id, colId))?.error ?? null;
+    },
+    [columnIds, rows, pendingEdits]
+  );
+  const onItemHovered = useCallback<NonNullable<DataEditorProps['onItemHovered']>>(
+    (args) => {
+      // Glide fires this only when the hovered item changes. Keep state only
+      // for failed cells, so ordinary hovering re-renders nothing.
+      setHoveredCell(args.kind === 'cell' && cellError(args.location) ? args.location : null);
+    },
+    [cellError]
+  );
+  const onVisibleRegionChanged = useCallback<
+    NonNullable<DataEditorProps['onVisibleRegionChanged']>
+  >((range) => {
+    setVisibleRange((prev) =>
+      prev &&
+      prev.x === range.x &&
+      prev.y === range.y &&
+      prev.width === range.width &&
+      prev.height === range.height
+        ? prev
+        : { x: range.x, y: range.y, width: range.width, height: range.height }
+    );
+    // The pointer is no longer over the cell that was hovered when the grid
+    // scrolls under it; Glide reports the new one on the next mouse move.
+    setHoveredCell(null);
+    // Re-read the anchor bounds so the popper tracks the scrolled cell.
+    void errorPopperRef.current?.update();
+  }, []);
+  const selectedGridCell = gridSelection.current?.cell ?? null;
+  const selectedCellVisible =
+    selectedGridCell !== null &&
+    visibleRange !== null &&
+    selectedGridCell[0] >= visibleRange.x &&
+    selectedGridCell[0] < visibleRange.x + visibleRange.width &&
+    selectedGridCell[1] >= visibleRange.y &&
+    selectedGridCell[1] < visibleRange.y + visibleRange.height;
+  const hoveredError = hoveredCell ? cellError(hoveredCell) : null;
+  const selectedError =
+    selectedGridCell && selectedCellVisible ? cellError(selectedGridCell) : null;
+  const errorPopperCell =
+    hoveredError !== null ? hoveredCell : selectedError !== null ? selectedGridCell : null;
+  const errorPopperText = hoveredError ?? selectedError;
+
   // Overlays decorations on year cells after Glide draws the default content:
   // - corner triangle (red / orange) when comments exist (unresolved vs all)
   // - underline on the rendered value when the DataPoint has a source
@@ -884,6 +949,7 @@ export default function DatasetDataGrid({
           // Glide's scroll element is the internal `.dvn-scroller`.
           '& .dvn-scroller': { overscrollBehaviorX: 'none' },
         }}
+        onMouseLeave={() => setHoveredCell(null)}
       >
         <DataEditor
           ref={gridRef}
@@ -901,6 +967,8 @@ export default function DatasetDataGrid({
           onHeaderContextMenu={onHeaderContextMenu}
           onHeaderMenuClick={onHeaderMenuClick}
           onColumnResize={onColumnResize}
+          onItemHovered={onItemHovered}
+          onVisibleRegionChanged={onVisibleRegionChanged}
           drawCell={drawCell}
           freezeColumns={freezeColumns}
           getCellsForSelection
@@ -937,6 +1005,12 @@ export default function DatasetDataGrid({
         )}
         <DatasetDataGridProgressOverlay saveProgress={editing.saveProgress} />
       </Box>
+      <CellErrorPopper
+        cell={errorPopperCell}
+        error={errorPopperText}
+        gridRef={gridRef}
+        popperRef={errorPopperRef}
+      />
       <CellContextMenu
         readOnly={readOnly}
         contextMenu={contextMenu}

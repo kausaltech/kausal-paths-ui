@@ -652,13 +652,19 @@ export class DimensionalMetric {
     sort: boolean = false,
     categoryChoice: MetricCategoryChoice | undefined,
     useGroups: boolean = true,
-    /** Support preventing filtering zero values from the category.
-     * Previously we always filtered zeroes which caused issues
-     * in NZP progress tracking.
+    /** Drop categories whose values are all zero (or missing).
+     * With `false`, a category is kept when it has at least one actual value,
+     * zero included, and dropped only when it has no data at all. Zeros must
+     * stay for NZP progress tracking, and in the public charts of instances
+     * with the `showZerosInGraphs` feature, so that a category reported as zero
+     * still shows in the legend and tooltip.
      **/
     filterZero: boolean = true
   ) {
     const byYear: Map<number, Map<string, number>> = new Map();
+    // Categories (or groups) with at least one non-null value. A per-year sum
+    // starts from 0, so the sums alone cannot tell "reported as 0" from "no data".
+    const idsWithValue = new Set<string>();
     const dim = this.dimensions.find((dim) => dim.id === dimensionId)!;
 
     // Grouped dimensions are sliced by their groups, also when they are filtered;
@@ -683,7 +689,10 @@ export class DimensionalMetric {
       val ??= 0;
       const rowVal = row.value;
       // FIXME: What if metric can't be summed?
-      if (rowVal !== null) val += rowVal;
+      if (rowVal !== null) {
+        val += rowVal;
+        idsWithValue.add(rowId);
+      }
 
       catVals.set(rowId, val);
     });
@@ -741,13 +750,11 @@ export class DimensionalMetric {
     const historicalYears = this.data.years.filter((year) => !this.isForecastYear(year));
     const forecastYears = this.data.years.filter((year) => this.isForecastYear(year));
 
-    const filteredCategoryValues = categoryValues.filter((cv) => {
-      const hasVals = [...cv.historicalValues, ...cv.forecastValues].some(
-        (val) => val !== null && (filterZero ? val !== 0 : true)
-      );
-
-      return hasVals;
-    });
+    const filteredCategoryValues = categoryValues.filter((cv) =>
+      filterZero
+        ? [...cv.historicalValues, ...cv.forecastValues].some((val) => val !== null && val !== 0)
+        : idsWithValue.has(cv.category.id)
+    );
 
     const ordered = filteredCategoryValues
       .filter((cv) => cv.category.order != null)
@@ -784,10 +791,15 @@ export class DimensionalMetric {
     return `${metricName}_${ts}`;
   }
 
-  async downloadData(config: SliceConfig, format: 'xlsx' | 'csv') {
+  async downloadData(
+    config: SliceConfig,
+    format: 'xlsx' | 'csv',
+    /** As in `sliceBy`; pass the chart's value so the export matches it. */
+    filterZero: boolean = true
+  ) {
     let slice: MetricSlice;
     if (config.dimensionId) {
-      slice = this.sliceBy(config.dimensionId, false, config.categories);
+      slice = this.sliceBy(config.dimensionId, false, config.categories, true, filterZero);
     } else {
       slice = this.flatten(config.categories);
     }

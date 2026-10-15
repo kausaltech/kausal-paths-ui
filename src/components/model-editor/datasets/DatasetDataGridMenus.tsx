@@ -14,8 +14,10 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import type { PopperProps } from '@mui/material';
 
-import type { DataEditorRef, Rectangle } from '@glideapps/glide-data-grid';
+import type { DataEditorRef, Item, Rectangle } from '@glideapps/glide-data-grid';
+import { useTranslations } from 'next-intl';
 import { Bookmarks, ChatLeft, Clipboard, Files } from 'react-bootstrap-icons';
 
 import { type GridRow, METRIC_COL } from './dataset-grid-data';
@@ -231,6 +233,73 @@ export function ColumnFilterMenu({
           </MenuList>
         </Paper>
       </ClickAwayListener>
+    </Popper>
+  );
+}
+
+/** The popper.js instance MUI's Popper exposes through `popperRef`. */
+export type PopperInstance = Extract<
+  NonNullable<PopperProps['popperRef']>,
+  RefObject<unknown>
+>['current'];
+
+type CellErrorPopperProps = {
+  /** The failed cell to annotate, in DataEditor column/row indices; null hides it. */
+  cell: Item | null;
+  /** The cell's save error, as reported by the backend. */
+  error: string | null;
+  gridRef: RefObject<DataEditorRef | null>;
+  popperRef: RefObject<PopperInstance>;
+};
+
+/**
+ * The detail behind a failed cell's red tint: the error the save reported for
+ * it. Glide draws on a canvas, so a plain `title` or MUI `Tooltip` has no
+ * element to attach to; this anchors a Popper to the cell's bounds instead.
+ * Bounds are read lazily from the grid ref, so the popper follows the cell when
+ * the grid scrolls (the parent calls `popperRef.current.update()` on scroll).
+ */
+export function CellErrorPopper({ cell, error, gridRef, popperRef }: CellErrorPopperProps) {
+  const t = useTranslations('model-editor');
+  return (
+    <Popper
+      open={cell !== null && error !== null}
+      popperRef={popperRef}
+      anchorEl={
+        cell !== null
+          ? {
+              getBoundingClientRect: () => {
+                const b = gridRef.current?.getBounds(cell[0], cell[1]);
+                return b ? new DOMRect(b.x, b.y, b.width, b.height) : new DOMRect(0, 0, 0, 0);
+              },
+            }
+          : null
+      }
+      placement="top"
+      modifiers={[{ name: 'offset', options: { offset: [0, 4] } }]}
+      // Never intercept the pointer: the grid must keep receiving hover and
+      // clicks for the cell underneath.
+      sx={{ zIndex: (theme) => theme.zIndex.tooltip, pointerEvents: 'none' }}
+    >
+      <Paper
+        role="tooltip"
+        aria-live="polite"
+        elevation={4}
+        sx={{
+          maxWidth: 360,
+          px: 1.25,
+          py: 0.75,
+          bgcolor: 'error.dark',
+          color: 'error.contrastText',
+        }}
+      >
+        <Typography variant="caption" component="div" sx={{ fontWeight: 600 }}>
+          {t('datasets-cell-not-saved')}
+        </Typography>
+        <Typography variant="caption" component="div" sx={{ whiteSpace: 'pre-wrap' }}>
+          {error}
+        </Typography>
+      </Paper>
     </Popper>
   );
 }
