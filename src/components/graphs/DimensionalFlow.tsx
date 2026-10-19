@@ -9,10 +9,10 @@ import { tint, transparentize } from 'polished';
 
 import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
+import { genColorsFromTheme } from '@common/utils/paths/colors';
 
 import type { DimensionalPlotFragment } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { genColorsFromTheme } from '@/common/colors';
 import { useNumberFormatter } from '@/common/numbers';
 import { escapeHtml } from '@/components/charts/chartTooltip';
 

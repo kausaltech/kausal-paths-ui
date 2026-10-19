@@ -13,14 +13,19 @@ import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
+import {
+  ALL_SCENARIOS,
+  getDefaultSliceConfig,
+  parseMetric,
+  sliceBy,
+} from '@common/utils/paths/metric';
+import { getProgressTrackingScenario } from '@common/utils/paths/progress-tracking';
 
 import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { useSiteWithSetter } from '@/context/site';
-import { DimensionalMetric } from '@/data/metric';
-import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
 const X_SYMBOL =
   'path://M0.979266 20.7782C-0.192306 21.9497 -0.192307 23.8492 0.979266 25.0208C2.15084 26.1924 4.05033 26.1924 5.22191 ' +
@@ -193,8 +198,8 @@ export function ProgressDriversVisualization({
       return undefined;
     }
 
-    const dimensionalMetric = new DimensionalMetric(metric, DimensionalMetric.ALL_SCENARIOS);
-    const defaultConfig = dimensionalMetric.getDefaultSliceConfig(activeGoal);
+    const dimensionalMetric = parseMetric(metric, ALL_SCENARIOS);
+    const defaultConfig = getDefaultSliceConfig(dimensionalMetric, activeGoal);
 
     const slicedDim = dimensionalMetric.dimensions.find(
       (dim) => dim.id === defaultConfig.dimensionId
@@ -204,13 +209,10 @@ export function ProgressDriversVisualization({
       return undefined;
     }
 
-    const slice = dimensionalMetric.sliceBy(
-      slicedDim.id,
-      false,
-      defaultConfig.categories,
-      true,
-      false
-    );
+    const slice = sliceBy(dimensionalMetric, slicedDim.id, false, defaultConfig.categories, true, {
+      filterZero: false,
+    });
+    if (!slice) return undefined;
 
     // Get years and values for both scenarios
     const defaultScenario = slice.categoryValues.find((cv) => cv.category.originalId === 'default');

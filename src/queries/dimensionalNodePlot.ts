@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-import { DimensionalMetric } from '@/data/metric';
+import { DIMENSIONAL_METRIC_FRAGMENT } from '@/queries/dimensionalMetric';
 
 const dimensionalNodePlotFragment = gql`
   fragment DimensionalNodeMetric on NodeInterface {
@@ -9,7 +9,7 @@ const dimensionalNodePlotFragment = gql`
       ...DimensionalMetric
     }
   }
-  ${DimensionalMetric.fragment}
+  ${DIMENSIONAL_METRIC_FRAGMENT}
 `;
 
 export default dimensionalNodePlotFragment;

@@ -8,7 +8,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 import DimensionalFlow from '@/components/graphs/DimensionalFlow';
-import { DimensionalMetric } from '@/data/metric';
+import { DIMENSIONAL_METRIC_FRAGMENT } from '@/queries/dimensionalMetric';
 import { ACTION_PARAMETER_FRAGMENT } from './actionParameterFragment';
 
 const CAUSAL_GRID_NODE_FRAGMENT = gql`
@@ -107,7 +107,7 @@ export const GET_CAUSAL_CHAIN: TypedDocumentNode<CausalChainQuery, CausalChainQu
     }
   }
 
-  ${DimensionalMetric.fragment}
+  ${DIMENSIONAL_METRIC_FRAGMENT}
   ${CAUSAL_GRID_NODE_FRAGMENT}
   ${ACTION_PARAMETER_FRAGMENT}
 `;
@@ -133,7 +133,7 @@ const GET_ACTION_CONTENT: TypedDocumentNode<ActionContentQuery, ActionContentQue
   ${CAUSAL_GRID_NODE_FRAGMENT}
   ${DimensionalFlow.fragment}
   ${STREAM_FIELD_FRAGMENT}
-  ${DimensionalMetric.fragment}
+  ${DIMENSIONAL_METRIC_FRAGMENT}
   ${ACTION_PARAMETER_FRAGMENT}
 `;
 export { GET_ACTION_CONTENT };

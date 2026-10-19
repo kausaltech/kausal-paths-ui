@@ -4,9 +4,9 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import styled from '@common/themes/styled';
+import { setUniqueColors } from '@common/utils/paths/colors';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { setUniqueColors } from '@/common/colors';
 import { useFeatures } from '@/common/instance';
 import { getMetricValue, getOutcomeTotal } from '@/common/preprocess';
 import OutcomeNodeContent from '@/components/general/OutcomeNodeContent';

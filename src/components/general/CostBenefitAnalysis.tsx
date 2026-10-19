@@ -15,13 +15,13 @@ import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
+import { type ParsedMetric, hasDimension, parseMetric } from '@common/utils/paths/metric';
 
 import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
-import { DimensionalMetric } from '@/data/metric';
 
 /**
  * For cost-benefit visualisations, only effectDim is used.
@@ -36,7 +36,7 @@ type Props = {
 type AxisBounds = { min: number; max: number };
 
 type Cubes = {
-  metric: DimensionalMetric;
+  metric: ParsedMetric;
   actionName: string;
   actionId: string;
   totals: { cost: number; benefit: number; netBenefit: number };
@@ -301,7 +301,7 @@ const SYNTHETIC_OUTCOME_COST_ID = '__synthetic_outcome_cost__';
 const SYNTHETIC_OUTCOME_BENEFIT_ID = '__synthetic_outcome_benefit__';
 
 function getStakeholderCostTypeData(
-  metric: DimensionalMetric,
+  metric: ParsedMetric,
   startYear: number,
   endYear: number,
   theme: Theme,
@@ -597,8 +597,8 @@ function ActionRow({
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
   const hasOutcomesOfInterest =
-    (!!stakeholderDimensionId && item.metric.hasDimension(stakeholderDimensionId)) ||
-    (!!outcomeDimensionId && item.metric.hasDimension(outcomeDimensionId));
+    (!!stakeholderDimensionId && hasDimension(item.metric, stakeholderDimensionId)) ||
+    (!!outcomeDimensionId && hasDimension(item.metric, outcomeDimensionId));
 
   const actionChartConfig = useMemo(
     () =>
@@ -711,7 +711,7 @@ function ActionRow({
   );
 }
 
-type TActionRow = { metric: DimensionalMetric; actionName: string; actionId: string };
+type TActionRow = { metric: ParsedMetric; actionName: string; actionId: string };
 
 export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const t = useTranslations('common');
@@ -725,7 +725,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
     return data.actions
       .map((action) => {
         if (!action?.effectDim) return undefined;
-        const metric = new DimensionalMetric(action.effectDim);
+        const metric = parseMetric(action.effectDim);
         const actionName = action.action?.name ?? '';
         const actionId = action.action?.id ?? actionName;
         if (!actionName) return undefined;

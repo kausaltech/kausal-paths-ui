@@ -9,6 +9,10 @@ import type { Theme } from '@kausal/themes/types';
 import ContentContainer from '@common/components/ContentContainer';
 import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
+import {
+  getBaselineScenario,
+  getProgressTrackingScenario,
+} from '@common/utils/paths/progress-tracking';
 
 import type { PageQuery, PageQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar, scenarioEditorDrawerOpenVar } from '@/common/cache';
@@ -23,7 +27,6 @@ import OutcomePage from '@/components/pages/OutcomePage';
 import StaticPage from '@/components/pages/StaticPage';
 import { useSiteOrNull } from '@/context/site';
 import GET_PAGE from '@/queries/getPage';
-import { getBaselineScenario, getProgressTrackingScenario } from '@/utils/progress-tracking';
 
 export type PageRefetchCallback = useQuery.Result<PageQuery, PageQueryVariables>['refetch'];
 
