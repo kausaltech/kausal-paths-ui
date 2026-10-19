@@ -14,5 +14,9 @@
     "allowImportingTsExtensions": true
   },
   "include": ["../next-env.d.ts", "../src", "../kausal_common/src", "../private/*/src"],
-  "exclude": ["../kausal_common/src/components/paths", "../kausal_common/src/utils/paths"]
+  "exclude": [
+    "../kausal_common/src/components/paths",
+    "../kausal_common/src/utils/paths",
+    "../kausal_common/src/**/__tests__"
+  ]
 }

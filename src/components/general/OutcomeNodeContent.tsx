@@ -9,6 +9,7 @@ import { getLatestProgressYear, hasProgressTracking } from '@common/utils/paths/
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
+import { DEFAULT_SIGNIFICANT_DIGITS } from '@/common/numbers';
 import Loader from '@/components/common/Loader';
 import { useSiteWithSetter } from '@/context/site';
 import DataTable from './DataTable';
@@ -139,7 +140,13 @@ const OutcomeNodeContent = ({
   const singleYearGraph = useMemo(
     () => (
       <div>
-        <DimensionalPieGraph metric={node.metricDim!} endYear={endYear} instance={instance} t={t} />
+        <DimensionalPieGraph
+          metric={node.metricDim!}
+          endYear={endYear}
+          instance={instance}
+          defaultSignificantDigits={DEFAULT_SIGNIFICANT_DIGITS}
+          t={t}
+        />
       </div>
     ),
     [node, endYear, instance, t]
