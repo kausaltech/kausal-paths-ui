@@ -4,6 +4,10 @@ import Script from 'next/script';
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 
+import {
+  contentContainerInsetStyles,
+  contentContainerStyles,
+} from '@common/components/ContentContainer';
 import { isProductionDeployment } from '@common/env';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
@@ -19,6 +23,8 @@ import { useSite } from '@/context/site';
 
 const SecondaryNav = styled(Navbar)`
   padding: 0;
+  /* Lined up with the page content, not the design system's narrower header grid */
+  ${({ theme }) => contentContainerStyles(theme)}
 
   &.show {
     padding: 0 0 ${(props) => props.theme.spaces.s150} 0;
@@ -163,6 +169,16 @@ const StyledHeaderMain = styled.div`
   &.header__main {
     z-index: 1;
   }
+
+  /* The logo lined up with the page content, not the design system's header
+     grid. !important, as its unlayered rules beat our layered ones otherwise */
+  .header__logobar-logo {
+    ${({ theme }) =>
+      contentContainerInsetStyles(theme, (inset) => ({ paddingLeft: `${inset} !important` }))}
+  }
+  .header__logo-link {
+    padding-left: 0 !important;
+  }
 `;
 
 function GlobalNav(props: GlobalNavProps) {
@@ -232,12 +248,7 @@ function GlobalNav(props: GlobalNavProps) {
           </StyledHeaderMain>
 
           <SecondaryNavWrapper>
-            <SecondaryNav
-              expand="md"
-              id="global-navigation-bar"
-              className="header__appnav-inner"
-              container={false}
-            >
+            <SecondaryNav expand="md" id="global-navigation-bar" container={false}>
               <StyledCollapse isOpen={isOpen}>
                 <Nav navbar className="stzh-appnav__items sc-stzh-appnav sc-stzh-appnav-s me-auto">
                   {navItems &&
