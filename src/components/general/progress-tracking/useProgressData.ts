@@ -3,18 +3,24 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client/react';
 
 import { useTheme } from '@common/themes';
-
-import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
-import { activeGoalVar } from '@/common/cache';
-import { setUniqueColors } from '@/common/colors';
-import { useSite } from '@/context/site';
-import { DimensionalMetric, type MetricCategoryValues } from '@/data/metric';
+import { setUniqueColors } from '@common/utils/paths/colors';
+import {
+  type MetricCategoryValues,
+  type MetricSliceData,
+  getDefaultSliceConfig,
+  parseMetric,
+  sliceBy,
+} from '@common/utils/paths/metric';
 import {
   getBaselineScenario,
   getProgressTrackingScenario,
   metricHasBaselineScenario,
   metricHasProgressTrackingScenario,
-} from '@/utils/progress-tracking';
+} from '@common/utils/paths/progress-tracking';
+
+import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
+import { activeGoalVar } from '@/common/cache';
+import { useSite } from '@/context/site';
 
 export type MetricDim = NonNullable<DimensionalNodeMetricFragment['metricDim']>;
 
@@ -29,7 +35,7 @@ function getValueAtIndex(item: ValuesSource | null | undefined, index: number): 
 }
 
 function mapCategoriesToEntries(
-  defaultCategoryValues: MetricCategoryValues[],
+  defaultCategoryValues: readonly MetricCategoryValues[],
   lookupCv: (categoryValue: MetricCategoryValues) => ValuesSource | undefined,
   index: number
 ) {
@@ -74,7 +80,6 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
   const defaultColor = color || theme.graphColors.blue070;
 
   return useMemo(() => {
-    const defaultMetric = new DimensionalMetric(metric);
     const hasProgressTracking = metricHasProgressTrackingScenario(metric, site.scenarios);
 
     if (!hasProgressTracking) return [];
@@ -82,49 +87,33 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
     const hasBaseline = metricHasBaselineScenario(metric, site.scenarios);
     const baselineScenario = getBaselineScenario(site.scenarios);
 
-    const metrics = {
-      default: defaultMetric,
-      progress: new DimensionalMetric(metric, 'progress_tracking'),
-      ...(hasBaseline && baselineScenario
-        ? { baseline: new DimensionalMetric(metric, baselineScenario?.id) }
-        : {}),
-    };
+    const defaultMetric = parseMetric(metric);
+    const defaultConfig = getDefaultSliceConfig(defaultMetric, activeGoal);
+    const { dimensionId, categories } = defaultConfig;
+    if (!dimensionId) return [];
 
-    const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
-    if (!defaultConfig.dimensionId) return [];
-    const defaultSlice = metrics.default.sliceBy(
-      defaultConfig.dimensionId,
-      true,
-      defaultConfig.categories
-    );
-
-    const progressSlice = metrics.progress.sliceBy(
-      defaultConfig.dimensionId,
-      true,
-      defaultConfig.categories
-    );
-
-    const baselineSlice = hasBaseline
-      ? metrics.baseline!.sliceBy(defaultConfig.dimensionId, true, defaultConfig.categories)
-      : null;
+    const sliceScenario = (scenarioId?: string) =>
+      sliceBy(
+        scenarioId ? parseMetric(metric, scenarioId) : defaultMetric,
+        dimensionId,
+        true,
+        categories
+      );
+    const defaultSlice = sliceScenario();
+    const progressSlice = sliceScenario('progress_tracking');
+    const baselineSlice =
+      hasBaseline && baselineScenario ? sliceScenario(baselineScenario.id) : null;
+    if (!defaultSlice || !progressSlice) return [];
 
     /**
      * Generate colours for nodes missing colours using the same
      * logic as DimensionalNodePlot for node colour consistency.
-     * Note that the setUniqueColors function mutates the categoryValues.
+     * The entries take their colours from the default slice's categories.
      */
-    if (defaultSlice.categoryValues.length > 1) {
+    const defaultCategoryValues = defaultSlice.categoryValues.map((cv) => ({ ...cv }));
+    if (defaultCategoryValues.length > 1) {
       setUniqueColors(
-        defaultSlice.categoryValues,
-        (categoryValue) => categoryValue.color,
-        (categoryValue, color) => {
-          categoryValue.color = color;
-        },
-        defaultColor
-      );
-
-      setUniqueColors(
-        progressSlice.categoryValues,
+        defaultCategoryValues,
         (categoryValue) => categoryValue.color,
         (categoryValue, color) => {
           categoryValue.color = color;
@@ -150,7 +139,7 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
         ...progressSlice.forecastYears,
       ].indexOf(year);
 
-      const findInSlice = (slice: typeof progressSlice, categoryValue: MetricCategoryValues) =>
+      const findInSlice = (slice: MetricSliceData, categoryValue: MetricCategoryValues) =>
         slice.categoryValues.find(
           ({ category }) => category.originalId === categoryValue.category.originalId
         );
@@ -160,20 +149,20 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
         unit: defaultSlice.unit,
         totalExpected: getValueAtIndex(defaultSlice.totalValues, yearIndex),
         expected: mapCategoriesToEntries(
-          defaultSlice.categoryValues,
+          defaultCategoryValues,
           (categoryValue) => categoryValue,
           yearIndex
         ),
         totalObserved: getValueAtIndex(progressSlice.totalValues, yearIndex),
         observed: mapCategoriesToEntries(
-          defaultSlice.categoryValues,
+          defaultCategoryValues,
           (categoryValue) => findInSlice(progressSlice, categoryValue),
           progressIndex
         ),
         totalBaseline: baselineSlice ? getValueAtIndex(baselineSlice.totalValues, yearIndex) : null,
         baseline: baselineSlice
           ? mapCategoriesToEntries(
-              defaultSlice.categoryValues,
+              defaultCategoryValues,
               (categoryValue) => findInSlice(baselineSlice, categoryValue),
               yearIndex
             )

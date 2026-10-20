@@ -4,13 +4,13 @@ import { Box } from '@mui/material';
 
 import DimensionalPieGraph from '@common/components/paths/DimensionalPieGraph';
 import styled from '@common/themes/styled';
+import { getLatestProgressYear, hasProgressTracking } from '@common/utils/paths/progress-tracking';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import Loader from '@/components/common/Loader';
 import { useSiteWithSetter } from '@/context/site';
-import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
 import DataTable from './DataTable';
 import DimensionalNodeVisualisation from './DimensionalNodeVisualisation';
 import NodeViewSelector from './Outcome/NodeViewSelector';
