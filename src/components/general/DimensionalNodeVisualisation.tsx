@@ -10,6 +10,7 @@ import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graph
 import { activeGoalVar } from '@/common/cache';
 import { useTranslations } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
+import { DEFAULT_SIGNIFICANT_DIGITS } from '@/common/numbers';
 import { useSiteOrNull } from '@/context/site';
 
 /** The translated labels of kausal_common's `DimensionalNodeVisualisation` */
@@ -78,6 +79,7 @@ export default function DimensionalNodeVisualisation(props: DimensionalNodeVisua
       {...props}
       activeGoal={activeGoal}
       instance={instance}
+      defaultSignificantDigits={DEFAULT_SIGNIFICANT_DIGITS}
       site={site}
       labels={labels}
     />

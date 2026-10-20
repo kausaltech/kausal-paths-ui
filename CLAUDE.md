@@ -123,3 +123,13 @@ include the module whenever it is initialized.
 - Prefer Emotion styled components for new styling; Sass/Bootstrap exist for legacy reasons
 - Icons: use `react-bootstrap-icons` (not `@mui/icons-material`) for consistency with the rest of the app
 - React 19 with the React Compiler babel plugin enabled
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
