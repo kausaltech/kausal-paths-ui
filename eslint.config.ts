@@ -54,7 +54,9 @@ const config: ConfigWithExtends[] = defineConfig(
   globalIgnores(
     ['kausal_common/src/components/paths', 'kausal_common/src/utils/paths'],
     'no-patchenstein'
-  )
+  ),
+  // Excluded from the TypeScript project too: they need Jest, which this app doesn't run
+  globalIgnores(['kausal_common/src/**/__tests__'], 'no-kausal-common-tests')
 );
 
 export default config;
