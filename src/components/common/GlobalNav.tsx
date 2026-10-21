@@ -231,7 +231,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   // The watch link first, then any further external links, in the language of the page.
   const localized = (value: string | { [key: string]: string }) =>
     typeof value === 'string' ? value : value[i18n.language] || Object.values(value)[0];
-  const externalLinks = [
+  const allLinks = [
     ...(site.watchLink ? [site.watchLink] : []),
     ...(site.externalLinks ?? []),
   ].map((link) => ({ title: localized(link.title), url: localized(link.url) }));
