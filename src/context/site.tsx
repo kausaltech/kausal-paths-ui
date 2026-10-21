@@ -37,10 +37,13 @@ export type SiteContextType = {
   menuPages: InstanceContextQuery['menuPages'];
   footerPages: InstanceContextQuery['footerPages'];
   additionalLinkPages: InstanceContextQuery['additionalLinkPages'];
-  watchLink?: {
-    title: string | { [key: string]: string };
-    url: string | { [key: string]: string };
-  } | null;
+  watchLink?: SiteContextLink | null;
+  externalLinks?: SiteContextLink[];
+};
+
+type SiteContextLink = {
+  title: string | { [key: string]: string };
+  url: string | { [key: string]: string };
 };
 
 export type SiteContextWithSetterType = [

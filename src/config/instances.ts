@@ -1,13 +1,17 @@
-type WatchLink = {
+type ExternalLink = {
   title: string | { [key: string]: string };
   url: string | { [key: string]: string };
-} | null;
+};
+
+type WatchLink = ExternalLink | null;
 
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
 
 type InstanceFixedConfigToBeRemoved = {
   instanceId?: string;
   watchLink?: WatchLink;
+  // Further links shown after the watch link, at the right end of the main navigation.
+  externalLinks?: ExternalLink[];
   demoPages?: DemoPage[];
 };
 
@@ -99,6 +103,18 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
       title: 'Sustainability Action Plan',
       url: 'https://climateaction.hollywoodfl.org',
     },
+  },
+  'mainz-bisko': {
+    watchLink: {
+      title: 'ZukunftKlima Mainz',
+      url: 'https://klimaschutz-in-mainz.watch.de.kausal.tech/',
+    },
+    externalLinks: [
+      {
+        title: 'Klimaschutz und Klimaanpassung in Mainz',
+        url: 'https://www.mainz.de/klimaschutz',
+      },
+    ],
   },
   'muenchen-bisko': {
     watchLink: {
