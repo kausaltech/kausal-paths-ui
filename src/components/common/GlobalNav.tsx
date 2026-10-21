@@ -228,17 +228,13 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   const { siteTitle, ownerName, navItems } = props;
   //const instanceId = site.instanceId || site.instanceContext?.id || 'default';
 
-  const watchLinkTitle = site.watchLink
-    ? typeof site.watchLink.title === 'string'
-      ? site.watchLink.title
-      : site.watchLink.title[i18n.language] || Object.values(site.watchLink.title)[0]
-    : null;
-
-  const watchLinkUrl = site.watchLink
-    ? typeof site.watchLink.url === 'string'
-      ? site.watchLink.url
-      : site.watchLink.url[i18n.language] || Object.values(site.watchLink.url)[0]
-    : '';
+  // The watch link first, then any further external links, in the language of the page.
+  const localized = (value: string | { [key: string]: string }) =>
+    typeof value === 'string' ? value : value[i18n.language] || Object.values(value)[0];
+  const externalLinks = [
+    ...(site.watchLink ? [site.watchLink] : []),
+    ...(site.externalLinks ?? []),
+  ].map((link) => ({ title: localized(link.title), url: localized(link.url) }));
   const orgLogo = useMemo(() => {
     const url = getThemeStaticURL(theme.themeLogoUrl);
     if (theme.themeLogoUrl.endsWith('.png')) {
@@ -315,15 +311,17 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
               <Nav navbar className="d-md-none">
                 <LanguageSelector mobile={true} />
               </Nav>
-              {site.watchLink ? (
+              {externalLinks.length > 0 ? (
                 <Nav navbar>
-                  <NavItem>
-                    <NavLink>
-                      <Link href={watchLinkUrl}>
-                        <NavHighlighter className="highlighter">{watchLinkTitle}</NavHighlighter>
-                      </Link>
-                    </NavLink>
-                  </NavItem>
+                  {externalLinks.map((link) => (
+                    <NavItem key={link.url}>
+                      <NavLink>
+                        <Link href={link.url}>
+                          <NavHighlighter className="highlighter">{link.title}</NavHighlighter>
+                        </Link>
+                      </NavLink>
+                    </NavItem>
+                  ))}
                 </Nav>
               ) : null}
             </NavbarCollapse>
