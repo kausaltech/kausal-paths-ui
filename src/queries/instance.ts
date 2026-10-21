@@ -106,6 +106,7 @@ const GET_INSTANCE_CONTEXT: InstanceContextDocument = gql`
     footerPages: pages(inFooter: true) {
       id
       title
+      menuLabel
       urlPath
       parent {
         id

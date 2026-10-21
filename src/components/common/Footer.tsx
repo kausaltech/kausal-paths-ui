@@ -100,6 +100,44 @@ const FooterNav = styled.nav`
   line-height: ${(props) => props.theme.lineHeightSm};
 `;
 
+const FooterNavItems = styled.ul`
+  display: flex;
+  justify-content: flex-start;
+  gap: ${(props) => props.theme.spaces.s300};
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin-bottom: ${(props) => props.theme.spaces.s300};
+
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    gap: ${(props) => props.theme.spaces.s300} ${(props) => props.theme.spaces.s200};
+    justify-content: center;
+    width: 100%;
+  }
+`;
+
+const FooterNavEntry = styled.li`
+  flex: 1 0 240px;
+  font-size: ${(props) => props.theme.fontSizeBase};
+  font-weight: ${(props) => props.theme.fontWeightBold};
+
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    flex: 1 0 auto;
+    max-width: 240px;
+  }
+`;
+
+const FooterSubnav = styled.ul`
+  list-style: none;
+  padding: 0;
+`;
+
+const FooterNavSubItem = styled.li`
+  margin-top: ${(props) => props.theme.spaces.s100};
+  font-size: ${(props) => props.theme.fontSizeSm};
+  font-weight: ${(props) => props.theme.fontWeightNormal};
+`;
+
 const UtilitySection = styled.div`
   display: flex;
   justify-content: space-between;
@@ -291,8 +329,30 @@ type MenuPage = {
   urlPath: string;
 };
 
+export type FooterNavItem = {
+  id: string;
+  name: string;
+  slug: string;
+  children?: FooterNavItem[];
+};
+
 export interface SiteFooterProps {
   additionalLinks: MenuPage[];
+  navItems?: FooterNavItem[];
+}
+
+function FooterNavLink(props: { item: FooterNavItem }) {
+  const { item } = props;
+  const theme = useTheme();
+
+  return (
+    <Link href={item.slug}>
+      {theme?.navLinkIcons && (
+        <Icon name="angleRight" color={theme.footerColor} aria-hidden="true" className="me-1" />
+      )}
+      {item.name}
+    </Link>
+  );
 }
 
 function OrgLogo(props: {
@@ -329,7 +389,7 @@ function SiteFooter(props: SiteFooterProps) {
   const theme = useTheme();
   const site = useSite();
 
-  const { additionalLinks } = props;
+  const { additionalLinks, navItems } = props;
   const utilityLinks: { id: string; name: string; slug: string; icon?: string }[] = [];
 
   const ownerName = site.owner;
@@ -377,6 +437,28 @@ function SiteFooter(props: SiteFooterProps) {
               </ServiceTitle>
             )}
           </Branding>
+          {navItems && navItems.length > 0 && (
+            <FooterNavItems>
+              {navItems.map((page) => (
+                <FooterNavEntry key={page.id}>
+                  {page.children?.length ? (
+                    <>
+                      <div id={`footer-nav-heading-${page.id}`}>{page.name}</div>
+                      <FooterSubnav aria-labelledby={`footer-nav-heading-${page.id}`}>
+                        {page.children.map((childPage) => (
+                          <FooterNavSubItem key={childPage.id}>
+                            <FooterNavLink item={childPage} />
+                          </FooterNavSubItem>
+                        ))}
+                      </FooterSubnav>
+                    </>
+                  ) : (
+                    <FooterNavLink item={page} />
+                  )}
+                </FooterNavEntry>
+              ))}
+            </FooterNavItems>
+          )}
         </FooterNav>
         <UtilitySection>
           <UtilityColumn>
