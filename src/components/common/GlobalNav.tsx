@@ -311,7 +311,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
               <Nav navbar className="d-md-none">
                 <LanguageSelector mobile={true} />
               </Nav>
-              {externalLinks.length > 0 ? (
+              {allLinks.length > 0 ? (
                 <Nav navbar>
                   {externalLinks.map((link) => (
                     <NavItem key={link.url}>
