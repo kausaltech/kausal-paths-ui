@@ -107,7 +107,7 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
   'mainz-bisko': {
     watchLink: {
       title: 'ZukunftKlima Mainz',
-      url: 'https://klimaschutz-in-mainz.watch.de.kausal.tech/',
+      url: 'http://zukunftklima.mainz.de/',
     },
     externalLinks: [
       {
