@@ -1716,8 +1716,6 @@ export type ActivateScenarioMutationVariables = Exact<{
 
 export type ActivateScenarioMutation = { __typename: 'Mutation', activateScenario: { __typename: 'ActivateScenarioResult', ok: boolean, activeScenario: { __typename: 'ScenarioType', id: string, name: string, isActive: boolean, isDefault: boolean, isSelectable: boolean } } };
 
-export type DimensionalMetricFragment = { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null };
-
 export type AvailableInstancesQueryVariables = Exact<{
   hostname: string;
 }>;
@@ -1753,6 +1751,8 @@ export type ActionParameterFragment =
   | ActionParameter_StringParameterType_Fragment
   | ActionParameter_UnknownParameterType_Fragment
 ;
+
+export type DimensionalMetricFragment = { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null };
 
 type DimensionalNodeMetric_ActionNode_Fragment = { __typename: 'ActionNode', id: string, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null };
 
@@ -2607,7 +2607,7 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
         | { __typename: 'StaticPage', id: string | null }
        | null }
   >, footerPages: Array<
-    | { __typename: 'ActionListPage', id: string | null, title: string, urlPath: string, parent:
+    | { __typename: 'ActionListPage', id: string | null, title: string, menuLabel: string | null, urlPath: string, parent:
         | { __typename: 'ActionListPage', id: string | null }
         | { __typename: 'DashboardPage', id: string | null }
         | { __typename: 'InstanceRootPage', id: string | null }
@@ -2615,7 +2615,7 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
         | { __typename: 'Page', id: string | null }
         | { __typename: 'StaticPage', id: string | null }
        | null }
-    | { __typename: 'DashboardPage', id: string | null, title: string, urlPath: string, parent:
+    | { __typename: 'DashboardPage', id: string | null, title: string, menuLabel: string | null, urlPath: string, parent:
         | { __typename: 'ActionListPage', id: string | null }
         | { __typename: 'DashboardPage', id: string | null }
         | { __typename: 'InstanceRootPage', id: string | null }
@@ -2623,7 +2623,7 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
         | { __typename: 'Page', id: string | null }
         | { __typename: 'StaticPage', id: string | null }
        | null }
-    | { __typename: 'InstanceRootPage', id: string | null, title: string, urlPath: string, parent:
+    | { __typename: 'InstanceRootPage', id: string | null, title: string, menuLabel: string | null, urlPath: string, parent:
         | { __typename: 'ActionListPage', id: string | null }
         | { __typename: 'DashboardPage', id: string | null }
         | { __typename: 'InstanceRootPage', id: string | null }
@@ -2631,7 +2631,7 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
         | { __typename: 'Page', id: string | null }
         | { __typename: 'StaticPage', id: string | null }
        | null }
-    | { __typename: 'OutcomePage', id: string | null, title: string, urlPath: string, parent:
+    | { __typename: 'OutcomePage', id: string | null, title: string, menuLabel: string | null, urlPath: string, parent:
         | { __typename: 'ActionListPage', id: string | null }
         | { __typename: 'DashboardPage', id: string | null }
         | { __typename: 'InstanceRootPage', id: string | null }
@@ -2639,7 +2639,7 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
         | { __typename: 'Page', id: string | null }
         | { __typename: 'StaticPage', id: string | null }
        | null }
-    | { __typename: 'Page', id: string | null, title: string, urlPath: string, parent:
+    | { __typename: 'Page', id: string | null, title: string, menuLabel: string | null, urlPath: string, parent:
         | { __typename: 'ActionListPage', id: string | null }
         | { __typename: 'DashboardPage', id: string | null }
         | { __typename: 'InstanceRootPage', id: string | null }
@@ -2647,7 +2647,7 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
         | { __typename: 'Page', id: string | null }
         | { __typename: 'StaticPage', id: string | null }
        | null }
-    | { __typename: 'StaticPage', id: string | null, title: string, urlPath: string, parent:
+    | { __typename: 'StaticPage', id: string | null, title: string, menuLabel: string | null, urlPath: string, parent:
         | { __typename: 'ActionListPage', id: string | null }
         | { __typename: 'DashboardPage', id: string | null }
         | { __typename: 'InstanceRootPage', id: string | null }

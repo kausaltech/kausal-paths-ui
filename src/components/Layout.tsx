@@ -12,7 +12,8 @@ import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { formatUrl } from '@/common/links';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
-import { useSiteOrNull } from '@/context/site';
+import { type SiteContextType, useSiteOrNull } from '@/context/site';
+import type { FooterNavItem } from './common/Footer';
 import IntroModal from './common/IntroModal';
 import { FooterSlot, GlobalNavSlot } from './custom';
 import { RefreshPrompt } from './general/RefreshPrompt';
@@ -74,13 +75,47 @@ function isMenuPage(
   );
 }
 
+/**
+ * Turn the flat, tree-ordered `footerPages` list into the two-level footer nav
+ * used in Watch: pages whose parent is not in the footer become top-level items,
+ * and anything below them is attached to their top-level ancestor. The root page
+ * (which can be of any page type) is shown as a sibling of its children rather
+ * than as their parent.
+ */
+function buildFooterNavItems(footerPages: SiteContextType['footerPages']): FooterNavItem[] {
+  const items: FooterNavItem[] = [];
+  const topLevelById = new Map<string, FooterNavItem>();
+
+  footerPages.forEach((page) => {
+    if (!page.id) return;
+    const item: FooterNavItem = {
+      id: page.id,
+      name: page.menuLabel || page.title,
+      slug: page.urlPath,
+    };
+    if (page.urlPath === '/') {
+      items.push(item);
+      return;
+    }
+    const topLevel = page.parent?.id ? topLevelById.get(page.parent.id) : undefined;
+    if (topLevel) {
+      topLevel.children = [...(topLevel.children ?? []), item];
+      topLevelById.set(page.id, topLevel);
+    } else {
+      items.push(item);
+      topLevelById.set(page.id, item);
+    }
+  });
+  return items;
+}
+
 const Layout = ({ children }: React.PropsWithChildren) => {
   const pathname = usePathname();
   const theme = useTheme();
   const site = useSiteOrNull();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { menuPages, additionalLinkPages } = site ?? {};
+  const { menuPages, footerPages, additionalLinkPages } = site ?? {};
   const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
   const handleDrawerClose = () => {
@@ -103,6 +138,8 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     title: page.title,
     urlPath: page.urlPath,
   }));
+
+  const footerNavItems = buildFooterNavItems(footerPages ?? []);
 
   // `urlPath` is the raw backend path (e.g. `/some-page`), while `pathname`
   // includes the instance basePath and locale prefix. Resolve each menu page to
@@ -232,7 +269,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             </Box>
             {children}
           </Box>
-          <FooterSlot additionalLinks={additionalLinkItems} />
+          <FooterSlot additionalLinks={additionalLinkItems} navItems={footerNavItems} />
         </Box>
       </Box>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
