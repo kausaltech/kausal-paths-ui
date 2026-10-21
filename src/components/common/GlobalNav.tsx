@@ -313,7 +313,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
               </Nav>
               {allLinks.length > 0 ? (
                 <Nav navbar>
-                  {externalLinks.map((link) => (
+                  {allLinks.map((link) => (
                     <NavItem key={link.url}>
                       <NavLink>
                         <Link href={link.url}>
