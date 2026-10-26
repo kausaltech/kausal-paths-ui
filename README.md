@@ -54,18 +54,11 @@ direnv allow
 
 #### 2.)
 
-Activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail).
-The right node version should show with the command
+Install and activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail). The node version specified in 'mise.toml' is "latest" so any recent version of Node will do. 
 
 ```bash
-cat .nvmrc
-```
-
-Install the number the .nvmrc file says and activate it
-
-```bash
-nvm install [insert node number]
-nvm use [insert node number]
+nvm install --lts
+nvm use --lts
 ```
 
 #### 3.)
@@ -73,7 +66,7 @@ nvm use [insert node number]
 Make sure the pnpm version is controlled with corepack:
 
 ```bash
-corepack enable npm
+corepack enable
 ```
 
 #### 4.)
