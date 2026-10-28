@@ -15,30 +15,6 @@ import {
 // Styles follow the Watch UI nav dropdown, using the same theme colors as
 // GlobalNav so the dropdown matches the surrounding navbar items.
 
-const NavLink = styled.div`
-  height: 100%;
-  a {
-    height: 100%;
-    display: flex;
-    margin: 0 0 ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100};
-    color: ${(props) => props.theme.neutralDark};
-
-    &:hover {
-      text-decoration: none;
-      color: ${(props) => props.theme.neutralDark};
-
-      .highlighter {
-        border-bottom: 5px solid ${(props) => props.theme.brandDark};
-      }
-    }
-
-    @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-      align-self: flex-end;
-      margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
-    }
-  }
-`;
-
 const NavHighlighter = styled.span`
   height: 100%;
   display: inline-block;
@@ -110,8 +86,11 @@ const StyledDropdown = styled(UncontrolledDropdown)`
     box-shadow: none;
   }
 
+  /* The link itself is the menu item, so it stays keyboard-activatable */
   .dropdown-item {
-    margin: 0 0 0 ${(props) => props.theme.spaces.s150};
+    display: flex;
+    margin: 0 0 ${(props) => props.theme.spaces.s050}
+      calc(${(props) => props.theme.spaces.s150} + ${(props) => props.theme.spaces.s100});
     color: ${(props) => props.theme.neutralDark};
     white-space: normal;
 
@@ -121,8 +100,11 @@ const StyledDropdown = styled(UncontrolledDropdown)`
       line-height: 1;
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
       background-color: transparent;
+      color: ${(props) => props.theme.neutralDark};
+      text-decoration: none;
 
       .highlighter {
         border-bottom: 5px solid ${(props) => props.theme.brandDark};
@@ -143,6 +125,9 @@ const StyledDropdown = styled(UncontrolledDropdown)`
 
     .dropdown-item {
       margin: 0;
+      padding-right: calc(
+        var(--bs-dropdown-item-padding-x) + ${(props) => props.theme.spaces.s200}
+      );
     }
   }
 `;
@@ -190,7 +175,6 @@ export type NavDropdownListItem = {
   id: string;
   urlPath: string;
   name: string;
-  locale?: string;
 };
 
 export type NavDropdownProps = {
@@ -211,12 +195,8 @@ function NavDropdown(props: NavDropdownProps) {
         <StyledDropdownMenu>
           {items &&
             items.map((child) => (
-              <DropdownItem key={child.id}>
-                <NavLink>
-                  <Link href={child.urlPath} locale={child.locale}>
-                    <NavHighlighter className="highlighter">{child.name}</NavHighlighter>
-                  </Link>
-                </NavLink>
+              <DropdownItem key={child.id} tag={Link} href={child.urlPath}>
+                <NavHighlighter className="highlighter">{child.name}</NavHighlighter>
               </DropdownItem>
             ))}
         </StyledDropdownMenu>
