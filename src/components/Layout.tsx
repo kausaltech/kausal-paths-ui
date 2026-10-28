@@ -12,7 +12,7 @@ import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { formatUrl } from '@/common/links';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
-import { type SiteContextType, useSiteOrNull } from '@/context/site';
+import { useSiteOrNull } from '@/context/site';
 import type { FooterNavItem } from './common/Footer';
 import IntroModal from './common/IntroModal';
 import { FooterSlot, GlobalNavSlot } from './custom';
@@ -61,11 +61,46 @@ type MenuPage = {
   title: string;
   menuLabel?: string | null;
   urlPath: string;
+  parentId?: string | null;
+  children?: MenuPage[];
 };
 
-function isMenuPage(
-  page: unknown
-): page is { id?: unknown; title?: unknown; menuLabel?: unknown; urlPath?: unknown } {
+function getParentId(parent: unknown): string | null {
+  if (typeof parent !== 'object' || parent === null) return null;
+  const { id } = parent as Record<string, unknown>;
+  return typeof id === 'string' ? id : null;
+}
+
+// The backend returns menu pages as a flat list. Nest each page under its parent
+// when the parent is also in the menu. Children of the root page (`/`) stay at the
+// top level, so a "home" menu item doesn't swallow the whole menu.
+function buildMenuTree(pages: MenuPage[]): MenuPage[] {
+  const byId = new Map(pages.filter((page) => page.id).map((page) => [page.id, page]));
+  const roots: MenuPage[] = [];
+  pages.forEach((page) => {
+    const parent = page.parentId ? byId.get(page.parentId) : undefined;
+    if (parent?.children && parent.urlPath !== '/') {
+      parent.children.push(page);
+    } else {
+      roots.push(page);
+    }
+  });
+  return roots;
+}
+
+function flattenMenu(pages: MenuPage[]): MenuPage[] {
+  return pages.flatMap((page) => [page, ...flattenMenu(page.children ?? [])]);
+}
+
+type RawMenuPage = {
+  id?: unknown;
+  title: string;
+  menuLabel?: unknown;
+  urlPath: string;
+  parent?: unknown;
+};
+
+function isMenuPage(page: unknown): page is RawMenuPage {
   if (typeof page !== 'object' || page === null) return false;
   const p = page as Record<string, unknown>;
   return (
@@ -75,38 +110,19 @@ function isMenuPage(
   );
 }
 
-/**
- * Turn the flat, tree-ordered `footerPages` list into the two-level footer nav
- * used in Watch: pages whose parent is not in the footer become top-level items,
- * and anything below them is attached to their top-level ancestor. The root page
- * (which can be of any page type) is shown as a sibling of its children rather
- * than as their parent.
- */
-function buildFooterNavItems(footerPages: SiteContextType['footerPages']): FooterNavItem[] {
-  const items: FooterNavItem[] = [];
-  const topLevelById = new Map<string, FooterNavItem>();
+function toMenuPage(page: RawMenuPage): MenuPage {
+  return {
+    id: typeof page.id === 'string' ? page.id : null,
+    title: page.title,
+    menuLabel: typeof page.menuLabel === 'string' ? page.menuLabel : null,
+    urlPath: page.urlPath,
+    parentId: getParentId(page.parent),
+    children: [],
+  };
+}
 
-  footerPages.forEach((page) => {
-    if (!page.id) return;
-    const item: FooterNavItem = {
-      id: page.id,
-      name: page.menuLabel || page.title,
-      slug: page.urlPath,
-    };
-    if (page.urlPath === '/') {
-      items.push(item);
-      return;
-    }
-    const topLevel = page.parent?.id ? topLevelById.get(page.parent.id) : undefined;
-    if (topLevel) {
-      topLevel.children = [...(topLevel.children ?? []), item];
-      topLevelById.set(page.id, topLevel);
-    } else {
-      items.push(item);
-      topLevelById.set(page.id, item);
-    }
-  });
-  return items;
+function getMenuPages(pages: unknown): MenuPage[] {
+  return (Array.isArray(pages) ? pages : []).filter(isMenuPage).map(toMenuPage);
 }
 
 const Layout = ({ children }: React.PropsWithChildren) => {
@@ -124,13 +140,8 @@ const Layout = ({ children }: React.PropsWithChildren) => {
 
   let activePage: MenuPage | undefined;
 
-  const rawMenu = Array.isArray(menuPages) ? menuPages : [];
-  const menuItems: MenuPage[] = rawMenu.filter(isMenuPage).map((page) => ({
-    id: typeof page.id === 'string' ? page.id : null,
-    title: page.title,
-    menuLabel: typeof page.menuLabel === 'string' ? page.menuLabel : null,
-    urlPath: page.urlPath,
-  }));
+  const menuItems = getMenuPages(menuPages);
+  const menuTree = buildMenuTree(menuItems);
 
   const rawAdditionalLinkPages = Array.isArray(additionalLinkPages) ? additionalLinkPages : [];
   const additionalLinkItems: MenuPage[] = rawAdditionalLinkPages.filter(isMenuPage).map((page) => ({
@@ -139,7 +150,23 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     urlPath: page.urlPath,
   }));
 
-  const footerNavItems = buildFooterNavItems(footerPages ?? []);
+  // The footer shows two levels too: deeper descendants are listed under their
+  // top-level ancestor, which is rendered as a heading rather than a link.
+  const footerNavItems: FooterNavItem[] = buildMenuTree(getMenuPages(footerPages)).map((page) => {
+    const descendants = flattenMenu(page.children ?? []);
+    return {
+      id: page.id || page.urlPath,
+      name: page.menuLabel || page.title,
+      slug: page.urlPath,
+      children: descendants.length
+        ? descendants.map((item) => ({
+            id: item.id || item.urlPath,
+            name: item.menuLabel || item.title,
+            slug: item.urlPath,
+          }))
+        : undefined,
+    };
+  });
 
   // `urlPath` is the raw backend path (e.g. `/some-page`), while `pathname`
   // includes the instance basePath and locale prefix. Resolve each menu page to
@@ -163,13 +190,24 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     });
   }
 
-  const navItems = menuItems.map((page) => ({
-    id: page.id || '',
-    name: page.menuLabel || page.title,
-    slug: page.urlPath,
-    urlPath: page.urlPath,
-    active: page === activePage,
-  }));
+  // GlobalNav renders one dropdown level, so deeper descendants are flattened into it.
+  const navItems = menuTree.map((page) => {
+    const descendants = flattenMenu(page.children ?? []);
+    return {
+      id: page.id || '',
+      name: page.menuLabel || page.title,
+      slug: page.urlPath,
+      urlPath: page.urlPath,
+      active: page === activePage || descendants.some((child) => child === activePage),
+      children: descendants.length
+        ? descendants.map((item) => ({
+            id: item.id || item.urlPath,
+            name: item.menuLabel || item.title,
+            urlPath: item.urlPath,
+          }))
+        : undefined,
+    };
+  });
 
   const instance = useInstance();
 
