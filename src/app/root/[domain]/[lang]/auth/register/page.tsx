@@ -19,6 +19,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { authClient } from '@/lib/auth-client';
 import { KAUSAL_PROVIDER_ID } from '@/lib/auth-const';
+import { withRegistrationContext } from '@/lib/auth-links';
 
 const GET_FRAMEWORK_NAME: TypedDocumentNode<FrameworkNameData, FrameworkNameQueryVariables> = gql`
   query FrameworkName($identifier: ID!) {
@@ -229,7 +230,11 @@ export default function RegisterPage() {
             </Stack>
             <Typography variant="body2" align="center">
               Already have an account?{' '}
-              <Button variant="text" size="small" onClick={() => router.push('/auth/sign-in')}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => router.push(withRegistrationContext('/auth/sign-in', searchParams))}
+              >
                 Sign in
               </Button>
             </Typography>

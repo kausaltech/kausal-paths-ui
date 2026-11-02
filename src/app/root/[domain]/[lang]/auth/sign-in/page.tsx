@@ -6,6 +6,7 @@ import { Box, Button, Container, Paper, Stack, Typography } from '@mui/material'
 
 import { authClient } from '@/lib/auth-client';
 import { KAUSAL_PROVIDER_ID } from '@/lib/auth-const';
+import { withRegistrationContext } from '@/lib/auth-links';
 
 // Only accept same-origin relative paths as the post-login destination, so a
 // crafted link can't bounce a freshly signed-in user to another site.
@@ -49,7 +50,11 @@ export default function SignInPage() {
             </Button>
             <Typography variant="body2" align="center">
               Don&apos;t have an account?{' '}
-              <Button variant="text" size="small" onClick={() => router.push('/auth/register')}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => router.push(withRegistrationContext('/auth/register', searchParams))}
+              >
                 Register
               </Button>
             </Typography>
