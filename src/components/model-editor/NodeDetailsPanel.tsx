@@ -20,6 +20,7 @@ import NodeDetailsSection from './NodeDetailsSection';
 import { useEditorUiActions } from './editor-ui';
 import { FormulaEditor, ReadOnlyFormula } from './node-details/FormulaEditor';
 import { NodeContentSection } from './node-details/NodeContentSection';
+import NodeExplanationSection from './node-details/NodeExplanationSection';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
 import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
 import type { ActionGroupOption } from './node-details/fields';
@@ -206,6 +207,7 @@ export default function NodeDetailsPanel({
   const [problemsOpen, setProblemsOpen] = useState(true);
   const [contentOpen, setContentOpen] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
   const [outputOpen, setOutputOpen] = useState(true);
   const [nodeDataOpen, setNodeDataOpen] = useState(true);
@@ -378,6 +380,12 @@ export default function NodeDetailsPanel({
       >
         <NodeContentSection node={node} readOnly={readOnly} />
       </CollapsibleSection>
+
+      <NodeExplanationSection
+        nodeId={node.id}
+        open={explanationOpen}
+        onToggle={() => setExplanationOpen((v) => !v)}
+      />
 
       <CollapsibleSection
         title={t('nodes-details')}

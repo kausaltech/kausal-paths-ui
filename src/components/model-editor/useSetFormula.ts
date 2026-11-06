@@ -23,7 +23,7 @@ function rejectionMessage(err: unknown): string | null {
  * name, syntax error, unit mismatch, ...). Handles the editor's write plumbing
  * (draft-head version token, stale-version notice) and refetches what the new
  * formula changes: the node's parameters, the graph (which also re-runs the
- * node status check), its output data and its change history.
+ * node status check), its output data, its change history and its explanation.
  */
 export function useSetFormula() {
   const instance = useInstance();
@@ -48,6 +48,7 @@ export function useSetFormula() {
             'EditorPublishState',
             'NodeOutputData',
             'NodeChangeHistory',
+            'NodeExplanation',
           ],
           awaitRefetchQueries: true,
         });

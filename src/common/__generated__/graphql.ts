@@ -537,14 +537,14 @@ export type NodePageQueryVariables = Exact<{
 
 
 export type NodePageQuery = { __typename: 'Query', activeScenario: { __typename: 'ScenarioType', id: string }, node:
-    | { __typename: 'ActionNode', id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, inputNodes: Array<
+    | { __typename: 'ActionNode', id: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, inputNodes: Array<
         | { __typename: 'ActionNode', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
         | { __typename: 'Node', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
       >, outputNodes: Array<
         | { __typename: 'ActionNode', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
         | { __typename: 'Node', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
       >, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null }
-    | { __typename: 'Node', id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, inputNodes: Array<
+    | { __typename: 'Node', id: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, inputNodes: Array<
         | { __typename: 'ActionNode', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
         | { __typename: 'Node', id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null }
       >, outputNodes: Array<
@@ -1484,6 +1484,16 @@ export type CreateNodeMutation = { __typename: 'Mutation', instanceEditor: { __t
       | { __typename: 'Node', id: string, identifier: string, name: string, uuid: string }
       | { __typename: 'OperationInfo', messages: Array<{ __typename: 'OperationMessage', kind: OperationMessageKind, field: string | null, message: string, code: string | null }> }
      } };
+
+export type NodeExplanationQueryVariables = Exact<{
+  nodeId: string | number;
+}>;
+
+
+export type NodeExplanationQuery = { __typename: 'Query', node:
+    | { __typename: 'ActionNode', id: string, explanation: string | null }
+    | { __typename: 'Node', id: string, explanation: string | null }
+   | null };
 
 export type NodeParametersQueryVariables = Exact<{
   nodeId: string | number;
@@ -2533,7 +2543,7 @@ export type ScenarioFragment = { __typename: 'ScenarioType', id: string, isActiv
 export type InstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type InstanceContextQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, name: string, siteTitle: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string, leadParagraph: string | null, frameworkConfig: { __typename: 'FrameworkConfig', id: string, framework: { __typename: 'Framework', id: string, identifier: string, name: string } } | null, features: { __typename: 'InstanceFeaturesType', hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null, showRefreshPrompt: boolean, showZerosInGraphs: boolean }, introContent: Array<
+export type InstanceContextQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, name: string, siteTitle: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string, leadParagraph: string | null, frameworkConfig: { __typename: 'FrameworkConfig', id: string, framework: { __typename: 'Framework', id: string, identifier: string, name: string } } | null, features: { __typename: 'InstanceFeaturesType', hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null, showRefreshPrompt: boolean, showZerosInGraphs: boolean, showExplanations: boolean }, introContent: Array<
       | { __typename: 'ActionImpactBlock', id: string | null }
       | { __typename: 'BlockQuoteBlock', id: string | null }
       | { __typename: 'BooleanBlock', id: string | null }
