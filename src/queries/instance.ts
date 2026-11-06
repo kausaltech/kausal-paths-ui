@@ -55,6 +55,7 @@ const GET_INSTANCE_CONTEXT: InstanceContextDocument = gql`
         showSignificantDigits
         showRefreshPrompt
         showZerosInGraphs
+        showExplanations
       }
       introContent {
         id

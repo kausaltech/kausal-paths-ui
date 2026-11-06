@@ -18,7 +18,9 @@ import {
 import NodeChangeHistorySection from './NodeChangeHistorySection';
 import NodeDetailsSection from './NodeDetailsSection';
 import { useEditorUiActions } from './editor-ui';
+import { FormulaEditor, ReadOnlyFormula } from './node-details/FormulaEditor';
 import { NodeContentSection } from './node-details/NodeContentSection';
+import NodeExplanationSection from './node-details/NodeExplanationSection';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
 import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
 import type { ActionGroupOption } from './node-details/fields';
@@ -177,6 +179,8 @@ function ActionEnabledToggle({
 
 export type { ActionGroupOption };
 
+const FORMULA_NODE_CLASS = 'nodes.formula.FormulaNode';
+
 export type NodeDetailsPanelProps = {
   node: EditorNodeFieldsFragment | null;
   allNodes: readonly EditorNodeFieldsFragment[];
@@ -203,6 +207,7 @@ export default function NodeDetailsPanel({
   const [problemsOpen, setProblemsOpen] = useState(true);
   const [contentOpen, setContentOpen] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
   const [outputOpen, setOutputOpen] = useState(true);
   const [nodeDataOpen, setNodeDataOpen] = useState(true);
@@ -211,7 +216,7 @@ export default function NodeDetailsPanel({
 
   const displayName = node?.name ?? '';
 
-  const { data: parametersData } = useQuery(NODE_PARAMETERS, {
+  const { data: parametersData, loading: parametersLoading } = useQuery(NODE_PARAMETERS, {
     variables: { nodeId: node?.id ?? '' },
     skip: !node?.id,
   });
@@ -262,8 +267,22 @@ export default function NodeDetailsPanel({
   const formulaParam = parametersData?.node?.parameters?.find(
     (p) => p.nodeRelativeId === 'formula'
   );
-  const formula =
-    formulaParam?.__typename === 'StringParameterType' ? (formulaParam.stringValue ?? null) : null;
+  const typeConfig = spec?.typeConfig;
+  // A node created in the editor as a formula node keeps its formula in the
+  // type config until its first save, which also writes the parameter the
+  // runtime reads; the parameter wins once it exists.
+  const configFormula = typeConfig?.__typename === 'FormulaConfigType' ? typeConfig.formula : null;
+  const paramFormula =
+    parametersData?.node?.id === node.id && formulaParam?.__typename === 'StringParameterType'
+      ? (formulaParam.stringValue ?? null)
+      : null;
+  const formula = paramFormula ?? configFormula;
+  // Mount the editor once this node's parameters have arrived (or failed to),
+  // so its draft starts from the stored formula.
+  const parametersReady = parametersData?.node?.id === node.id || !parametersLoading;
+  const isFormulaNode =
+    typeConfig?.__typename === 'FormulaConfigType' ||
+    (typeConfig?.__typename === 'SimpleConfigType' && typeConfig.nodeClass === FORMULA_NODE_CLASS);
   const previewLabel = t(
     node.__typename === 'ActionNode' ? 'nodes-output-data-show-action' : 'nodes-output-data-show'
   );
@@ -362,6 +381,12 @@ export default function NodeDetailsPanel({
         <NodeContentSection node={node} readOnly={readOnly} />
       </CollapsibleSection>
 
+      <NodeExplanationSection
+        nodeId={node.id}
+        open={explanationOpen}
+        onToggle={() => setExplanationOpen((v) => !v)}
+      />
+
       <CollapsibleSection
         title={t('nodes-details')}
         open={detailsOpen}
@@ -401,30 +426,9 @@ export default function NodeDetailsPanel({
         open={nodeDataOpen}
         onToggle={() => setNodeDataOpen((v) => !v)}
       >
-        {formula && (
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
-              {t('nodes-formula')}
-            </Typography>
-            <Box
-              component="pre"
-              sx={{
-                m: 0,
-                px: 1,
-                py: 0.75,
-                bgcolor: 'grey.100',
-                borderRadius: 0.5,
-                fontFamily: 'monospace',
-                fontSize: 12,
-                lineHeight: 1.4,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-              }}
-            >
-              {formula}
-            </Box>
-          </Box>
-        )}
+        {isFormulaNode && !readOnly
+          ? parametersReady && <FormulaEditor key={node.id} nodeId={node.id} value={formula} />
+          : formula && <ReadOnlyFormula formula={formula} />}
         <Chip
           icon={<BarChartLine size={18} />}
           label={previewLabel}

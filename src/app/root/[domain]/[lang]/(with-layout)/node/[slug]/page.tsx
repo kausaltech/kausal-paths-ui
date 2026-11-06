@@ -19,6 +19,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
+import { useFeatures } from '@/common/instance';
 import { ActionLink } from '@/common/links';
 import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -88,6 +89,7 @@ const GET_NODE_PAGE_CONTENT: TypedDocumentNode<NodePageQuery, NodePageQueryVaria
       name
       shortDescription
       description
+      explanation
       color
       unit {
         id
@@ -128,6 +130,7 @@ export default function NodePage() {
   const slug = params.slug;
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
+  const { showExplanations } = useFeatures();
 
   // Scenario and parameter mutations refetch all active queries, including this one
   const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
@@ -231,6 +234,19 @@ export default function NodePage() {
           inputNodes={node.inputNodes as unknown as OutcomeNodeFieldsFragment[]}
         />
       </ContentContainer>
+      {showExplanations && node.explanation && (
+        // Generated from the model: the most technical text on the page, so it comes
+        // last, apart from the authored description.
+        <NodeBodyText>
+          <ContentContainer>
+            <Card>
+              <CardContent>
+                <BodyText dangerouslySetInnerHTML={{ __html: node.explanation }} />
+              </CardContent>
+            </Card>
+          </ContentContainer>
+        </NodeBodyText>
+      )}
     </>
   );
 }

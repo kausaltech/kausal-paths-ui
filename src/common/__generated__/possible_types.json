@@ -202,6 +202,11 @@
       "AssistantMessageType",
       "OperationInfo"
     ],
+    "SetFormulaPayload": [
+      "ActionNode",
+      "Node",
+      "OperationInfo"
+    ],
     "SetInstanceLockedPayload": [
       "OperationInfo",
       "SetInstanceLockedResult"
