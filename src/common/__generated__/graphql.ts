@@ -1632,6 +1632,20 @@ export type UpdateNodeMutation = { __typename: 'Mutation', instanceEditor: { __t
         | { __typename: 'OperationInfo', messages: Array<{ __typename: 'OperationMessage', kind: OperationMessageKind, field: string | null, message: string, code: string | null }> }
        } } };
 
+export type SetFormulaMutationVariables = Exact<{
+  instanceId: string | number;
+  nodeId: string | number;
+  formula: string;
+  version?: string | null | undefined;
+}>;
+
+
+export type SetFormulaMutation = { __typename: 'Mutation', instanceEditor: { __typename: 'InstanceEditorMutation', nodeEditor: { __typename: 'NodeEditorMutation', setFormula:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+        | { __typename: 'OperationInfo', messages: Array<{ __typename: 'OperationMessage', kind: OperationMessageKind, field: string | null, message: string, code: string | null }> }
+       } } };
+
 export type UpdateInputPortMutationVariables = Exact<{
   instanceId: string | number;
   nodeId: string | number;

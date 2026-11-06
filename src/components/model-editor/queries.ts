@@ -35,6 +35,8 @@ import type {
   NodeTranslationQueryVariables,
   PublishModelInstanceMutation,
   PublishModelInstanceMutationVariables,
+  SetFormulaMutation,
+  SetFormulaMutationVariables,
   UpdateDatasetBindingMutation,
   UpdateDatasetBindingMutationVariables,
   UpdateEdgeBindingMutation,
@@ -877,6 +879,33 @@ export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutati
             editor {
               nodeGroup
             }
+          }
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+/**
+ * Replace a formula node's formula. The backend computes the node with the new
+ * formula in the draft first and saves only if that succeeds; a formula that
+ * does not compute comes back as an error whose message says why.
+ */
+export const SET_FORMULA: TypedDocumentNode<SetFormulaMutation, SetFormulaMutationVariables> = gql`
+  mutation SetFormula($instanceId: ID!, $nodeId: ID!, $formula: String!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      nodeEditor(nodeId: $nodeId) {
+        setFormula(formula: $formula) {
+          __typename
+          ... on Node {
+            id
+          }
+          ... on ActionNode {
+            id
           }
           ... on OperationInfo {
             ...EditorOperationInfoFields
