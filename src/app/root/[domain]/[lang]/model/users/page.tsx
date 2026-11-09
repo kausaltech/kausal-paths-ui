@@ -154,9 +154,14 @@ function getInitials(name: string | null | undefined, email: string | null | und
 
 const ROLE_LABEL_KEY: Record<
   InstanceMemberRole,
-  'users-role-admin' | 'users-role-reviewer' | 'users-role-super-admin' | 'users-role-viewer'
+  | 'users-role-admin'
+  | 'users-role-editor'
+  | 'users-role-reviewer'
+  | 'users-role-super-admin'
+  | 'users-role-viewer'
 > = {
   [InstanceMemberRole.Admin]: 'users-role-admin',
+  [InstanceMemberRole.Editor]: 'users-role-editor',
   [InstanceMemberRole.Reviewer]: 'users-role-reviewer',
   [InstanceMemberRole.SuperAdmin]: 'users-role-super-admin',
   [InstanceMemberRole.Viewer]: 'users-role-viewer',

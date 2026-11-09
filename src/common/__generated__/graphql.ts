@@ -4,6 +4,7 @@ type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 export type ActionConfigInput = {
   decisionLevel?: DecisionLevel | null | undefined;
+  formula?: string | null | undefined;
   group?: string | null | undefined;
   noEffectValue?: number | null | undefined;
   nodeClass: string;
@@ -61,7 +62,11 @@ export type CreateDataPointCommentInput = {
 export type CreateDataPointInput = {
   date: string;
   dimensionCategoryIds?: Array<string> | null | undefined;
+  /** How the value was obtained. */
+  evidenceKind?: DataEvidenceKind | null | undefined;
   metricId: string;
+  /** Grade from one of the dataset's quality schemes. */
+  qualityLevelId?: string | null | undefined;
   value?: number | null | undefined;
 };
 
@@ -80,9 +85,10 @@ export type CreateDatasetInput = {
   id?: string | null | undefined;
   /** Optional identifier, unique within the instance. */
   identifier?: string | null | undefined;
-  /** Metrics (value columns) of the dataset; at least one is required. */
-  metrics: Array<CreateDatasetMetricInput>;
+  /** Metrics for a new schema. Omit when using schemaId. */
+  metrics?: Array<CreateDatasetMetricInput>;
   name: string;
+  schemaId?: string | null | undefined;
 };
 
 export type CreateDatasetMetricInput = {
@@ -149,7 +155,6 @@ export type CreateNodeInput = {
   name?: string;
   nodeGroup?: string | number | null | undefined;
   order?: number | null | undefined;
-  outputDimensions?: Array<string> | null | undefined;
   outputMetrics?: Array<OutputMetricInput> | null | undefined;
   outputPorts?: Array<OutputPortInput> | null | undefined;
   params?: Record<string, unknown> | unknown[] | null | undefined;
@@ -158,33 +163,33 @@ export type CreateNodeInput = {
   tags?: Array<string> | null | undefined;
 };
 
+export enum DataEvidenceKind {
+  Estimated = 'ESTIMATED',
+  ExplicitZero = 'EXPLICIT_ZERO',
+  Observed = 'OBSERVED',
+  ProviderDefault = 'PROVIDER_DEFAULT'
+}
+
 export enum DataPointCommentReviewState {
   Resolved = 'RESOLVED',
   Unresolved = 'UNRESOLVED'
 }
 
-/** BLOCK_EDIT rules reject mutations that introduce new violations; BLOCK_PUBLISH rules allow edits but block publication while violations remain. */
-export enum DatasetRuleEnforcement {
-  BlockEdit = 'BLOCK_EDIT',
-  BlockPublish = 'BLOCK_PUBLISH'
-}
-
 /** Exactly one transformation of a dataset binding. Order in the containing list is execution order. */
-export type DatasetTransformationInput = {
-  assignDimension?: AssignDimensionInput | null | undefined;
-  dropNulls?: boolean | null | undefined;
-  ensureUnit?: EnsureUnitInput | null | undefined;
-  filterColumn?: FilterColumnInput | null | undefined;
-  filterDimension?: FilterDimensionInput | null | undefined;
-  filterTemporal?: FilterTemporalInput | null | undefined;
-  indexTemporal?: boolean | null | undefined;
-  remapLegacyYears?: boolean | null | undefined;
-  renameColumn?: RenameColumnInput | null | undefined;
-  renameItem?: RenameItemInput | null | undefined;
-  selectMetric?: boolean | null | undefined;
-  setForecastFrom?: SetForecastFromInput | null | undefined;
-  tagOperation?: TagOperationInput | null | undefined;
-};
+export type DatasetTransformationInput =
+  {   assignDimension: AssignDimensionInput; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never;   dropNulls: boolean; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never;   ensureUnit: EnsureUnitInput; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never;   filterColumn: FilterColumnInput; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never;   filterDimension: FilterDimensionInput; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never;   filterTemporal: FilterTemporalInput; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never;   indexTemporal: boolean; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never;   remapLegacyYears: boolean; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never;   renameColumn: RenameColumnInput; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never;   renameItem: RenameItemInput; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never;   selectMetric: boolean; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never;   setForecastFrom: SetForecastFromInput; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never;   tagOperation: TagOperationInput; };
 
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
@@ -212,10 +217,9 @@ export enum DimensionKind {
 }
 
 /** Exactly one transformation of an edge binding. Order in the containing list is execution order. Only the dimension-reshaping transformations are accepted until edges execute the shared transform pipeline. */
-export type EdgeTransformationInput = {
-  assignDimension?: AssignDimensionInput | null | undefined;
-  filterDimension?: FilterDimensionInput | null | undefined;
-};
+export type EdgeTransformationInput =
+  {   assignDimension: AssignDimensionInput; filterDimension?: never; }
+  |  { assignDimension?: never;   filterDimension: FilterDimensionInput; };
 
 export type EnsureUnitInput = {
   unit: string;
@@ -232,6 +236,7 @@ export type FilterColumnInput = {
 };
 
 export type FilterDimensionInput = {
+  allowEmpty?: boolean;
   categories?: Array<string>;
   dimension: string;
   exclude?: boolean;
@@ -265,17 +270,17 @@ export type InputPortInput = {
 
 export enum InstanceMemberRole {
   Admin = 'ADMIN',
+  Editor = 'EDITOR',
   Reviewer = 'REVIEWER',
   SuperAdmin = 'SUPER_ADMIN',
   Viewer = 'VIEWER'
 }
 
-export type NodeConfigInput = {
-  action?: ActionConfigInput | null | undefined;
-  formula?: FormulaConfigInput | null | undefined;
-  pipeline?: PipelineConfigInput | null | undefined;
-  simple?: SimpleConfigInput | null | undefined;
-};
+export type NodeConfigInput =
+  {   action: ActionConfigInput; formula?: never; pipeline?: never; simple?: never; }
+  |  { action?: never;   formula: FormulaConfigInput; pipeline?: never; simple?: never; }
+  |  { action?: never; formula?: never;   pipeline: PipelineConfigInput; simple?: never; }
+  |  { action?: never; formula?: never; pipeline?: never;   simple: SimpleConfigInput; };
 
 export enum NodeErrorPhase {
   Computation = 'COMPUTATION',
@@ -326,6 +331,7 @@ export type OutputMetricInput = {
 
 export type OutputPortInput = {
   columnId?: string | null | undefined;
+  /** Asserted exact dimensions; null infers them from the inputs, an empty list asserts a scalar. */
   dimensions?: Array<string> | null | undefined;
   id?: string | null | undefined;
   identifier?: string | null | undefined;
@@ -340,11 +346,9 @@ export type OutputPortInput = {
 };
 
 export type PipelineConfigInput = {
-  operations?: Array<PipelineOperationInput>;
-};
-
-export type PipelineOperationInput = {
-  operation: string;
+  description?: string | null | undefined;
+  operations: Record<string, unknown> | unknown[];
+  outputRef?: string | null | undefined;
 };
 
 export enum PrimaryLayoutClass {
@@ -355,7 +359,7 @@ export enum PrimaryLayoutClass {
   Outcome = 'OUTCOME'
 }
 
-/** How a problem is presented; every problem blocks publication. */
+/** How a problem or advisory finding is presented. */
 export enum ProblemSeverity {
   Error = 'ERROR',
   Warning = 'WARNING'
@@ -376,6 +380,7 @@ export type RenameColumnInput = {
 };
 
 export type RenameItemInput = {
+  allowMissing?: boolean;
   column: string;
   newItem: string;
   oldItem: string;
@@ -400,10 +405,12 @@ export type TagOperationInput = {
   tag: string;
 };
 
+/** Changes to a data point's value and evidence. Its coordinates (date, metric, dimension categories) are its identity and cannot be changed; to move a value, delete the data point and create a new one. */
 export type UpdateDataPointInput = {
-  date?: string | null | undefined;
-  dimensionCategoryIds?: Array<string> | null | undefined;
-  metricId?: string | null | undefined;
+  /** How the value was obtained; null clears it. A confirmed zero (EXPLICIT_ZERO) requires the value to be zero, and must be cleared or changed in the same write that changes the value. */
+  evidenceKind?: DataEvidenceKind | null | undefined;
+  /** Grade from one of the dataset's quality schemes; null clears it. */
+  qualityLevelId?: string | null | undefined;
   value?: number | null | undefined;
 };
 
@@ -481,7 +488,6 @@ export type UpdateNodeInput = {
   name?: string | null | undefined;
   nodeGroup?: string | number | null | undefined;
   order?: number | null | undefined;
-  outputDimensions?: Array<string> | null | undefined;
   outputMetrics?: Array<OutputMetricInput> | null | undefined;
   outputPorts?: Array<OutputPortInput> | null | undefined;
   params?: Record<string, unknown> | unknown[] | null | undefined;
@@ -500,6 +506,7 @@ export type UpdateNodeLayoutInput = {
 /** Partial update of one output port. Unset fields are left untouched. */
 export type UpdateOutputPortInput = {
   columnId?: string | null | undefined;
+  /** Asserted exact dimensions; null infers them from the inputs, an empty list asserts a scalar. */
   dimensions?: Array<string> | null | undefined;
   identifier?: string | null | undefined;
   isEditable?: boolean | null | undefined;
@@ -509,6 +516,13 @@ export type UpdateOutputPortInput = {
   role?: string | null | undefined;
   unit?: string | null | undefined;
 };
+
+/** Which operation a validation problem blocks. BLOCK_EDIT rejects edits that introduce it; BLOCK_PUBLISH allows edits but blocks publication; BLOCK_SUBMISSION allows edits and publication but blocks finalising a submission. Each tier also blocks the ones after it. */
+export enum ValidationRuleEnforcement {
+  BlockEdit = 'BLOCK_EDIT',
+  BlockPublish = 'BLOCK_PUBLISH',
+  BlockSubmission = 'BLOCK_SUBMISSION'
+}
 
 export type CytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -600,8 +614,14 @@ export type ModelEditorLandingDataQueryVariables = Exact<{ [key: string]: never;
 export type ModelEditorLandingDataQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, siteTitle: string, users: Array<{ __typename: 'InstanceMember', user: { __typename: 'User', id: string } }>, model: { __typename: 'InstanceModel', nodes: Array<
         | { __typename: 'ActionNode', id: string, uuid: string, name: string }
         | { __typename: 'Node', id: string, uuid: string, name: string }
-      > }, editor: { __typename: 'InstanceEditor', live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null, latestChange: Array<{ __typename: 'InstanceChangeOperationType', uuid: string, createdAt: string }>, constraintConflicts: Array<{ __typename: 'ConstraintConflict', code: string, message: string, origins: Array<{ __typename: 'ConstraintOrigin', nodeUuid: string | null }>, value: { __typename: 'ConstraintValueRef', nodeUuid: string | null } | null }> } | null }, scenarios: Array<{ __typename: 'ScenarioType', id: string, identifier: string, name: string, isDefault: boolean, allActionsEnabled: boolean }>, parameters: Array<
+      > }, editor: { __typename: 'InstanceEditor', live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null, latestChange: Array<{ __typename: 'InstanceChangeOperationType', uuid: string, createdAt: string }>, constraintConflicts: Array<{ __typename: 'ConstraintConflict', code: string, message: string, origins: Array<{ __typename: 'ConstraintOrigin', nodeUuid: string | null }>, value: { __typename: 'ConstraintValueRef', nodeUuid: string | null } | null }>, problems: Array<
+        | { __typename: 'ConstraintConflict', code: string, message: string, enforcement: ValidationRuleEnforcement }
+        | { __typename: 'DataEntryDefinitionProblem', code: string, message: string, enforcement: ValidationRuleEnforcement }
+        | { __typename: 'DatasetValidationViolation', datasetIdentifier: string | null, years: Array<number>, code: string, message: string, enforcement: ValidationRuleEnforcement }
+        | { __typename: 'NodeValueValidationViolation', years: Array<number>, code: string, message: string, enforcement: ValidationRuleEnforcement }
+      > } | null }, scenarios: Array<{ __typename: 'ScenarioType', id: string, identifier: string, name: string, isDefault: boolean, allActionsEnabled: boolean }>, parameters: Array<
     | { __typename: 'BoolParameterType', id: string, label: string | null, boolDefault: boolean | null }
+    | { __typename: 'ChoiceParameterType', id: string, label: string | null }
     | { __typename: 'NumberParameterType', id: string, label: string | null, numberDefault: number | null, unit: { __typename: 'UnitType', id: string, short: string } | null }
     | { __typename: 'StringParameterType', id: string, label: string | null, stringDefault: string | null }
     | { __typename: 'UnknownParameterType', id: string, label: string | null }
@@ -795,6 +815,7 @@ export type SetParameterMutationVariables = Exact<{
 
 export type SetParameterMutation = { __typename: 'Mutation', setParameter: { __typename: 'SetParameterResult', ok: boolean, parameter:
       | { __typename: 'BoolParameterType', id: string, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null }
+      | { __typename: 'ChoiceParameterType', id: string, isCustomized: boolean }
       | { __typename: 'NumberParameterType', id: string, isCustomized: boolean }
       | { __typename: 'StringParameterType', id: string, isCustomized: boolean }
       | { __typename: 'UnknownParameterType', id: string, isCustomized: boolean }
@@ -838,6 +859,7 @@ export type SetActionEnabledMutationVariables = Exact<{
 
 export type SetActionEnabledMutation = { __typename: 'Mutation', setParameter: { __typename: 'SetParameterResult', ok: boolean, parameter:
       | { __typename: 'BoolParameterType', id: string, boolValue: boolean | null }
+      | { __typename: 'ChoiceParameterType', id: string }
       | { __typename: 'NumberParameterType', id: string }
       | { __typename: 'StringParameterType', id: string }
       | { __typename: 'UnknownParameterType', id: string }
@@ -902,7 +924,7 @@ export type DataSourceFieldsFragment = { __typename: 'DataSource', id: string, n
 
 export type DatasetSourceReferenceFieldsFragment = { __typename: 'DatasetSourceReference', id: string, createdAt: string, lastModifiedAt: string, dataPoint: { __typename: 'DataPoint', id: string } | null, dataSource: { __typename: 'DataSource', id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null };
 
-export type DatasetDetailFieldsFragment = { __typename: 'Dataset', id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, userPermissions: { __typename: 'UserPermissions', change: boolean, delete: boolean } | null, externalRef: { __typename: 'DatasetExternalRefType', repoUrl: string, commit: string | null, datasetId: string } | null, dimensions: Array<{ __typename: 'DatasetDimension', id: string, name: string, categories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string, identifier: string | null, label: string }> }>, metrics: Array<{ __typename: 'DatasetMetric', id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: { __typename: 'UnitType', id: string, standard: string } | null, quantity: { __typename: 'QuantityKindType', id: string, label: string } | null }>, dataPoints: Array<{ __typename: 'DataPoint', id: string, date: string, value: number | null, metric: { __typename: 'DatasetMetric', id: string }, dimensionCategories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string }>, comments: Array<{ __typename: 'DataPointComment', id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }> }>, portBindings: Array<{ __typename: 'DatasetPortType', id: string, portRef: { __typename: 'NodePortRef', nodeUuid: string, portId: string } }>, sourceReferences: Array<{ __typename: 'DatasetSourceReference', id: string, createdAt: string, lastModifiedAt: string, dataPoint: { __typename: 'DataPoint', id: string } | null, dataSource: { __typename: 'DataSource', id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }>, validationViolations: Array<{ __typename: 'DatasetValidationViolation', code: string, message: string, severity: ProblemSeverity, enforcement: DatasetRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<{ __typename: 'DatasetDimensionCoordinate', dimension: string, category: string }> }> };
+export type DatasetDetailFieldsFragment = { __typename: 'Dataset', id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, userPermissions: { __typename: 'UserPermissions', change: boolean, delete: boolean } | null, externalRef: { __typename: 'DatasetExternalRefType', repoUrl: string, commit: string | null, datasetId: string } | null, dimensions: Array<{ __typename: 'DatasetDimension', id: string, name: string, categories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string, identifier: string | null, label: string }> }>, metrics: Array<{ __typename: 'DatasetMetric', id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: { __typename: 'UnitType', id: string, standard: string } | null, quantity: { __typename: 'QuantityKindType', id: string, label: string } | null }>, dataPoints: Array<{ __typename: 'DataPoint', id: string, date: string, value: number | null, metric: { __typename: 'DatasetMetric', id: string }, dimensionCategories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string }>, comments: Array<{ __typename: 'DataPointComment', id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }> }>, portBindings: Array<{ __typename: 'DatasetPortType', id: string, portRef: { __typename: 'NodePortRef', nodeUuid: string, portId: string } }>, sourceReferences: Array<{ __typename: 'DatasetSourceReference', id: string, createdAt: string, lastModifiedAt: string, dataPoint: { __typename: 'DataPoint', id: string } | null, dataSource: { __typename: 'DataSource', id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }>, validationViolations: Array<{ __typename: 'DatasetValidationViolation', code: string, message: string, severity: ProblemSeverity, enforcement: ValidationRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<{ __typename: 'DatasetDimensionCoordinate', dimension: string, category: string }> }> };
 
 export type InstanceDatasetsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -914,7 +936,7 @@ export type InstanceDatasetQueryVariables = Exact<{
 }>;
 
 
-export type InstanceDatasetQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, editor: { __typename: 'InstanceEditor', dataset: { __typename: 'Dataset', id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, userPermissions: { __typename: 'UserPermissions', change: boolean, delete: boolean } | null, externalRef: { __typename: 'DatasetExternalRefType', repoUrl: string, commit: string | null, datasetId: string } | null, dimensions: Array<{ __typename: 'DatasetDimension', id: string, name: string, categories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string, identifier: string | null, label: string }> }>, metrics: Array<{ __typename: 'DatasetMetric', id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: { __typename: 'UnitType', id: string, standard: string } | null, quantity: { __typename: 'QuantityKindType', id: string, label: string } | null }>, dataPoints: Array<{ __typename: 'DataPoint', id: string, date: string, value: number | null, metric: { __typename: 'DatasetMetric', id: string }, dimensionCategories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string }>, comments: Array<{ __typename: 'DataPointComment', id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }> }>, portBindings: Array<{ __typename: 'DatasetPortType', id: string, portRef: { __typename: 'NodePortRef', nodeUuid: string, portId: string } }>, sourceReferences: Array<{ __typename: 'DatasetSourceReference', id: string, createdAt: string, lastModifiedAt: string, dataPoint: { __typename: 'DataPoint', id: string } | null, dataSource: { __typename: 'DataSource', id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }>, validationViolations: Array<{ __typename: 'DatasetValidationViolation', code: string, message: string, severity: ProblemSeverity, enforcement: DatasetRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<{ __typename: 'DatasetDimensionCoordinate', dimension: string, category: string }> }> } | null, dataSources: Array<{ __typename: 'DataSource', id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }> } | null } };
+export type InstanceDatasetQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, editor: { __typename: 'InstanceEditor', dataset: { __typename: 'Dataset', id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, userPermissions: { __typename: 'UserPermissions', change: boolean, delete: boolean } | null, externalRef: { __typename: 'DatasetExternalRefType', repoUrl: string, commit: string | null, datasetId: string } | null, dimensions: Array<{ __typename: 'DatasetDimension', id: string, name: string, categories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string, identifier: string | null, label: string }> }>, metrics: Array<{ __typename: 'DatasetMetric', id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: { __typename: 'UnitType', id: string, standard: string } | null, quantity: { __typename: 'QuantityKindType', id: string, label: string } | null }>, dataPoints: Array<{ __typename: 'DataPoint', id: string, date: string, value: number | null, metric: { __typename: 'DatasetMetric', id: string }, dimensionCategories: Array<{ __typename: 'DatasetDimensionCategory', uuid: string }>, comments: Array<{ __typename: 'DataPointComment', id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }> }>, portBindings: Array<{ __typename: 'DatasetPortType', id: string, portRef: { __typename: 'NodePortRef', nodeUuid: string, portId: string } }>, sourceReferences: Array<{ __typename: 'DatasetSourceReference', id: string, createdAt: string, lastModifiedAt: string, dataPoint: { __typename: 'DataPoint', id: string } | null, dataSource: { __typename: 'DataSource', id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }, createdBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null, lastModifiedBy: { __typename: 'User', id: string, firstName: string, lastName: string, email: string } | null }>, validationViolations: Array<{ __typename: 'DatasetValidationViolation', code: string, message: string, severity: ProblemSeverity, enforcement: ValidationRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<{ __typename: 'DatasetDimensionCoordinate', dimension: string, category: string }> }> } | null, dataSources: Array<{ __typename: 'DataSource', id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }> } | null } };
 
 export type CreateDatasetMutationVariables = Exact<{
   instanceId: string | number;
@@ -1304,7 +1326,7 @@ export type NodeGraphQuery = { __typename: 'Query', instance: { __typename: 'Ins
                       | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
                       | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
                     > }
-                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
                 | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 | { __typename: 'FormulaConfigType', formula: string }
                 | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
@@ -1341,7 +1363,7 @@ export type NodeGraphQuery = { __typename: 'Query', instance: { __typename: 'Ins
                       | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
                       | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
                     > }
-                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
                 | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 | { __typename: 'FormulaConfigType', formula: string }
                 | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
@@ -1380,7 +1402,7 @@ type EditorNodeFields_ActionNode_Fragment = { __typename: 'ActionNode', isEnable
               | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
               | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
             > }
-        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
         | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
         | { __typename: 'FormulaConfigType', formula: string }
         | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
@@ -1418,7 +1440,7 @@ type EditorNodeFields_Node_Fragment = { __typename: 'Node', isOutcome: boolean, 
               | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
               | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
             > }
-        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
         | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
         | { __typename: 'FormulaConfigType', formula: string }
         | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
@@ -1467,8 +1489,10 @@ export type PublishModelInstanceMutationVariables = Exact<{
 
 export type PublishModelInstanceMutation = { __typename: 'Mutation', instanceEditor: { __typename: 'InstanceEditorMutation', publishModelInstance:
       | { __typename: 'ConstraintViolations', conflicts: Array<{ __typename: 'ConstraintConflict', code: string, message: string, origins: Array<{ __typename: 'ConstraintOrigin', kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }>, value: { __typename: 'ConstraintValueRef', kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null } | null }> }
-      | { __typename: 'DatasetValidationViolations' }
+      | { __typename: 'DataEntryDefinitionProblems', problems: Array<{ __typename: 'DataEntryDefinitionProblem', code: string, message: string }> }
+      | { __typename: 'DatasetValidationViolations', violations: Array<{ __typename: 'DatasetValidationViolation', code: string, message: string }> }
       | { __typename: 'InstanceType', id: string, editor: { __typename: 'InstanceEditor', live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null } | null }
+      | { __typename: 'NodeValueValidationViolations', violations: Array<{ __typename: 'NodeValueValidationViolation', code: string, message: string }> }
       | { __typename: 'OperationInfo', messages: Array<{ __typename: 'OperationMessage', kind: OperationMessageKind, field: string | null, message: string, code: string | null }> }
      } };
 
@@ -1493,12 +1517,14 @@ export type NodeParametersQueryVariables = Exact<{
 export type NodeParametersQuery = { __typename: 'Query', node:
     | { __typename: 'ActionNode', id: string, parameters: Array<
         | { __typename: 'BoolParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean, boolValue: boolean | null }
+        | { __typename: 'ChoiceParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean }
         | { __typename: 'NumberParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean, numberValue: number | null }
         | { __typename: 'StringParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean, stringValue: string | null }
         | { __typename: 'UnknownParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean }
       > }
     | { __typename: 'Node', id: string, parameters: Array<
         | { __typename: 'BoolParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean, boolValue: boolean | null }
+        | { __typename: 'ChoiceParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean }
         | { __typename: 'NumberParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean, numberValue: number | null }
         | { __typename: 'StringParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean, stringValue: string | null }
         | { __typename: 'UnknownParameterType', id: string, nodeRelativeId: string | null, isCustomizable: boolean }
@@ -1730,6 +1756,11 @@ type ActionParameter_BoolParameterType_Fragment = { __typename: 'BoolParameterTy
     | { __typename: 'Node', id: string }
    | null };
 
+type ActionParameter_ChoiceParameterType_Fragment = { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+    | { __typename: 'ActionNode', id: string }
+    | { __typename: 'Node', id: string }
+   | null };
+
 type ActionParameter_NumberParameterType_Fragment = { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
     | { __typename: 'ActionNode', id: string }
     | { __typename: 'Node', id: string }
@@ -1747,6 +1778,7 @@ type ActionParameter_UnknownParameterType_Fragment = { __typename: 'UnknownParam
 
 export type ActionParameterFragment =
   | ActionParameter_BoolParameterType_Fragment
+  | ActionParameter_ChoiceParameterType_Fragment
   | ActionParameter_NumberParameterType_Fragment
   | ActionParameter_StringParameterType_Fragment
   | ActionParameter_UnknownParameterType_Fragment
@@ -1776,6 +1808,10 @@ type CausalGridNode_ActionNode_Fragment = { __typename: 'ActionNode', id: string
         | { __typename: 'ActionNode', id: string }
         | { __typename: 'Node', id: string }
        | null }
+    | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
     | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
         | { __typename: 'ActionNode', id: string }
         | { __typename: 'Node', id: string }
@@ -1798,6 +1834,10 @@ type CausalGridNode_Node_Fragment = { __typename: 'Node', id: string, name: stri
     | { __typename: 'Node', id: string }
   >, impactMetric: { __typename: 'ForecastMetricType', name: string | null, id: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, historicalValues: Array<{ __typename: 'YearlyValue', year: number, value: number }>, forecastValues: Array<{ __typename: 'YearlyValue', value: number, year: number }>, baselineForecastValues: Array<{ __typename: 'YearlyValue', year: number, value: number }> | null, yearlyCumulativeUnit: { __typename: 'UnitType', id: string, htmlShort: string } | null } | null, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null, parameters: Array<
     | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
+    | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
         | { __typename: 'ActionNode', id: string }
         | { __typename: 'Node', id: string }
        | null }
@@ -1839,6 +1879,10 @@ export type CausalChainQuery = { __typename: 'Query', action: { __typename: 'Act
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
              | null }
+          | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
           | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
@@ -1860,6 +1904,10 @@ export type CausalChainQuery = { __typename: 'Query', action: { __typename: 'Act
           | { __typename: 'Node', id: string }
         >, impactMetric: { __typename: 'ForecastMetricType', name: string | null, id: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, historicalValues: Array<{ __typename: 'YearlyValue', year: number, value: number }>, forecastValues: Array<{ __typename: 'YearlyValue', value: number, year: number }>, baselineForecastValues: Array<{ __typename: 'YearlyValue', year: number, value: number }> | null, yearlyCumulativeUnit: { __typename: 'UnitType', id: string, htmlShort: string } | null } | null, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null, parameters: Array<
           | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+          | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
              | null }
@@ -1897,6 +1945,10 @@ export type ActionContentQuery = { __typename: 'Query', action: { __typename: 'A
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
              | null }
+          | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
           | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
@@ -1918,6 +1970,10 @@ export type ActionContentQuery = { __typename: 'Query', action: { __typename: 'A
           | { __typename: 'Node', id: string }
         >, impactMetric: { __typename: 'ForecastMetricType', name: string | null, id: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, historicalValues: Array<{ __typename: 'YearlyValue', year: number, value: number }>, forecastValues: Array<{ __typename: 'YearlyValue', value: number, year: number }>, baselineForecastValues: Array<{ __typename: 'YearlyValue', year: number, value: number }> | null, yearlyCumulativeUnit: { __typename: 'UnitType', id: string, htmlShort: string } | null } | null, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null, parameters: Array<
           | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+          | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
              | null }
@@ -1983,6 +2039,10 @@ export type ActionContentQuery = { __typename: 'Query', action: { __typename: 'A
           | { __typename: 'ActionNode', id: string }
           | { __typename: 'Node', id: string }
          | null }
+      | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+          | { __typename: 'ActionNode', id: string }
+          | { __typename: 'Node', id: string }
+         | null }
       | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
           | { __typename: 'ActionNode', id: string }
           | { __typename: 'Node', id: string }
@@ -2004,6 +2064,10 @@ export type ActionListQueryVariables = Exact<{
 
 export type ActionListQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, actionGroups: Array<{ __typename: 'ActionGroupType', id: string, name: string, color: string | null, actions: Array<{ __typename: 'ActionNode', id: string }> }> }, actions: Array<{ __typename: 'ActionNode', id: string, name: string, goal: string | null, shortDescription: string | null, color: string | null, decisionLevel: DecisionLevel | null, quantity: string | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, parameters: Array<
       | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+          | { __typename: 'ActionNode', id: string }
+          | { __typename: 'Node', id: string }
+         | null }
+      | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
           | { __typename: 'ActionNode', id: string }
           | { __typename: 'Node', id: string }
          | null }
@@ -2032,6 +2096,10 @@ export type ActionsForChooserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ActionsForChooserQuery = { __typename: 'Query', actions: Array<{ __typename: 'ActionNode', id: string, name: string, parameters: Array<
       | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+          | { __typename: 'ActionNode', id: string }
+          | { __typename: 'Node', id: string }
+         | null }
+      | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
           | { __typename: 'ActionNode', id: string }
           | { __typename: 'Node', id: string }
          | null }
@@ -2096,6 +2164,10 @@ export type OutcomeNodeFieldsFragment = { __typename: 'Node', id: string, name: 
           | { __typename: 'ActionNode', id: string }
           | { __typename: 'Node', id: string }
          | null }
+      | { __typename: 'ChoiceParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, node:
+          | { __typename: 'ActionNode', id: string }
+          | { __typename: 'Node', id: string }
+         | null }
       | { __typename: 'NumberParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, node:
           | { __typename: 'ActionNode', id: string }
           | { __typename: 'Node', id: string }
@@ -2131,6 +2203,10 @@ export type OutcomeNodeQuery = { __typename: 'Query', node:
                   | { __typename: 'ActionNode', id: string }
                   | { __typename: 'Node', id: string }
                  | null }
+              | { __typename: 'ChoiceParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, node:
+                  | { __typename: 'ActionNode', id: string }
+                  | { __typename: 'Node', id: string }
+                 | null }
               | { __typename: 'NumberParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, node:
                   | { __typename: 'ActionNode', id: string }
                   | { __typename: 'Node', id: string }
@@ -2158,6 +2234,10 @@ export type OutcomeNodeQuery = { __typename: 'Query', node:
                   | { __typename: 'ActionNode', id: string }
                   | { __typename: 'Node', id: string }
                  | null }
+              | { __typename: 'ChoiceParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, node:
+                  | { __typename: 'ActionNode', id: string }
+                  | { __typename: 'Node', id: string }
+                 | null }
               | { __typename: 'NumberParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, node:
                   | { __typename: 'ActionNode', id: string }
                   | { __typename: 'Node', id: string }
@@ -2179,6 +2259,10 @@ export type OutcomeNodeQuery = { __typename: 'Query', node:
         | { __typename: 'Node', id: string }
       >, upstreamActions: Array<{ __typename: 'ActionNode', id: string, name: string, goal: string | null, shortName: string | null, shortDescription: string | null, parameters: Array<
           | { __typename: 'BoolParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+          | { __typename: 'ChoiceParameterType', id: string, nodeRelativeId: string | null, isCustomized: boolean, node:
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
              | null }
@@ -2495,6 +2579,10 @@ export type ParametersQuery = { __typename: 'Query', availableNormalizations: Ar
         | { __typename: 'ActionNode', id: string }
         | { __typename: 'Node', id: string }
        | null }
+    | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
     | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
         | { __typename: 'ActionNode', id: string }
         | { __typename: 'Node', id: string }
@@ -2706,6 +2794,10 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
        | null }
   >, parameters: Array<
     | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
+    | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
         | { __typename: 'ActionNode', id: string }
         | { __typename: 'Node', id: string }
        | null }

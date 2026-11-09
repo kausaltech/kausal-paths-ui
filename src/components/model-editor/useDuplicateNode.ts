@@ -88,7 +88,8 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     label: port.label ?? null,
     quantity: port.quantity ?? null,
     unit: port.unit?.standard ?? '',
-    dimensions: [...port.dimensions],
+    // null: the backend infers them, as it did for the source port.
+    dimensions: port.dimensions ? [...port.dimensions] : null,
     role: null,
     isEditable: true,
   }));
@@ -198,7 +199,6 @@ export function useDuplicateNode() {
         inputPorts,
         outputPorts,
         inputDimensions: source.editor?.inputDimensions ?? null,
-        outputDimensions: source.editor?.outputDimensions ?? null,
         tags: source.editor?.tags ?? null,
         config,
         allowNulls: false,

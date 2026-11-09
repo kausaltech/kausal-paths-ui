@@ -120,7 +120,9 @@
     ],
     "InstanceProblem": [
       "ConstraintConflict",
-      "DatasetValidationViolation"
+      "DataEntryDefinitionProblem",
+      "DatasetValidationViolation",
+      "NodeValueValidationViolation"
     ],
     "InviteUserToInstancePayload": [
       "InstanceInvitation",
@@ -182,8 +184,10 @@
     ],
     "PublishModelInstancePayload": [
       "ConstraintViolations",
+      "DataEntryDefinitionProblems",
       "DatasetValidationViolations",
       "InstanceType",
+      "NodeValueValidationViolations",
       "OperationInfo"
     ],
     "RegisterUserPayload": [

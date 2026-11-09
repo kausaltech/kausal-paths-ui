@@ -559,6 +559,26 @@ export const PUBLISH_MODEL_INSTANCE: TypedDocumentNode<
         ... on ConstraintViolations {
           ...ConstraintViolationsFields
         }
+        # The other refusals the publication gate returns. Without them the
+        # client saw an unselected result and reported success.
+        ... on DatasetValidationViolations {
+          violations {
+            code
+            message
+          }
+        }
+        ... on NodeValueValidationViolations {
+          violations {
+            code
+            message
+          }
+        }
+        ... on DataEntryDefinitionProblems {
+          problems {
+            code
+            message
+          }
+        }
       }
     }
   }
