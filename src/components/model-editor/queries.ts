@@ -1150,6 +1150,7 @@ export const METRIC_DIMENSION_FIELDS = gql`
 
 export const DIMENSIONAL_METRIC_FIELDS = gql`
   fragment ModelEditorDimensionalMetricFields on DimensionalMetricType {
+    # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: stop selecting id; kausal_common's metric parser (utils/paths/metric/parse.ts) still copies it
     id
     name
     measureDatapointYears

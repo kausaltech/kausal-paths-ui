@@ -225,8 +225,8 @@ export const DATASET_DETAIL_FIELDS = gql`
       requirementGroup
       combinationIds
       coordinates {
-        dimension
-        category
+        dimensionUuid
+        categoryUuid
       }
     }
   }
