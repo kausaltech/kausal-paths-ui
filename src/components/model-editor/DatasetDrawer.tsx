@@ -311,7 +311,7 @@ function DatasetPortView({
       {orderedMetrics.length > 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {orderedMetrics.map((metric) => (
-            <Suspense key={metric.id} fallback={<CircularProgress size={20} />}>
+            <Suspense key={metric.name} fallback={<CircularProgress size={20} />}>
               <MetricDataViewer metric={metric} />
             </Suspense>
           ))}
