@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import type { ErrorLike } from '@apollo/client/core';
-import { useQuery } from '@apollo/client/react';
+import { skipToken, useQuery } from '@apollo/client/react';
 
 import {
   type ActionListQuery,
@@ -115,11 +115,12 @@ export function useActionListData({
     previousData: detailPreviousData,
     loading: detailLoading,
     error: detailError,
-  } = useQuery(GET_IMPACT_OVERVIEW, {
-    variables: { id: activeOverviewId ?? '' },
-    skip: !activeOverviewId,
-    fetchPolicy: 'cache-and-network',
-  });
+  } = useQuery(
+    GET_IMPACT_OVERVIEW,
+    activeOverviewId
+      ? { variables: { id: activeOverviewId }, fetchPolicy: 'cache-and-network' }
+      : skipToken
+  );
 
   // Keep showing previous detail while the new one is in-flight so the UI doesn't
   // flash empty between selections. If the user switched back to "no overview"

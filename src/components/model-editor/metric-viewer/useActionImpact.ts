@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
-import { useQuery } from '@apollo/client/react';
+import { skipToken, useQuery } from '@apollo/client/react';
 
 import type {
   ActionNodeImpactQuery,
@@ -92,11 +92,12 @@ export function useActionImpact(
   nodeId: string | null,
   targetNodeId: string | null
 ): UseActionImpactResult {
-  const { data, loading, error } = useQuery(GET_ACTION_IMPACT, {
-    variables: { nodeId: nodeId ?? '', targetNodeId: targetNodeId ?? '' },
-    skip: !nodeId || !targetNodeId,
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data, loading, error } = useQuery(
+    GET_ACTION_IMPACT,
+    nodeId && targetNodeId
+      ? { variables: { nodeId, targetNodeId }, fetchPolicy: 'cache-and-network' }
+      : skipToken
+  );
 
   const rawMetric = useMemo(() => {
     const impact = data?.node?.impactMetric;
