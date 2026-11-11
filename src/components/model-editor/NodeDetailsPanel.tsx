@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { Box, Chip, FormControlLabel, IconButton, Switch, Typography } from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
-import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
+import { skipToken, useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { BarChartLine, ExclamationTriangleFill, X, XCircleFill } from 'react-bootstrap-icons';
 
@@ -211,10 +211,10 @@ export default function NodeDetailsPanel({
 
   const displayName = node?.name ?? '';
 
-  const { data: parametersData } = useQuery(NODE_PARAMETERS, {
-    variables: { nodeId: node?.id ?? '' },
-    skip: !node?.id,
-  });
+  const { data: parametersData } = useQuery(
+    NODE_PARAMETERS,
+    node?.id ? { variables: { nodeId: node.id } } : skipToken
+  );
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {

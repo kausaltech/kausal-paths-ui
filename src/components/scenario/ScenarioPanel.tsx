@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
-import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { skipToken, useQuery, useReactiveVar } from '@apollo/client/react';
 import { Sliders } from 'react-bootstrap-icons';
 
 import ContentContainer from '@common/components/ContentContainer';
@@ -154,13 +154,17 @@ const ScenarioPanel = () => {
   }, [scenarioEditorDrawerOpen]);
 
   // Get the goal outcome for the active goal
-  const { error, data } = useQuery(GET_INSTANCE_GOAL_OUTCOME, {
-    skip: !!hideNodeDetails,
-    variables: {
-      goal: activeGoal?.id ?? '',
-    },
-    errorPolicy: 'all',
-  });
+  const { error, data } = useQuery(
+    GET_INSTANCE_GOAL_OUTCOME,
+    hideNodeDetails
+      ? skipToken
+      : {
+          variables: {
+            goal: activeGoal?.id ?? '',
+          },
+          errorPolicy: 'all',
+        }
+  );
 
   if (error) {
     logApolloError(error, { component: 'ScenarioPanel' });
