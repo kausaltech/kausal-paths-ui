@@ -39,8 +39,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.3.1)(react-responsive-carousel@3.2.23)(react@19.3.1)(supports-color@8.1.1)
       '@kausal/themes':
-        specifier: ^0.8.32
-        version: 0.8.32
+        specifier: ^0.9.2
+        version: 0.9.2
       '@mui/icons-material':
         specifier: ^9.5.0
         version: 9.5.0(@mui/material@9.5.0)(@types/react@19.3.0)(react@19.3.1)
@@ -440,8 +440,8 @@ importers:
         version: 5.112.2(@swc/core@1.16.22)(postcss@8.5.23)(sharp@0.35.5)
     optionalDependencies:
       '@kausal-private/themes-private':
-        specifier: ^0.5.133
-        version: 0.5.133
+        specifier: ^0.6.2
+        version: 0.6.2
 
   kausal_common:
     dependencies:
@@ -459,7 +459,7 @@ importers:
         version: 6.0.3(lodash@4.18.1)(marked@4.3.0)(react-dom@19.3.1)(react-responsive-carousel@3.2.23)(react@19.3.1)(supports-color@8.1.1)
       '@kausal/themes':
         specifier: '*'
-        version: 0.8.32
+        version: 0.9.2
       '@mui/material':
         specifier: '>=7'
         version: 9.5.0(@emotion/react@11.14.0)(@emotion/styled@11.14.1)(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
@@ -2513,11 +2513,11 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kausal-private/themes-private@0.5.133':
-    resolution: {integrity: sha512-hh+Lrc0hDh4RYaWbL5Tt3oQEMiTul9GhKwjkYqwHzQ5+IYMtRVD+o1YbL6T0qaH6GhJRJTmchRoAZ8iOwCP0UA==}
+  '@kausal-private/themes-private@0.6.2':
+    resolution: {integrity: sha512-CTlep9UntA6MGWLnHs2hnSA0Tdc6+njdlDSnUh0TTH+lfF++vs/0namNfyIhO/IXIjdr7uuuXsN4Jsf4WqVx8Q==}
 
-  '@kausal/themes@0.8.32':
-    resolution: {integrity: sha512-fq1rN7obvPyfWS/E8JYnzDlX+OQkLubJj93y8kNwFHRV5CrC/ZsIrmQrTqRtsmwr0sQPcPtTlVYkVxysGkTRqw==}
+  '@kausal/themes@0.9.2':
+    resolution: {integrity: sha512-CGJDiPdTws8SZ8FM48jdPiXiSbcCTo1lHZy74lrdKMBJ9GQqTdkZXLm2sbXoqIhM/zZnuekedHj3tVDKrahD8A==}
 
   '@linaria/core@4.5.4':
     resolution: {integrity: sha512-vMs/5iU0stxjfbBCxobIgY+wSQx4G8ukNwrhjPVD+6bF9QrTwi5rl0mKaCMxaGMjnfsLRiiM3i+hnWLIEYLdSg==}
@@ -11502,10 +11502,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@kausal-private/themes-private@0.5.133':
+  '@kausal-private/themes-private@0.6.2':
     optional: true
 
-  '@kausal/themes@0.8.32': {}
+  '@kausal/themes@0.9.2': {}
 
   '@linaria/core@4.5.4(supports-color@8.1.1)':
     dependencies:
