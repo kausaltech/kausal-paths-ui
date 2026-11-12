@@ -147,7 +147,10 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
     },
   },
   sunnydale: {
-    watchLink: null,
+    watchLink: {
+      title: "Climate Action Plan",
+      url: 'https://sunnydale.watch.fi.kausal.tech/',
+    },
     demoPages: [
       {
         id: 's-en-1',
