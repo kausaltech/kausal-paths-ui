@@ -30,6 +30,11 @@
       "ActionGroupType",
       "OperationInfo"
     ],
+    "CreateActionOnNodesPayload": [
+      "ConstraintViolations",
+      "CreateActionOnNodesResult",
+      "OperationInfo"
+    ],
     "CreateDataPointCommentPayload": [
       "DataPointComment",
       "OperationInfo"
