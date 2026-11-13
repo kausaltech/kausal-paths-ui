@@ -11,6 +11,16 @@ export type ActionConfigInput = {
   parent?: string | null | undefined;
 };
 
+/** One effect of the new action: the node it acts on, and the source of its numbers. */
+export type ActionEffectInput = {
+  /** Label of the action's output port (and new metric); defaults to the target's name. */
+  label?: string | null | undefined;
+  /** Omitted: a new dataset with all categories. */
+  source?: EffectSourceInput | null | undefined;
+  /** The node the action acts on. It must have a single output port. */
+  targetNodeId: string;
+};
+
 /** An enumeration. */
 export enum ActionSortOrder {
   /** Cumulative impact */
@@ -51,6 +61,17 @@ export enum ChangeTargetKind {
   Node = 'NODE',
   Unknown = 'UNKNOWN'
 }
+
+export type CreateActionOnNodesInput = {
+  effects: Array<ActionEffectInput>;
+  /** UUID of the action group. */
+  group?: string | null | undefined;
+  /** Derived from the name when omitted. */
+  identifier?: string | number | null | undefined;
+  name: string;
+  /** Year of the zeros in the new dataset; defaults to the instance's last historical year. */
+  startYear?: number | null | undefined;
+};
 
 export type CreateDataPointCommentInput = {
   isReview?: boolean;
@@ -175,6 +196,13 @@ export enum DataPointCommentReviewState {
   Unresolved = 'UNRESOLVED'
 }
 
+/** A metric of an existing instance dataset. It must hold changes, not levels. */
+export type DatasetSourceInput = {
+  datasetId: string;
+  /** May be omitted when the dataset has a single metric. */
+  metricId?: string | null | undefined;
+};
+
 /** Exactly one transformation of a dataset binding. Order in the containing list is execution order. */
 export type DatasetTransformationInput =
   {   assignDimension: AssignDimensionInput; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
@@ -220,6 +248,18 @@ export enum DimensionKind {
 export type EdgeTransformationInput =
   {   assignDimension: AssignDimensionInput; filterDimension?: never; }
   |  { assignDimension?: never;   filterDimension: FilterDimensionInput; };
+
+/** The categories of one dimension that an effect touches. */
+export type EffectCategoriesInput = {
+  categoryIds: Array<string>;
+  dimensionId: string;
+};
+
+/** Where an effect's numbers come from. They are added to the target, so they must be changes, not levels. */
+export type EffectSourceInput =
+  {   dataset: DatasetSourceInput; newDataset?: never; node?: never; }
+  |  { dataset?: never;   newDataset: NewDatasetSourceInput; node?: never; }
+  |  { dataset?: never; newDataset?: never;   node: OutputPortRefInput; };
 
 export type EnsureUnitInput = {
   unit: string;
@@ -275,6 +315,12 @@ export enum InstanceMemberRole {
   SuperAdmin = 'SUPER_ADMIN',
   Viewer = 'VIEWER'
 }
+
+/** A new dataset owned by the action, with a zero in the start year for every kept category. */
+export type NewDatasetSourceInput = {
+  /** Narrowing of the target's categories, per dimension; a dimension not named keeps all of them. */
+  categories?: Array<EffectCategoriesInput> | null | undefined;
+};
 
 export type NodeConfigInput =
   {   action: ActionConfigInput; formula?: never; pipeline?: never; simple?: never; }
@@ -343,6 +389,13 @@ export type OutputPortInput = {
   /** Semantic role from the node class's output port declarations. Null keeps the existing role when `id` names an existing port. */
   role?: string | null | undefined;
   unit: string;
+};
+
+/** An output port of a node. */
+export type OutputPortRefInput = {
+  nodeId: string;
+  /** May be omitted when the node has a single output. */
+  portId?: string | null | undefined;
 };
 
 export type PipelineConfigInput = {
@@ -865,6 +918,41 @@ export type SetActionEnabledMutation = { __typename: 'Mutation', setParameter: {
       | { __typename: 'UnknownParameterType', id: string }
      | null } };
 
+export type ActionWizardDimensionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ActionWizardDimensionsQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, editor: { __typename: 'InstanceEditor', dimensions: Array<{ __typename: 'InstanceDimension', id: string, identifier: string, name: string, categories: Array<{ __typename: 'InstanceDimensionCategory', id: string, label: string }> }> } | null } };
+
+export type ActionTargetCategoriesQueryVariables = Exact<{
+  targetNodeId: string;
+}>;
+
+
+export type ActionTargetCategoriesQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, editor: { __typename: 'InstanceEditor', actionTargetCategories: Array<{ __typename: 'DimensionCategoriesType', dimensionId: string, categoryIds: Array<string> }> } | null } };
+
+export type EffectSourceCandidatesQueryVariables = Exact<{
+  targetNodeId: string;
+}>;
+
+
+export type EffectSourceCandidatesQuery = { __typename: 'Query', instance: { __typename: 'InstanceType', id: string, editor: { __typename: 'InstanceEditor', effectSourceCandidates: { __typename: 'EffectSourceCandidates', datasets: Array<{ __typename: 'EffectDatasetCandidate', datasetId: string, datasetName: string, metricId: string, metricLabel: string }>, nodes: Array<{ __typename: 'EffectNodeCandidate', nodeId: string, nodeName: string, portId: string }> } } | null } };
+
+export type CreateActionOnNodesMutationVariables = Exact<{
+  instanceId: string | number;
+  input: CreateActionOnNodesInput;
+  version?: string | null | undefined;
+}>;
+
+
+export type CreateActionOnNodesMutation = { __typename: 'Mutation', instanceEditor: { __typename: 'InstanceEditorMutation', createActionOnNodes:
+      | { __typename: 'ConstraintViolations', conflicts: Array<{ __typename: 'ConstraintConflict', code: string, message: string, origins: Array<{ __typename: 'ConstraintOrigin', kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }>, value: { __typename: 'ConstraintValueRef', kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null } | null }> }
+      | { __typename: 'CreateActionOnNodesResult', action:
+          | { __typename: 'ActionNode', id: string }
+          | { __typename: 'Node', id: string }
+        , datasets: Array<{ __typename: 'Dataset', id: string }> }
+      | { __typename: 'OperationInfo', messages: Array<{ __typename: 'OperationMessage', kind: OperationMessageKind, field: string | null, message: string, code: string | null }> }
+     } };
+
 export type DatasetPortDataQueryVariables = Exact<{
   nodeId: string | number;
 }>;
@@ -1294,7 +1382,7 @@ export type NodeGraphQuery = { __typename: 'Query', instance: { __typename: 'Ins
           | { __typename: 'SelectMetricType', kind: string, isSystemManaged: boolean }
           | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
           | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
-        > }> } | null, model: { __typename: 'InstanceModel', nodes: Array<
+        > }>, actionTargets: Array<{ __typename: 'ActionTargetType', nodeId: string, available: boolean, reason: string | null }> } | null, model: { __typename: 'InstanceModel', nodes: Array<
         | { __typename: 'ActionNode', id: string, isEnabled: boolean, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: { __typename: 'ActionGroupType', id: string, name: string, color: string | null } | null, userPermissions: { __typename: 'UserPermissions', change: boolean, delete: boolean } | null, quantityKind: { __typename: 'QuantityKindType', icon: string | null, id: string, label: string } | null, editor: { __typename: 'NodeEditor', nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: { __typename: 'NodeLayout', nodeId: string, x: number, y: number, source: NodeLayoutSource } | null, errors: Array<{ __typename: 'NodeError', phase: NodeErrorPhase, message: string }>, layoutMeta: { __typename: 'NodeGraphLayoutMeta', primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }, spec: { __typename: 'NodeSpecType', supportsAuthoredPorts: boolean, inputPortDeclarations: Array<{ __typename: 'InputPortDeclaration', role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }>, inputPorts: Array<{ __typename: 'InputPortType', id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, effectiveShape: { __typename: 'EffectiveShape', quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: { __typename: 'UnitType', id: string, short: string, htmlShort: string } | null } | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string, dimensionality: Array<{ __typename: 'UnitDimensionality', dimension: string, value: number }> } | null, bindings: Array<
                   | { __typename: 'DatasetPortType', id: string, tags: Array<string>, portRef: { __typename: 'NodePortRef', nodeUuid: string, portId: string }, dataset: { __typename: 'Dataset', id: string, identifier: string | null, name: string, metrics: Array<{ __typename: 'DatasetMetric', id: string, label: string, unitInfo: { __typename: 'UnitType', id: string, standard: string } | null }> } | null, metric: { __typename: 'DatasetMetricRefType', id: string, label: string } | null, transformations: Array<
                       | { __typename: 'AssignDimensionType', dimension: string, category: string, kind: string, isSystemManaged: boolean }
@@ -1326,7 +1414,7 @@ export type NodeGraphQuery = { __typename: 'Query', instance: { __typename: 'Ins
                       | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
                       | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
                     > }
-                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string }, effectiveShape: { __typename: 'EffectiveShape', dimensionUuids: Array<string> | null, categories: Array<{ __typename: 'EffectiveShapeDimensionCategories', dimensionUuid: string, categoryUuids: Array<string> }> } | null }>, typeConfig:
                 | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 | { __typename: 'FormulaConfigType', formula: string }
                 | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
@@ -1363,7 +1451,7 @@ export type NodeGraphQuery = { __typename: 'Query', instance: { __typename: 'Ins
                       | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
                       | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
                     > }
-                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+                > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string }, effectiveShape: { __typename: 'EffectiveShape', dimensionUuids: Array<string> | null, categories: Array<{ __typename: 'EffectiveShapeDimensionCategories', dimensionUuid: string, categoryUuids: Array<string> }> } | null }>, typeConfig:
                 | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 | { __typename: 'FormulaConfigType', formula: string }
                 | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
@@ -1402,7 +1490,7 @@ type EditorNodeFields_ActionNode_Fragment = { __typename: 'ActionNode', isEnable
               | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
               | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
             > }
-        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string }, effectiveShape: { __typename: 'EffectiveShape', dimensionUuids: Array<string> | null, categories: Array<{ __typename: 'EffectiveShapeDimensionCategories', dimensionUuid: string, categoryUuids: Array<string> }> } | null }>, typeConfig:
         | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
         | { __typename: 'FormulaConfigType', formula: string }
         | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
@@ -1440,7 +1528,7 @@ type EditorNodeFields_Node_Fragment = { __typename: 'Node', isOutcome: boolean, 
               | { __typename: 'SetForecastFromType', year: number, kind: string, isSystemManaged: boolean }
               | { __typename: 'TagOperationType', tag: string, kind: string, isSystemManaged: boolean }
             > }
-        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string } }>, typeConfig:
+        > }>, outputPorts: Array<{ __typename: 'OutputPortType', id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string> | null, unit: { __typename: 'UnitType', id: string, short: string, standard: string }, effectiveShape: { __typename: 'EffectiveShape', dimensionUuids: Array<string> | null, categories: Array<{ __typename: 'EffectiveShapeDimensionCategories', dimensionUuid: string, categoryUuids: Array<string> }> } | null }>, typeConfig:
         | { __typename: 'ActionConfigType', nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
         | { __typename: 'FormulaConfigType', formula: string }
         | { __typename: 'PipelineConfigType', operations: Record<string, unknown> | unknown[] }
