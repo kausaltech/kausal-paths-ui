@@ -724,6 +724,29 @@ type StreamField_ListBlock_Fragment = { __typename: 'ListBlock', id: string | nu
 
 type StreamField_PageChooserBlock_Fragment = { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string };
 
+type StreamField_ParameterPanelBlock_Fragment = { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+    | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
+    | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
+    | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
+    | { __typename: 'StringParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
+    | { __typename: 'UnknownParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+        | { __typename: 'ActionNode', id: string }
+        | { __typename: 'Node', id: string }
+       | null }
+   | null> | null };
+
 type StreamField_RawHtmlBlock_Fragment = { __typename: 'RawHTMLBlock', id: string | null, blockType: string, field: string };
 
 type StreamField_ReferenceProgressBarBlock_Fragment = { __typename: 'ReferenceProgressBarBlock', id: string | null, blockType: string, field: string };
@@ -775,6 +798,7 @@ export type StreamFieldFragment =
   | StreamField_IntegerBlock_Fragment
   | StreamField_ListBlock_Fragment
   | StreamField_PageChooserBlock_Fragment
+  | StreamField_ParameterPanelBlock_Fragment
   | StreamField_RawHtmlBlock_Fragment
   | StreamField_ReferenceProgressBarBlock_Fragment
   | StreamField_RegexBlock_Fragment
@@ -804,6 +828,18 @@ export type SetNormalizationFromWidgetMutationVariables = Exact<{
 
 
 export type SetNormalizationFromWidgetMutation = { __typename: 'Mutation', setNormalizer: { __typename: 'SetNormalizerMutation', ok: boolean } };
+
+export type ParameterPanelResetMutationVariables = Exact<{
+  parameterId: string | number;
+}>;
+
+
+export type ParameterPanelResetMutation = { __typename: 'Mutation', resetParameter: { __typename: 'ResetParameterResult', ok: boolean } };
+
+export type ParameterPanelActiveScenarioQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ParameterPanelActiveScenarioQuery = { __typename: 'Query', activeScenario: { __typename: 'ScenarioType', id: string } };
 
 export type SetParameterMutationVariables = Exact<{
   parameterId: string | number;
@@ -2015,6 +2051,28 @@ export type ActionContentQuery = { __typename: 'Query', action: { __typename: 'A
       | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
       | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
       | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
+      | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+          | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+          | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+          | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+          | { __typename: 'StringParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+          | { __typename: 'UnknownParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+              | { __typename: 'ActionNode', id: string }
+              | { __typename: 'Node', id: string }
+             | null }
+         | null> | null }
       | { __typename: 'RawHTMLBlock', id: string | null, blockType: string, field: string }
       | { __typename: 'ReferenceProgressBarBlock', id: string | null, blockType: string, field: string }
       | { __typename: 'RegexBlock', id: string | null, blockType: string, field: string }
@@ -2308,6 +2366,7 @@ export type DashboardCardVisualizationsFragment = { __typename: 'DashboardCardBl
     | { __typename: 'IntegerBlock', id: string | null }
     | { __typename: 'ListBlock', id: string | null }
     | { __typename: 'PageChooserBlock', id: string | null }
+    | { __typename: 'ParameterPanelBlock', id: string | null }
     | { __typename: 'RawHTMLBlock', id: string | null }
     | { __typename: 'ReferenceProgressBarBlock', title: string, description: string, chartLabel: string, color: string, id: string | null }
     | { __typename: 'RegexBlock', id: string | null }
@@ -2362,6 +2421,7 @@ export type DashboardPageFieldsFragment = { __typename: 'DashboardPage', id: str
         | { __typename: 'IntegerBlock', id: string | null }
         | { __typename: 'ListBlock', id: string | null }
         | { __typename: 'PageChooserBlock', id: string | null }
+        | { __typename: 'ParameterPanelBlock', id: string | null }
         | { __typename: 'RawHTMLBlock', id: string | null }
         | { __typename: 'ReferenceProgressBarBlock', title: string, description: string, chartLabel: string, color: string, id: string | null }
         | { __typename: 'RegexBlock', id: string | null }
@@ -2390,6 +2450,7 @@ export type DashboardPageFieldsFragment = { __typename: 'DashboardPage', id: str
     | { __typename: 'IntegerBlock', id: string | null }
     | { __typename: 'ListBlock', id: string | null }
     | { __typename: 'PageChooserBlock', id: string | null }
+    | { __typename: 'ParameterPanelBlock', id: string | null }
     | { __typename: 'RawHTMLBlock', id: string | null }
     | { __typename: 'ReferenceProgressBarBlock', id: string | null }
     | { __typename: 'RegexBlock', id: string | null }
@@ -2447,6 +2508,7 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
             | { __typename: 'IntegerBlock', id: string | null }
             | { __typename: 'ListBlock', id: string | null }
             | { __typename: 'PageChooserBlock', id: string | null }
+            | { __typename: 'ParameterPanelBlock', id: string | null }
             | { __typename: 'RawHTMLBlock', id: string | null }
             | { __typename: 'ReferenceProgressBarBlock', title: string, description: string, chartLabel: string, color: string, id: string | null }
             | { __typename: 'RegexBlock', id: string | null }
@@ -2475,6 +2537,7 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'IntegerBlock', id: string | null }
         | { __typename: 'ListBlock', id: string | null }
         | { __typename: 'PageChooserBlock', id: string | null }
+        | { __typename: 'ParameterPanelBlock', id: string | null }
         | { __typename: 'RawHTMLBlock', id: string | null }
         | { __typename: 'ReferenceProgressBarBlock', id: string | null }
         | { __typename: 'RegexBlock', id: string | null }
@@ -2514,6 +2577,28 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+            | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'StringParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'UnknownParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+           | null> | null }
         | { __typename: 'RawHTMLBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'ReferenceProgressBarBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'RegexBlock', id: string | null, blockType: string, field: string }
@@ -2528,7 +2613,67 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'TimeBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'URLBlock', id: string | null, blockType: string, field: string }
        | null> | null }
-    | { __typename: 'OutcomePage', leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: { __typename: 'Node', id: string } }
+    | { __typename: 'OutcomePage', leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: { __typename: 'Node', id: string }, body: Array<
+        | { __typename: 'ActionImpactBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'BlockQuoteBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'BooleanBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'CallToActionBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'CardListBlock', blockType: string, title: string | null, id: string | null, field: string, cards: Array<{ __typename: 'CardListCardBlock', title: string | null, shortDescription: string | null } | null> | null }
+        | { __typename: 'CategoryBreakdownBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'CharBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ChoiceBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'CurrentProgressBarBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'DashboardCardBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'DateBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'DateTimeBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'DecimalBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'DocumentChooserBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'EmailBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'EmbedBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'FloatBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'FrameworkLandingBlock', heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: { __typename: 'Framework', id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean } | null }
+        | { __typename: 'GoalProgressBarBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ImageBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ImageChooserBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+            | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'StringParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'UnknownParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+           | null> | null }
+        | { __typename: 'RawHTMLBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ReferenceProgressBarBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'RegexBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'RichTextBlock', value: string, rawValue: string, id: string | null, blockType: string, field: string }
+        | { __typename: 'ScenarioProgressBarBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'SnippetChooserBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'StaticBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'StreamBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'StreamFieldBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'StructBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'TextBlock', value: string, id: string | null, blockType: string, field: string }
+        | { __typename: 'TimeBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'URLBlock', id: string | null, blockType: string, field: string }
+       | null> | null }
     | { __typename: 'Page', id: string | null, title: string }
     | { __typename: 'StaticPage', id: string | null, title: string, body: Array<
         | { __typename: 'ActionImpactBlock', id: string | null, blockType: string, field: string }
@@ -2555,6 +2700,28 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
+        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+            | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'ChoiceParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'NumberParameterType', minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: { __typename: 'UnitType', id: string, htmlShort: string } | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'StringParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+            | { __typename: 'UnknownParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node:
+                | { __typename: 'ActionNode', id: string }
+                | { __typename: 'Node', id: string }
+               | null }
+           | null> | null }
         | { __typename: 'RawHTMLBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'ReferenceProgressBarBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'RegexBlock', id: string | null, blockType: string, field: string }
@@ -2632,6 +2799,7 @@ export type InstanceContextQuery = { __typename: 'Query', instance: { __typename
       | { __typename: 'IntegerBlock', id: string | null }
       | { __typename: 'ListBlock', id: string | null }
       | { __typename: 'PageChooserBlock', id: string | null }
+      | { __typename: 'ParameterPanelBlock', id: string | null }
       | { __typename: 'RawHTMLBlock', id: string | null }
       | { __typename: 'ReferenceProgressBarBlock', id: string | null }
       | { __typename: 'RegexBlock', id: string | null }

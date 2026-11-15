@@ -2,6 +2,8 @@ import { gql } from '@apollo/client';
 
 import type { StreamFieldFragment } from '@/common/__generated__/graphql';
 import { FrameworkLanding } from '@/components/general/FrameworkLanding';
+import { ParameterPanelBlock } from '@/components/general/ParameterPanelBlock';
+import { ACTION_PARAMETER_FRAGMENT } from '@/queries/actionParameterFragment';
 import { CardListBlock } from './CardListBlock';
 import RichText from './RichText';
 
@@ -43,7 +45,16 @@ export const STREAM_FIELD_FRAGMENT = gql`
         allowInstanceCreation
       }
     }
+
+    ... on ParameterPanelBlock {
+      title
+      showReset
+      parameters {
+        ...ActionParameter
+      }
+    }
   }
+  ${ACTION_PARAMETER_FRAGMENT}
 `;
 
 type Props = {
@@ -77,6 +88,9 @@ export function StreamField({ block }: Props) {
 
     case 'FrameworkLandingBlock':
       return <FrameworkLanding block={block} />;
+
+    case 'ParameterPanelBlock':
+      return <ParameterPanelBlock block={block} />;
 
     default:
       return null;

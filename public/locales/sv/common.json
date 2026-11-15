@@ -38,6 +38,7 @@
   "error-unexpected": "Ett oväntat fel inträffade",
   "explore": "Utforska",
   "my-model": "Min modell",
+  "parameter-panel-applies-everywhere": "Inställningarna gäller hela webbplatsen, inte bara den här sidan.",
   "settings-expand": "Visa alla inställningar",
   "settings-collapse": "Dölj alla inställningar",
   "emissions": "Utsläpp",

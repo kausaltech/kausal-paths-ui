@@ -246,6 +246,7 @@
       "IntegerBlock",
       "ListBlock",
       "PageChooserBlock",
+      "ParameterPanelBlock",
       "RawHTMLBlock",
       "ReferenceProgressBarBlock",
       "RegexBlock",

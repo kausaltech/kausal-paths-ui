@@ -18,12 +18,14 @@ import { sanitizeHtmlUnit } from '@common/utils/format';
 
 import type { CytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
+import { formatUrl } from '@/common/links';
 import {
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
   UncontrolledDropdown,
 } from '@/components/common/Dropdowns';
+import { useSiteOrNull } from '@/context/site';
 import SelectDropdown from './common/SelectDropdown';
 import Icon from './common/icon';
 
@@ -419,6 +421,7 @@ export default function CytoGraph(props: CytoGraphProps) {
   const [layout, setLayout] = useState(graphSettings[0]);
   const [cy, setCy] = useState<Cytoscape.Core | null>(null);
   const router = useRouter();
+  const site = useSiteOrNull();
   const cyRef = useRef<HTMLDivElement | null>(null);
 
   const elements = useMemo(() => {
@@ -519,9 +522,11 @@ export default function CytoGraph(props: CytoGraphProps) {
   const handleNodeClick = useCallback(
     (event: Cytoscape.EventObject) => {
       const nodeId = event.target.data('id');
-      router.push(`/node/${nodeId}`);
+      // formatUrl adds the site's base path and the locale prefix; without them a click on the
+      // English graph opened the node page in the default language.
+      router.push(formatUrl(site, `/node/${nodeId}`));
     },
-    [router]
+    [router, site]
   );
 
   useEffect(() => {
