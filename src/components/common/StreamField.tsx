@@ -49,6 +49,14 @@ export const STREAM_FIELD_FRAGMENT = gql`
     ... on ParameterPanelBlock {
       title
       showReset
+      nodeGraphs {
+        nodeId
+        groupBy
+        filters {
+          dimension
+          categories
+        }
+      }
       parameters {
         ...ActionParameter
       }

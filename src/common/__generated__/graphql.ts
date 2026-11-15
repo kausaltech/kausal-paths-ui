@@ -724,7 +724,7 @@ type StreamField_ListBlock_Fragment = { __typename: 'ListBlock', id: string | nu
 
 type StreamField_PageChooserBlock_Fragment = { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string };
 
-type StreamField_ParameterPanelBlock_Fragment = { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+type StreamField_ParameterPanelBlock_Fragment = { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, nodeGraphs: Array<{ __typename: 'ParameterPanelGraphType', nodeId: string, groupBy: string | null, filters: Array<{ __typename: 'ParameterPanelGraphFilterType', dimension: string, categories: Array<string> }> } | null> | null, parameters: Array<
     | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
         | { __typename: 'ActionNode', id: string }
         | { __typename: 'Node', id: string }
@@ -856,6 +856,17 @@ export type SetParameterMutation = { __typename: 'Mutation', setParameter: { __t
       | { __typename: 'StringParameterType', id: string, isCustomized: boolean }
       | { __typename: 'UnknownParameterType', id: string, isCustomized: boolean }
      | null } };
+
+export type ParameterPanelGraphQueryVariables = Exact<{
+  node: string | number;
+  scenarios?: Array<string> | null | undefined;
+}>;
+
+
+export type ParameterPanelGraphQuery = { __typename: 'Query', activeScenario: { __typename: 'ScenarioType', id: string }, node:
+    | { __typename: 'ActionNode', id: string, name: string, color: string | null, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null }
+    | { __typename: 'Node', id: string, name: string, color: string | null, metricDim: { __typename: 'DimensionalMetricType', id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<{ __typename: 'MetricDimensionType', id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<{ __typename: 'MetricDimensionCategoryType', id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }>, groups: Array<{ __typename: 'MetricDimensionCategoryGroupType', id: string, originalId: string, label: string, color: string | null, order: number | null }> }>, goals: Array<{ __typename: 'DimensionalMetricGoalEntry', categories: Array<string>, groups: Array<string>, values: Array<{ __typename: 'MetricYearlyGoalType', year: number, value: number, isInterpolated: boolean }> }>, unit: { __typename: 'UnitType', id: string, htmlShort: string, short: string, htmlLong: string, long: string }, normalizedBy: { __typename: 'NormalizerNodeType', id: string, name: string } | null } | null }
+   | null };
 
 export type DimensionalPlotFragment = { __typename: 'DimensionalFlowType', id: string, sources: Array<string>, unit: { __typename: 'UnitType', id: string, htmlLong: string }, nodes: Array<{ __typename: 'FlowNodeType', id: string, label: string, color: string | null }>, links: Array<{ __typename: 'FlowLinksType', year: number, sources: Array<string>, targets: Array<string>, values: Array<number | null>, absoluteSourceValues: Array<number> }> };
 
@@ -2051,7 +2062,7 @@ export type ActionContentQuery = { __typename: 'Query', action: { __typename: 'A
       | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
       | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
       | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
-      | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+      | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, nodeGraphs: Array<{ __typename: 'ParameterPanelGraphType', nodeId: string, groupBy: string | null, filters: Array<{ __typename: 'ParameterPanelGraphFilterType', dimension: string, categories: Array<string> }> } | null> | null, parameters: Array<
           | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
               | { __typename: 'ActionNode', id: string }
               | { __typename: 'Node', id: string }
@@ -2577,7 +2588,7 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
-        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, nodeGraphs: Array<{ __typename: 'ParameterPanelGraphType', nodeId: string, groupBy: string | null, filters: Array<{ __typename: 'ParameterPanelGraphFilterType', dimension: string, categories: Array<string> }> } | null> | null, parameters: Array<
             | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
                 | { __typename: 'ActionNode', id: string }
                 | { __typename: 'Node', id: string }
@@ -2638,7 +2649,7 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
-        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, nodeGraphs: Array<{ __typename: 'ParameterPanelGraphType', nodeId: string, groupBy: string | null, filters: Array<{ __typename: 'ParameterPanelGraphFilterType', dimension: string, categories: Array<string> }> } | null> | null, parameters: Array<
             | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
                 | { __typename: 'ActionNode', id: string }
                 | { __typename: 'Node', id: string }
@@ -2700,7 +2711,7 @@ export type PageQuery = { __typename: 'Query', activeScenario: { __typename: 'Sc
         | { __typename: 'IntegerBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'ListBlock', id: string | null, blockType: string, field: string }
         | { __typename: 'PageChooserBlock', id: string | null, blockType: string, field: string }
-        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, parameters: Array<
+        | { __typename: 'ParameterPanelBlock', title: string | null, showReset: boolean, id: string | null, blockType: string, field: string, nodeGraphs: Array<{ __typename: 'ParameterPanelGraphType', nodeId: string, groupBy: string | null, filters: Array<{ __typename: 'ParameterPanelGraphFilterType', dimension: string, categories: Array<string> }> } | null> | null, parameters: Array<
             | { __typename: 'BoolParameterType', id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node:
                 | { __typename: 'ActionNode', id: string }
                 | { __typename: 'Node', id: string }

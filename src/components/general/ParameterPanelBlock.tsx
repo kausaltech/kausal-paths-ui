@@ -15,6 +15,7 @@ import type {
 import { activeScenarioVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import ParameterWidget from '@/components/general/ParameterWidget';
+import { ParameterPanelGraph } from '@/components/general/node-metric-chart/ParameterPanelGraph';
 import { useSite } from '@/context/site';
 
 type ParameterPanelBlockData = Extract<StreamFieldFragment, { __typename: 'ParameterPanelBlock' }>;
@@ -46,7 +47,7 @@ type Props = {
 };
 
 /**
- * A panel of parameters chosen by the page editor.
+ * A panel of parameters chosen by the page editor, and the graphs of the nodes the editor chose.
  *
  * It changes the visitor's session, as the settings panel does, so the change applies on every
  * page. Reset returns only this panel's parameters to their defaults, not the visitor's other
@@ -62,7 +63,10 @@ export function ParameterPanelBlock({ block }: Props) {
   const parameters = (block.parameters ?? []).filter(
     (param): param is NonNullable<typeof param> => !!param?.isCustomizable
   );
-  if (!parameters.length) return null;
+  const graphs = (block.nodeGraphs ?? []).filter(
+    (graph): graph is NonNullable<typeof graph> => !!graph
+  );
+  if (!parameters.length && !graphs.length) return null;
   const customized = parameters.filter((param) => param.isCustomized);
 
   const handleReset = async () => {
@@ -115,6 +119,18 @@ export function ParameterPanelBlock({ block }: Props) {
         >
           {t('reset-button')}
         </Button>
+      )}
+      {graphs.length > 0 && (
+        <Stack spacing={3} sx={{ mt: 3 }}>
+          {graphs.map((graph, idx) => (
+            // The same node may be graphed twice with different defaults, so the index is part of the key.
+            <ParameterPanelGraph
+              key={`${idx}:${graph.nodeId}`}
+              nodeId={graph.nodeId}
+              editorDefaults={{ groupBy: graph.groupBy, filters: graph.filters }}
+            />
+          ))}
+        </Stack>
       )}
     </Box>
   );

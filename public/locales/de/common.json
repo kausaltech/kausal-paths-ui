@@ -59,6 +59,7 @@
   "my-model": "Mein Modell",
   "negative": "negativ",
   "parameter-panel-applies-everywhere": "Diese Einstellungen gelten für die ganze Website, nicht nur für diese Seite.",
+  "parameter-panel-graph-unavailable": "Für diesen Knoten kann kein Diagramm angezeigt werden.",
   "plot-action-impact": "Maßnahmenauswirkungen",
   "plot-actualized": "Realisiert",
   "plot-baseline": "Referenzwert",
