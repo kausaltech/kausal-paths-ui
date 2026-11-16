@@ -30,6 +30,7 @@ export type PlaywrightGetInstanceInfoQuery = { __typename: 'Query', instance: { 
     | { __typename: 'StaticPage', urlPath: string, title: string, showInMenus: boolean }
   >, actions: Array<{ __typename: 'ActionNode', id: string, isVisible: boolean, group: { __typename: 'ActionGroupType', id: string } | null, parameters: Array<
       | { __typename: 'BoolParameterType', localId: string | null, isCustomizable: boolean }
+      | { __typename: 'ChoiceParameterType', localId: string | null, isCustomizable: boolean }
       | { __typename: 'NumberParameterType', localId: string | null, isCustomizable: boolean }
       | { __typename: 'StringParameterType', localId: string | null, isCustomizable: boolean }
       | { __typename: 'UnknownParameterType', localId: string | null, isCustomizable: boolean }

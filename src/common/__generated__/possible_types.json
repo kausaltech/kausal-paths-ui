@@ -1,7 +1,15 @@
 {
   "possibleTypes": {
+    "ActivateFrameworkOrganizationPayload": [
+      "ActivateOrganizationResult",
+      "OperationInfo"
+    ],
     "AddInputPortPayload": [
       "InputPortType",
+      "OperationInfo"
+    ],
+    "AddInventoryYearPayload": [
+      "AddInventoryYearResult",
       "OperationInfo"
     ],
     "AddOutputPortPayload": [
@@ -12,6 +20,14 @@
       "OperationInfo",
       "User",
       "UserNotFoundError"
+    ],
+    "AnyNodeType": [
+      "ActionNode",
+      "Node"
+    ],
+    "AssignOrganizationRolePayload": [
+      "OperationInfo",
+      "OrganizationAccessGrant"
     ],
     "BeginInvocationPayload": [
       "BeginAssistantInvocationPayload",
@@ -81,6 +97,10 @@
       "Node",
       "OperationInfo"
     ],
+    "CreatePayload": [
+      "OperationInfo",
+      "Submission"
+    ],
     "CreateScenarioPayload": [
       "OperationInfo",
       "ScenarioType"
@@ -88,6 +108,10 @@
     "CreateSourceReferencePayload": [
       "DatasetSourceReference",
       "OperationInfo"
+    ],
+    "DatasetFinding": [
+      "DatasetPlausibilityFinding",
+      "DatasetValidationViolation"
     ],
     "DeleteDataPointsPayload": [
       "DeleteDataPointsResult",
@@ -105,6 +129,10 @@
       "ModelDeletePayload",
       "OperationInfo"
     ],
+    "DiscardPayload": [
+      "DiscardSubmissionResult",
+      "OperationInfo"
+    ],
     "EditableEntity": [
       "ActionNode",
       "DatasetPortType",
@@ -114,6 +142,13 @@
     "FailInvocationPayload": [
       "AssistantInvocationType",
       "OperationInfo"
+    ],
+    "FinalisePayload": [
+      "ConstraintViolations",
+      "DatasetValidationViolations",
+      "NodeValueValidationViolations",
+      "OperationInfo",
+      "Submission"
     ],
     "InitializeThreadPayload": [
       "AssistantThreadType",
@@ -132,6 +167,11 @@
     "InviteUserToInstancePayload": [
       "InstanceInvitation",
       "OperationInfo"
+    ],
+    "MetricQualifier": [
+      "CoveredScoreQualifierType",
+      "ReportingQualifierType",
+      "SourcesQualifierType"
     ],
     "NodeConfigUnion": [
       "ActionConfigType",
@@ -153,6 +193,7 @@
     ],
     "ParameterInterface": [
       "BoolParameterType",
+      "ChoiceParameterType",
       "NumberParameterType",
       "StringParameterType",
       "UnknownParameterType"
@@ -195,17 +236,34 @@
       "NodeValueValidationViolations",
       "OperationInfo"
     ],
+    "ReactivateOrganizationRolePayload": [
+      "OperationInfo",
+      "OrganizationAccessGrant"
+    ],
     "RegisterUserPayload": [
       "OperationInfo",
       "RegisterUserResult"
+    ],
+    "RemoveInventoryYearPayload": [
+      "InventoryYearNotEmpty",
+      "OperationInfo",
+      "RemoveInventoryYearResult"
     ],
     "RenameThreadPayload": [
       "AssistantThreadType",
       "OperationInfo"
     ],
+    "RequestReviewPayload": [
+      "OperationInfo",
+      "Submission"
+    ],
     "ResolveDataPointCommentPayload": [
       "DataPointComment",
       "OperationInfo"
+    ],
+    "ReturnToDraftPayload": [
+      "OperationInfo",
+      "Submission"
     ],
     "SaveMessagePayload": [
       "AssistantMessageType",
@@ -216,9 +274,18 @@
       "Node",
       "OperationInfo"
     ],
+    "SetInputPortBindingsPayload": [
+      "ConstraintViolations",
+      "ModelDeletePayload",
+      "OperationInfo"
+    ],
     "SetInstanceLockedPayload": [
       "OperationInfo",
       "SetInstanceLockedResult"
+    ],
+    "SetInstanceParameterPayload": [
+      "InstanceType",
+      "OperationInfo"
     ],
     "SetMetricValidationRulesPayload": [
       "MetricValidationRulesResult",
@@ -270,6 +337,10 @@
       "TextBlock",
       "TimeBlock",
       "URLBlock"
+    ],
+    "SuspendOrganizationRolePayload": [
+      "OperationInfo",
+      "OrganizationAccessGrant"
     ],
     "UnresolveDataPointCommentPayload": [
       "DataPointComment",
@@ -342,8 +413,11 @@
       "OperationInfo",
       "ScenarioType"
     ],
+    "UpgradeFrameworkTemplatePayload": [
+      "InstanceType",
+      "OperationInfo"
+    ],
     "ValidationRule": [
-      "AllowedCombinationsRule",
       "DimensionSumRule",
       "NoGapsRule",
       "RequiredCombinationsRule",
