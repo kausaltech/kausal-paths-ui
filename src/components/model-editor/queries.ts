@@ -237,6 +237,12 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
           id
           ...EditorNodeEdge
         }
+        # Which nodes the action wizard can act on (single output, additive input, local).
+        actionTargets {
+          nodeId
+          available
+          reason
+        }
       }
       model {
         nodes {
@@ -411,6 +417,15 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
             standard
           }
           dimensions
+          # What the port produces, per the solver; the template of a new
+          # action acting on it (see action-wizard).
+          effectiveShape {
+            dimensionUuids
+            categories {
+              dimensionUuid
+              categoryUuids
+            }
+          }
         }
         typeConfig {
           __typename
@@ -452,7 +467,7 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
   ${EDITOR_PORT_TRANSFORMATION}
 `;
 
-const EDITOR_OPERATION_INFO_FIELDS = gql`
+export const EDITOR_OPERATION_INFO_FIELDS = gql`
   fragment EditorOperationInfoFields on OperationInfo {
     messages {
       kind

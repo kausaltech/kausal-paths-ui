@@ -1,7 +1,7 @@
 import { Suspense, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { Alert, Box, CircularProgress, Drawer, Snackbar } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Drawer, Snackbar } from '@mui/material';
 
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
 import { AssistantIntegration } from '@paths-assistant/client';
@@ -43,6 +43,9 @@ import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeDisplaySettingsMenu from './NodeDisplaySettingsMenu';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
+import ActionWizard from './action-wizard/ActionWizard';
+import { type ActionTarget, actionWizardVar, openActionWizard } from './action-wizard/state';
+import { usePickMode } from './action-wizard/usePickMode';
 import { nodeNamesByUuidVar } from './constraintViolations';
 import { EditorUiProvider, useCreateEditorUiController } from './editor-ui';
 import {
@@ -288,6 +291,7 @@ const FlowCanvas = memo(function FlowCanvas({
 function FlowEditor(props: {
   nodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
+  actionTargets: readonly ActionTarget[];
   nodeLayouts: readonly {
     nodeId: string;
     x: number;
@@ -414,6 +418,17 @@ function FlowEditor(props: {
     return convertToElk(visibleNodes, visibleEdges, snippedConnectionsByNodeId);
   }, [snippedConnectionsByNodeId, visibleEdges, visibleNodes]);
 
+  /** Whether the action wizard can act on each node, by node uuid. */
+  const actionTargetByUuid = useMemo(
+    () => new Map(props.actionTargets.map((target) => [target.nodeId, target])),
+    [props.actionTargets]
+  );
+
+  const t = useTranslations('model-editor');
+  const pickMode = usePickMode(props.nodes, nodeMap, actionTargetByUuid, {
+    noFit: t('action-from-ports-pick-no-fit'),
+  });
+
   const instance = useInstance();
   const instanceId = instance.id;
   const updateNodeLayouts = useUpdateNodeLayouts();
@@ -477,9 +492,10 @@ function FlowEditor(props: {
         isProtected: graphNode?.isEditable === false,
         canChange: graphNode?.userPermissions?.change === true,
         canDelete: graphNode?.userPermissions?.delete === true,
+        actionTarget: graphNode ? (actionTargetByUuid.get(graphNode.uuid) ?? null) : null,
       });
     },
-    [nodeMap]
+    [actionTargetByUuid, nodeMap]
   );
 
   const onPaneContextMenu = useCallback(
@@ -534,8 +550,25 @@ function FlowEditor(props: {
       highlightedNodeIds,
       activeNodeId: inspectedNodeId,
       onHiddenContextClick: handleSnippedNodeClick,
+      dimmedNodeIds: pickMode.dimmedNodeIds,
     }),
-    [highlightedNodeIds, inspectedNodeId, handleSnippedNodeClick]
+    [highlightedNodeIds, inspectedNodeId, handleSnippedNodeClick, pickMode.dimmedNodeIds]
+  );
+
+  // The wizard takes the right edge of the canvas, where the details drawer opens.
+  const wizardOpen = useReactiveVar(actionWizardVar).open;
+  useEffect(() => {
+    if (wizardOpen) inspectNode(null, 'user');
+  }, [wizardOpen, inspectNode]);
+
+  const { pick: pickNode } = pickMode;
+  const handleCanvasNodeClick = useCallback(
+    (nodeId: string | null) => {
+      // While the action wizard waits for a pick, a node click goes to it.
+      if (nodeId !== null && pickNode(nodeId)) return;
+      inspectNode(nodeId, 'user');
+    },
+    [inspectNode, pickNode]
   );
 
   const inspectedNode = inspectedNodeId ? (nodeMap.get(inspectedNodeId) ?? null) : null;
@@ -554,7 +587,7 @@ function FlowEditor(props: {
                 persistedPositions={persistedPositions}
                 inspectedNodeId={inspectedNodeId}
                 layoutResetCounter={layoutResetCounter}
-                onInspectNode={(nodeId) => inspectNode(nodeId, 'user')}
+                onInspectNode={handleCanvasNodeClick}
                 onResetLayout={handleResetLayout}
                 onEdgeContextMenu={onEdgeContextMenu}
                 onNodeContextMenu={onNodeContextMenu}
@@ -568,7 +601,38 @@ function FlowEditor(props: {
                 onDuplicateNode={crud.duplicateNode}
                 onDeleteNode={crud.requestDeleteNode}
                 onNewNode={crud.createNodeAt}
+                onNewActionOn={openActionWizard}
               />
+              <ActionWizard
+                nodeMap={nodeMap}
+                actionGroups={props.actionGroups}
+                onCreated={(actionId) => {
+                  void focusNode(actionId, { origin: 'user', highlight: true });
+                }}
+              />
+              {pickMode.active && (
+                <Alert
+                  severity={pickMode.refusal ? 'warning' : 'info'}
+                  action={
+                    <Button color="inherit" size="small" onClick={pickMode.cancel}>
+                      {t('action-from-ports-pick-cancel')}
+                    </Button>
+                  }
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 7,
+                    boxShadow: 3,
+                  }}
+                >
+                  {pickMode.refusal ??
+                    (pickMode.kind === 'target'
+                      ? t('action-from-ports-pick-target')
+                      : t('action-from-ports-pick-source'))}
+                </Alert>
+              )}
               <Drawer
                 variant="persistent"
                 anchor="right"
@@ -707,6 +771,7 @@ export default function NodeGraphEditor() {
           <FlowEditor
             nodes={nodesWithOverrides}
             edges={editor.edges}
+            actionTargets={editor.actionTargets}
             nodeLayouts={editor.nodeLayouts}
             outcomeNodeIds={editor.graphLayout.outcomeIds}
             actionGroups={data.instance.actionGroups}

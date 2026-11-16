@@ -82,6 +82,8 @@ export type ContextMenuState =
           isProtected: boolean;
           canChange: boolean;
           canDelete: boolean;
+          /** Whether the action wizard can act on the node, and if not, why (`actionTargets`). */
+          actionTarget: { available: boolean; reason: string | null } | null;
         }
       | { kind: 'edge'; edgeId: string }
       | { kind: 'pane'; flowX: number; flowY: number }
@@ -95,6 +97,8 @@ type Props = {
   onDuplicateNode: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
   onNewNode: (flowX: number, flowY: number, kind: NewNodeKind) => void;
+  /** Start the action wizard on a node: the action's effect is added to the node's additive input. */
+  onNewActionOn: (nodeId: string) => void;
 };
 
 export default function NodeGraphContextMenu({
@@ -104,6 +108,7 @@ export default function NodeGraphContextMenu({
   onDuplicateNode,
   onDeleteNode,
   onNewNode,
+  onNewActionOn,
 }: Props) {
   const t = useTranslations('model-editor');
   const readOnly = useIsEditorReadOnly();
@@ -125,6 +130,31 @@ export default function NodeGraphContextMenu({
     onDeleteNode(state.nodeId);
     onClose();
   };
+
+  const handleNewActionOn = () => {
+    if (state?.kind === 'node') onNewActionOn(state.nodeId);
+    onClose();
+  };
+
+  const actionTarget = state?.kind === 'node' ? state.actionTarget : null;
+  // Disabled rather than hidden, so that the reason is visible: a node with several
+  // outputs, no additive input, or one inherited from a framework.
+  const newActionItem = (
+    <MenuItem key="new-action-on" onClick={handleNewActionOn} disabled={!actionTarget?.available}>
+      <ListItemIcon>
+        <Lightning size={14} />
+      </ListItemIcon>
+      <ListItemText
+        primary={t('action-from-ports-menu')}
+        secondary={
+          actionTarget?.available
+            ? t('action-from-ports-menu-desc')
+            : (actionTarget?.reason ?? t('action-from-ports-menu-unavailable'))
+        }
+        slotProps={{ secondary: { sx: { fontSize: 11, whiteSpace: 'normal', maxWidth: 280 } } }}
+      />
+    </MenuItem>
+  );
 
   const handleNewNode = (kind: NewNodeKind) => {
     if (state?.kind !== 'pane') return;
@@ -148,6 +178,7 @@ export default function NodeGraphContextMenu({
           <ListItemText>{t('nodes-hide-edge')}</ListItemText>
         </MenuItem>
       )}
+      {!readOnly && state?.kind === 'node' && [newActionItem, <Divider key="new-action-divider" />]}
       {!readOnly &&
         state?.kind === 'node' &&
         state.canChange &&

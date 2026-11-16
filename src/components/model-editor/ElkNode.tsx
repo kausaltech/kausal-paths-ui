@@ -47,6 +47,8 @@ export type NodeGraphInteraction = {
   highlightedNodeIds: ReadonlySet<string>;
   activeNodeId: string | null;
   onHiddenContextClick: (id: string) => void;
+  /** Nodes drawn faded, e.g. those that cannot be picked in the action wizard's pick mode. */
+  dimmedNodeIds?: ReadonlySet<string>;
 };
 
 const defaultInteraction: NodeGraphInteraction = {
@@ -345,9 +347,10 @@ export type ElkNodeType = Node<ElkNodeData, 'elk'>;
 const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType>) => {
   const t = useTranslations('model-editor');
   const showContent = useStore(zoomSelector);
-  const { highlightedNodeIds, activeNodeId, onHiddenContextClick } = use(
+  const { highlightedNodeIds, activeNodeId, onHiddenContextClick, dimmedNodeIds } = use(
     NodeGraphInteractionContext
   );
+  const dimmed = dimmedNodeIds?.has(id) ?? false;
   const display = useReactiveVar(nodeDisplaySettingsVar);
   const statusEntry = useReactiveVar(nodeStatusVar)[id];
   const statusSeverity = getStatusSeverity(statusEntry?.status);
@@ -492,6 +495,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
       {showContent ? (
         <Box
           sx={{
+            opacity: dimmed ? 0.35 : 1,
             display: 'flex',
             flexDirection: 'column',
             borderRadius: '4px',
