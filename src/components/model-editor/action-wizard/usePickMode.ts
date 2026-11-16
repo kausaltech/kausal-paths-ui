@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { skipToken, useQuery, useReactiveVar } from '@apollo/client/react';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useEditorApolloContext } from '../useEditorApolloContext';
@@ -52,11 +52,12 @@ export function usePickMode(
       ? state.effects.find((e) => e.key === pickState.effectKey)
       : undefined;
   const sourceTarget = sourceEffect ? nodeMap.get(sourceEffect.targetNodeId) : undefined;
-  const { data } = useQuery(EFFECT_SOURCE_CANDIDATES, {
-    variables: { targetNodeId: sourceTarget?.uuid ?? '' },
-    skip: !sourceTarget,
-    context: editorContext,
-  });
+  const { data } = useQuery(
+    EFFECT_SOURCE_CANDIDATES,
+    sourceTarget
+      ? { variables: { targetNodeId: sourceTarget.uuid }, context: editorContext }
+      : skipToken
+  );
   const candidatePorts = useMemo(() => {
     const byNodeUuid = new Map<string, string>();
     for (const c of data?.instance.editor?.effectSourceCandidates.nodes ?? []) {

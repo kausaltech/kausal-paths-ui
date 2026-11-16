@@ -23,7 +23,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { skipToken, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { Bullseye, PlusLg, Trash, X } from 'react-bootstrap-icons';
 
@@ -95,12 +95,16 @@ function EffectSources({ effect, node }: { effect: EffectDraft; node: EditorNode
   const t = useTranslations('model-editor');
   const uid = useId();
   const editorContext = useEditorApolloContext();
-  const { data, loading } = useQuery(EFFECT_SOURCE_CANDIDATES, {
-    variables: { targetNodeId: node.uuid },
-    skip: effect.sourceKind === 'newDataset',
-    context: editorContext,
-    fetchPolicy: 'network-only',
-  });
+  const { data, loading } = useQuery(
+    EFFECT_SOURCE_CANDIDATES,
+    effect.sourceKind === 'newDataset'
+      ? skipToken
+      : {
+          variables: { targetNodeId: node.uuid },
+          context: editorContext,
+          fetchPolicy: 'network-only',
+        }
+  );
   const candidates = data?.instance.editor?.effectSourceCandidates;
   const pick = useReactiveVar(actionWizardVar).pick;
   const picking = pick?.kind === 'source' && pick.effectKey === effect.key;
@@ -193,11 +197,10 @@ function EffectCard({
 }) {
   const t = useTranslations('model-editor');
   const editorContext = useEditorApolloContext();
-  const { data: categoryData, loading: categoriesLoading } = useQuery(ACTION_TARGET_CATEGORIES, {
-    variables: { targetNodeId: node?.uuid ?? '' },
-    skip: !node,
-    context: editorContext,
-  });
+  const { data: categoryData, loading: categoriesLoading } = useQuery(
+    ACTION_TARGET_CATEGORIES,
+    node ? { variables: { targetNodeId: node.uuid }, context: editorContext } : skipToken
+  );
   const present = useMemo(
     () =>
       new Map(
