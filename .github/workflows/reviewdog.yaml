@@ -57,7 +57,7 @@ jobs:
         with:
           reviewdog_version: v0.21.0
 
-      # github-actions reports findings as annotations from the job's own output.
+      # github-annotations reports findings as annotations from the job's own output.
       # github-check creates a check run and updates it afterwards, and that update
       # intermittently got 404, failing the job with zero findings.
       - name: Run lint and typecheck
@@ -65,8 +65,8 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           status=0
-          reviewdog -reporter=github-actions -fail-level=warning -runners eslint || status=$?
-          reviewdog -reporter=github-actions -fail-level=error -runners typecheck || status=$?
+          reviewdog -reporter=github-annotations -fail-level=warning -runners eslint || status=$?
+          reviewdog -reporter=github-annotations -fail-level=error -runners typecheck || status=$?
           exit "$status"
 
       # The kausal_common workspace package resolves its peerDependencies
