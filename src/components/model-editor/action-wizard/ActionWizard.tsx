@@ -73,6 +73,8 @@ function effectPort(node: EditorNodeFieldsFragment | undefined): OutputPort | nu
 function portDimensionIds(port: OutputPort, dimensions: readonly Dimension[]): string[] | null {
   const solved = port.effectiveShape?.dimensionUuids;
   if (solved) return [...solved];
+  // An inferred port declares no dimensions; until the solver answers, they are unknown.
+  if (!port.dimensions) return null;
   const ids = port.dimensions.map(
     (identifier) => dimensions.find((d) => d.identifier === identifier)?.id
   );
