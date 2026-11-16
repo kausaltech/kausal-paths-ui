@@ -311,6 +311,12 @@ export function getApolloClientConfig(opts: ApolloClientOpts): {
         ImpactOverviewType: {
           keyFields: false,
         },
+        // A DimensionalMetricType is a computed data cube with its metadata, not an
+        // entity: the same node gives a different cube per scenario and presentation
+        // options. The API deprecated its `id`; store each result under its parent field.
+        DimensionalMetricType: {
+          keyFields: false,
+        },
       },
     },
   };

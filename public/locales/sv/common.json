@@ -38,6 +38,8 @@
   "error-unexpected": "Ett oväntat fel inträffade",
   "explore": "Utforska",
   "my-model": "Min modell",
+  "parameter-panel-applies-everywhere": "Inställningarna gäller hela webbplatsen, inte bara den här sidan.",
+  "parameter-panel-graph-unavailable": "Inget diagram kan visas för den här noden.",
   "settings-expand": "Visa alla inställningar",
   "settings-collapse": "Dölj alla inställningar",
   "emissions": "Utsläpp",

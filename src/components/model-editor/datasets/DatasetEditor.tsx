@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useFragment, useMutation, useQuery } from '@apollo/client/react';
+import { skipToken, useFragment, useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
@@ -152,11 +152,12 @@ export default function DatasetEditor({ datasetId }: Props) {
   }, [dataset]);
   const connectedNodeCount = connectedNodeIds.length;
 
-  const { data: connectedNodesData } = useQuery(GET_DATASET_CONNECTED_NODES, {
-    variables: { ids: connectedNodeIds },
-    skip: connectedNodeIds.length === 0,
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: connectedNodesData } = useQuery(
+    GET_DATASET_CONNECTED_NODES,
+    connectedNodeIds.length > 0
+      ? { variables: { ids: connectedNodeIds }, fetchPolicy: 'cache-and-network' }
+      : skipToken
+  );
   const connectedNodes = connectedNodesData?.instance.model.nodes ?? [];
 
   if (loading && !data) {

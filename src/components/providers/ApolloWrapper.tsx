@@ -1,12 +1,14 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+
 import {
   ApolloClient,
   ApolloNextAppProvider,
   InMemoryCache,
 } from '@apollo/client-integration-nextjs';
 
-import { getApolloClientConfig } from '@/common/apollo-config';
+import { type PreviewMode, getApolloClientConfig } from '@/common/apollo-config';
 import { editorPreviewModeVar } from '@/components/model-editor/queries';
 import { recoverFromInvalidToken } from '@/lib/invalid-token-recovery';
 
@@ -28,24 +30,30 @@ const EDITOR_ROUTE_RE = /(^|\/)model(\/|$)/;
  * the backend's publish-first default, so a slice selection can never leak
  * out of the editor.
  *
- * DRAFT deliberately sends no arg: the backend's default path IS the
- * editable working copy for editor operations (mutations force DRAFT
- * server-side). Explicitly requesting the DRAFT slice makes the backend
- * re-hydrate the draft per request, minting a fresh head token that breaks
- * optimistic locking — every mutation would be rejected as stale.
+ * DRAFT is sent explicitly too. With no arg the backend serves the live
+ * revision whenever one exists, so the editor of a published instance would
+ * read frozen datasets (shown as protected) beside its draft node rows.
+ *
+ * The server-side render runs these queries as well, and the browser reuses
+ * their streamed results, so the server must pick the same slice. It has no
+ * `window`, so it reads the route from `serverPathname`; the toggle is
+ * browser state and is always DRAFT on first render.
  */
-function detectPreviewMode() {
-  if (typeof window === 'undefined') return null;
+function detectPreviewMode(serverPathname: string | null): PreviewMode | null {
+  if (typeof window === 'undefined') {
+    return serverPathname && EDITOR_ROUTE_RE.test(serverPathname) ? 'DRAFT' : null;
+  }
   if (!EDITOR_ROUTE_RE.test(window.location.pathname)) return null;
-  return editorPreviewModeVar() === 'PUBLISHED' ? 'PUBLISHED' : null;
+  return editorPreviewModeVar();
 }
 
 export function ApolloWrapper({ locale, instanceIdentifier, instanceHostname, children }: Props) {
+  const pathname = usePathname();
   const opts = {
     locale,
     instanceIdentifier,
     instanceHostname,
-    previewMode: detectPreviewMode,
+    previewMode: () => detectPreviewMode(pathname),
     onInvalidToken: recoverFromInvalidToken,
   };
   const clientConfig = getApolloClientConfig(opts);

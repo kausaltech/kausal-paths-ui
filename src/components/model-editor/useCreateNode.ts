@@ -155,7 +155,6 @@ export function useCreateNode() {
         inputPorts: null,
         outputPorts: [outputPort],
         inputDimensions: null,
-        outputDimensions: null,
         tags: null,
         allowNulls: false,
         order: null,

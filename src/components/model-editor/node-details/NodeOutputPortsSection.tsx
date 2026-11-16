@@ -35,7 +35,8 @@ import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNod
 type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
 type OutputPort = NodeSpec['outputPorts'][number];
 
-type PortPatch = { unit: string; quantity: string; dimensions: string[] };
+// dimensions: null leaves them to the backend's inference.
+type PortPatch = { unit: string; quantity: string; dimensions: string[] | null };
 
 /**
  * Convert the node's current output ports to the input shape, preserving each
@@ -55,7 +56,9 @@ function portsToInput(ports: readonly OutputPort[]): OutputPortInput[] {
     // the output data preview) — saving any port edit repairs them. Multi-port
     // nodes keep whatever they have; their columns are genuinely distinct.
     columnId: p.columnId ?? (ports.length === 1 ? 'Value' : null),
-    dimensions: [...p.dimensions],
+    // Keep null as null: it means the backend infers the dimensions, and an
+    // empty list would instead assert a scalar on every save.
+    dimensions: p.dimensions ? [...p.dimensions] : null,
     // Null preserves the port's role and protection flag on round-trip.
     role: null,
     isEditable: null,
@@ -79,7 +82,12 @@ function OutputPortEditDialog({
   const t = useTranslations('model-editor');
   const [unit, setUnit] = useState(port.unit?.standard ?? '');
   const [quantity, setQuantity] = useState(port.quantity ?? '');
-  const [dimensions, setDimensions] = useState<string[]>([...port.dimensions]);
+  const [dimensions, setDimensions] = useState<string[]>(
+    port.dimensions ? [...port.dimensions] : []
+  );
+  // A port whose dimensions are inferred (null) stays inferred unless the
+  // user edits the list; saving a unit change must not assert a scalar.
+  const [dimensionsEdited, setDimensionsEdited] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +97,11 @@ function OutputPortEditDialog({
     if (!canSave) return;
     setSubmitting(true);
     setError(null);
-    onSave({ unit: unit.trim(), quantity: quantity.trim(), dimensions })
+    onSave({
+      unit: unit.trim(),
+      quantity: quantity.trim(),
+      dimensions: port.dimensions == null && !dimensionsEdited ? null : dimensions,
+    })
       .then(() => onClose())
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : t('common-save-failed'))
@@ -148,7 +160,10 @@ function OutputPortEditDialog({
           <DimensionsSelect
             label={t('nodes-port-dimensions')}
             value={dimensions}
-            onChange={setDimensions}
+            onChange={(next) => {
+              setDimensions(next);
+              setDimensionsEdited(true);
+            }}
           />
         </Box>
       </DialogContent>
@@ -188,7 +203,8 @@ function PortTooltipContent({ port, edgeCount }: { port: OutputPort; edgeCount: 
       <PortInfoRow label={t('nodes-port-unit')} value={port.unit?.short ?? '—'} />
       <PortInfoRow
         label={t('datasets-dimensions')}
-        value={port.dimensions.length ? port.dimensions.join(', ') : '—'}
+        // null: the backend infers the dimensions from the inputs.
+        value={port.dimensions?.length ? port.dimensions.join(', ') : '—'}
       />
       <PortInfoRow label={t('nodes-port-edges')} value={String(edgeCount)} />
     </Stack>
@@ -227,17 +243,14 @@ export default function NodeOutputPortsSection({
 
   // Resend the whole port list (ids preserved) with the edited port's
   // unit/quantity/dimensions applied — updateNode replaces output ports
-  // wholesale. The node-level outputDimensions (what the engine actually
-  // validates output frames against) is kept in sync as the union of the
-  // ports' dimension lists.
+  // wholesale. Output dimensions belong to the ports; the node carries none.
   const savePort = (portId: string, patch: PortPatch) => {
     const next = portsToInput(ports).map((p) =>
       p.id === portId
         ? { ...p, unit: patch.unit, quantity: patch.quantity || null, dimensions: patch.dimensions }
         : p
     );
-    const outputDimensions = [...new Set(next.flatMap((p) => p.dimensions ?? []))];
-    return updateOutputPorts(nodeId, next, outputDimensions);
+    return updateOutputPorts(nodeId, next);
   };
 
   if (ports.length === 0) return null;

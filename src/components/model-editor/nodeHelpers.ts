@@ -26,7 +26,9 @@ export type OutputPort = NodeSpec['outputPorts'][number];
 export function outputMatchesPort(port: InputPort, output: OutputPort): boolean {
   const requiredQuantity = port.quantity ?? port.effectiveShape?.quantity ?? null;
   if (requiredQuantity && requiredQuantity !== output.quantity) return false;
-  if (port.requiredDimensions.some((req) => !output.dimensions.includes(req))) return false;
+  // null: the backend infers the output's dimensions, so they cannot rule it out here.
+  const dimensions = output.dimensions;
+  if (dimensions && port.requiredDimensions.some((req) => !dimensions.includes(req))) return false;
   return true;
 }
 

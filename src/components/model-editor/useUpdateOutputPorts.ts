@@ -65,18 +65,17 @@ function useUpdateNodePorts() {
 /**
  * Replace a node's output ports. Used to edit a port's unit/quantity/dimensions.
  *
- * `outputDimensions` rides along in the same mutation: the runtime engine
- * still enforces the node-level dimension list (ports' `dimensions` are the
- * canonical-but-not-yet-consumed representation), so callers editing port
- * dimensions pass the union here to keep the enforced contract in sync.
+ * Output dimensions belong to the ports: a port's `dimensions` asserts them,
+ * an empty list asserts a scalar, and null lets the backend infer them. The
+ * node-level `outputDimensions` input is gone from the backend.
  */
 export function useUpdateOutputPorts() {
   const updatePorts = useUpdateNodePorts();
   return useCallback(
-    (nodeId: string, outputPorts: OutputPortInput[], outputDimensions?: string[]) =>
+    (nodeId: string, outputPorts: OutputPortInput[]) =>
       updatePorts(
         nodeId,
-        { outputPorts, outputDimensions } satisfies UpdateNodeInput,
+        { outputPorts } satisfies UpdateNodeInput,
         'Failed to update output ports'
       ),
     [updatePorts]

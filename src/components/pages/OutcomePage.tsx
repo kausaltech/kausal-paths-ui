@@ -13,10 +13,20 @@ import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import InlineError from '@/components/common/InlineError';
 import { PageHero } from '@/components/common/PageHero';
+import { StreamField } from '@/components/common/StreamField';
 import GET_OUTCOME_NODE from '@/queries/getOutcomeNode';
 import OutcomeBlock from '../general/OutcomeBlock';
 import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';
+
+// Text and parameter panels shown above the outcome graphs, which follow the panels' settings.
+const BodyCard = styled.div`
+  padding: 1.5rem 2rem;
+  margin-bottom: ${(props) => props.theme.spaces.s200};
+  border-radius: ${(props) => props.theme.cardBorderRadius};
+  background-color: ${(props) => props.theme.themeColors.white};
+  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+`;
 
 const StyledTitle = styled.h1`
   font-size: ${(props) => props.theme.fontSizeMd};
@@ -106,6 +116,13 @@ export default function OutcomePage(props: OutcomePageProps) {
           }}
         >
           <StyledTitle as={pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
+          {!!page.body?.length && (
+            <BodyCard>
+              {page.body.map((block) =>
+                block ? <StreamField key={block.id} block={block} /> : null
+              )}
+            </BodyCard>
+          )}
           {error && <InlineError error={error} />}
           {(!error || outcomeNode) && (
             <OutcomeBlock

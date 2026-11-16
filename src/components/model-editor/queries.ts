@@ -563,6 +563,26 @@ export const PUBLISH_MODEL_INSTANCE: TypedDocumentNode<
         ... on ConstraintViolations {
           ...ConstraintViolationsFields
         }
+        # The other refusals the publication gate returns. Without them the
+        # client saw an unselected result and reported success.
+        ... on DatasetValidationViolations {
+          violations {
+            code
+            message
+          }
+        }
+        ... on NodeValueValidationViolations {
+          violations {
+            code
+            message
+          }
+        }
+        ... on DataEntryDefinitionProblems {
+          problems {
+            code
+            message
+          }
+        }
       }
     }
   }
@@ -1178,6 +1198,7 @@ export const METRIC_DIMENSION_FIELDS = gql`
 
 export const DIMENSIONAL_METRIC_FIELDS = gql`
   fragment ModelEditorDimensionalMetricFields on DimensionalMetricType {
+    # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: drop this id once the API removes it (Watch UI still selects it); nothing reads it, and the cache does not normalize by it (keyFields: false)
     id
     name
     measureDatapointYears

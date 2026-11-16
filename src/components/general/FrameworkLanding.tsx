@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
-import { useQuery } from '@apollo/client/react';
+import { skipToken, useQuery } from '@apollo/client/react';
 import * as Sentry from '@sentry/nextjs';
 import { useTranslations } from 'next-intl';
 import { Compass, PencilSquare } from 'react-bootstrap-icons';
@@ -146,14 +146,18 @@ export function FrameworkLanding({ block }: Props) {
     data: configsData,
     loading: configsLoading,
     error: configsError,
-  } = useQuery(GET_FRAMEWORK_CONFIGS, {
-    variables: {
-      identifier: framework?.identifier ?? '',
-      clientUrl: typeof window !== 'undefined' ? window.location.href : null,
-    },
-    errorPolicy: 'all',
-    skip: !isAuthenticated || !framework,
-  });
+  } = useQuery(
+    GET_FRAMEWORK_CONFIGS,
+    isAuthenticated && framework
+      ? {
+          variables: {
+            identifier: framework.identifier,
+            clientUrl: typeof window !== 'undefined' ? window.location.href : null,
+          },
+          errorPolicy: 'all',
+        }
+      : skipToken
+  );
 
   useEffect(() => {
     if (configsError) {

@@ -90,6 +90,22 @@ const GET_LANDING_DATA: LandingDataDocument = gql`
             nodeUuid
           }
         }
+        # Everything else that blocks publishing: dataset validation rules,
+        # input-value contracts and data-entry definitions. Without these the
+        # status read as ready while the backend refused the publish.
+        problems {
+          __typename
+          code
+          message
+          enforcement
+          ... on DatasetValidationViolation {
+            datasetIdentifier
+            years
+          }
+          ... on NodeValueValidationViolation {
+            years
+          }
+        }
       }
     }
     scenarios {
@@ -127,6 +143,32 @@ type LandingConflict = {
   origins: { nodeUuid: string | null }[];
   value: { nodeUuid: string | null } | null;
 };
+
+type LandingProblem = {
+  __typename: string;
+  code: string;
+  message: string;
+  enforcement: 'BLOCK_EDIT' | 'BLOCK_PUBLISH' | 'BLOCK_SUBMISSION';
+  datasetIdentifier?: string | null;
+  years?: number[];
+};
+
+/** Problems the backend's publication gate refuses on, other than structural conflicts. */
+function publishBlockingProblems(problems: LandingProblem[]): LandingProblem[] {
+  return problems.filter(
+    (p) =>
+      // Structural conflicts have their own alert above.
+      p.__typename !== 'ConstraintConflict' &&
+      (p.enforcement === 'BLOCK_EDIT' || p.enforcement === 'BLOCK_PUBLISH')
+  );
+}
+
+function problemLocation(p: LandingProblem): string {
+  const parts: string[] = [];
+  if (p.datasetIdentifier) parts.push(p.datasetIdentifier);
+  if (p.years && p.years.length > 0) parts.push(p.years.join(', '));
+  return parts.join(' · ');
+}
 
 type LandingScenario = {
   id: string;
@@ -175,6 +217,7 @@ type LandingDataQuery = {
       draftHeadToken: string | null;
       latestChange: { uuid: string; createdAt: string }[];
       constraintConflicts: LandingConflict[];
+      problems: LandingProblem[];
     } | null;
   };
   scenarios: LandingScenario[];
@@ -255,6 +298,7 @@ export default function ModelEditorLandingPage() {
 
   const [toast, setToast] = useState<ToastState>(null);
   const [conflictsOpen, setConflictsOpen] = useState(false);
+  const [problemsOpen, setProblemsOpen] = useState(true);
 
   // Seed the optimistic-locking token var whenever the query returns a new
   // value — mutations read from this var to gate writes via the backend's
@@ -273,6 +317,14 @@ export default function ModelEditorLandingPage() {
   // must not be enabled on the optimistic default.
   const conflictsKnown = editor?.constraintConflicts != null;
   const blockingConflicts = editor?.constraintConflicts ?? [];
+  // The same holds for the other publication blockers: dataset rules,
+  // input-value contracts and data-entry definitions.
+  const problemsKnown = editor?.problems != null;
+  const blockingProblems = useMemo(
+    () => publishBlockingProblems(editor?.problems ?? []),
+    [editor?.problems]
+  );
+  const publishBlocked = blockingConflicts.length > 0 || blockingProblems.length > 0;
   const nodeNameByUuid = useMemo(
     () => new Map((data?.instance.model.nodes ?? []).map((n) => [n.uuid, n.name])),
     [data]
@@ -305,10 +357,14 @@ export default function ModelEditorLandingPage() {
   const isDraftView = previewMode === 'DRAFT';
   const badgeLabel = isDraftView ? t('editor-draft') : t('editor-published');
   const badgeColor: 'warning' | 'success' = isDraftView ? 'warning' : 'success';
+  // Red when the draft cannot be published as it stands, so the status never
+  // reads as ready while the backend would refuse the publish.
   const indicatorColor = isDraftView
-    ? hasUnpublishedChanges
-      ? 'warning.main'
-      : 'success.main'
+    ? publishBlocked
+      ? 'error.main'
+      : hasUnpublishedChanges
+        ? 'warning.main'
+        : 'success.main'
     : 'success.main';
   const statusHeading = isDraftView
     ? hasUnpublishedChanges
@@ -329,6 +385,16 @@ export default function ModelEditorLandingPage() {
       ? t('editor-read-only-desc')
       : t('editor-no-published-revision');
 
+  const refusalMessage = (items: { message: string }[]) => {
+    const shown = items.slice(0, 3).map((item) => item.message);
+    const rest = items.length - shown.length;
+    return [
+      t('editor-publish-refused', { count: items.length }),
+      ...shown,
+      ...(rest > 0 ? [t('editor-publish-refused-more', { count: rest })] : []),
+    ].join(' — ');
+  };
+
   const handlePublish = async () => {
     try {
       const result = await publish({
@@ -336,19 +402,34 @@ export default function ModelEditorLandingPage() {
         refetchQueries: ['EditorPublishState', 'ModelEditorLandingData'],
       });
       const payload = result.data?.instanceEditor.publishModelInstance;
-      if (payload?.__typename === 'ConstraintViolations') {
-        // Publishing is blocked while the draft has structural conflicts;
-        // the top-level ConstraintViolationsNotice lists them.
-        constraintViolationsVar(payload.conflicts);
-        return;
+      switch (payload?.__typename) {
+        case 'InstanceType':
+          setToast({ severity: 'success', message: t('editor-model-published-ok') });
+          return;
+        case 'ConstraintViolations':
+          // Publishing is blocked while the draft has structural conflicts;
+          // the top-level ConstraintViolationsNotice lists them.
+          constraintViolationsVar(payload.conflicts);
+          return;
+        case 'OperationInfo':
+          setToast({
+            severity: 'error',
+            message:
+              payload.messages.map((m) => m.message).join('; ') || t('editor-model-publish-failed'),
+          });
+          return;
+        case 'DatasetValidationViolations':
+        case 'NodeValueValidationViolations':
+          setToast({ severity: 'error', message: refusalMessage(payload.violations) });
+          return;
+        case 'DataEntryDefinitionProblems':
+          setToast({ severity: 'error', message: refusalMessage(payload.problems) });
+          return;
+        default:
+          // A refusal type this client does not know yet: never report success
+          // for anything but the published instance.
+          setToast({ severity: 'error', message: t('editor-model-publish-failed') });
       }
-      if (payload?.__typename === 'OperationInfo') {
-        const msg =
-          payload.messages.map((m) => m.message).join('; ') || t('editor-model-publish-failed');
-        setToast({ severity: 'error', message: msg });
-        return;
-      }
-      setToast({ severity: 'success', message: t('editor-model-published-ok') });
     } catch (err) {
       const isStale =
         CombinedGraphQLErrors.is(err) &&
@@ -499,14 +580,14 @@ export default function ModelEditorLandingPage() {
               color="primary"
               size="small"
               startIcon={<CloudUpload size={14} />}
-              disabled={publishing || !conflictsKnown || blockingConflicts.length > 0}
+              disabled={publishing || !conflictsKnown || !problemsKnown || publishBlocked}
               onClick={() => {
                 void handlePublish();
               }}
             >
               {publishing
                 ? t('common-publishing')
-                : !conflictsKnown
+                : !conflictsKnown || !problemsKnown
                   ? t('editor-checking-conflicts')
                   : hasBeenPublished
                     ? t('common-publish')
@@ -549,6 +630,45 @@ export default function ModelEditorLandingPage() {
                           }}
                         >
                           {names.join(', ')}
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Collapse>
+          </Alert>
+        )}
+
+        {isDraftView && blockingProblems.length > 0 && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            <Box
+              onClick={() => setProblemsOpen((v) => !v)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+            >
+              {problemsOpen ? <CaretDownFill size={11} /> : <CaretRightFill size={11} />}
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {t('editor-publish-blocked-problems', { count: blockingProblems.length })}
+              </Typography>
+            </Box>
+            <Collapse in={problemsOpen}>
+              <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2.5 }}>
+                {blockingProblems.map((problem, i) => {
+                  const location = problemLocation(problem);
+                  return (
+                    <Box component="li" key={i}>
+                      <Typography variant="body2" sx={{ fontSize: 13 }}>
+                        {problem.message}
+                      </Typography>
+                      {location && (
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          {location}
                         </Typography>
                       )}
                     </Box>

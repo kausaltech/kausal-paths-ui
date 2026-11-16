@@ -172,6 +172,9 @@ const GET_PAGE: TypedDocumentNode<PageQuery, PageQueryVariables> = gql`
         outcomeNode {
           id
         }
+        body {
+          ...StreamField
+        }
       }
       ... on ActionListPage {
         actionListLeadTitle: leadTitle

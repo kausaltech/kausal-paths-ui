@@ -47,6 +47,8 @@
   "emissions-forecast": "Emissions forecast",
   "error-loading-data": "Error loading data",
   "my-model": "My model",
+  "parameter-panel-applies-everywhere": "These settings apply to the whole site, not only to this page.",
+  "parameter-panel-graph-unavailable": "No graph can be shown for this node.",
   "show-error": "Show error",
   "forecast": "Forecast",
   "has-effect-on": "Has effect on",

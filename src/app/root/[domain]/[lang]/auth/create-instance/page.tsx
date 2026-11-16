@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
-import { useMutation, useQuery } from '@apollo/client/react';
+import { skipToken, useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
@@ -167,17 +167,16 @@ export default function CreateInstancePage() {
 
   const [createInstance, { loading }] = useMutation(CREATE_INSTANCE);
 
-  const { data: frameworkData } = useQuery(FRAMEWORK_NAME, {
-    variables: { identifier: frameworkId },
-    skip: !frameworkId,
-  });
+  const { data: frameworkData } = useQuery(
+    FRAMEWORK_NAME,
+    frameworkId ? { variables: { identifier: frameworkId } } : skipToken
+  );
   const frameworkName = frameworkData?.framework?.name;
 
-  const { data: editUrlData, loading: editUrlLoading } = useQuery(NEW_INSTANCE_EDIT_URL, {
-    variables: { frameworkId },
-    skip: !created,
-    fetchPolicy: 'network-only',
-  });
+  const { data: editUrlData, loading: editUrlLoading } = useQuery(
+    NEW_INSTANCE_EDIT_URL,
+    created ? { variables: { frameworkId }, fetchPolicy: 'network-only' } : skipToken
+  );
   const newInstanceViewUrl = created
     ? editUrlData?.me?.editableInstances.find((i) => i.identifier === created.instanceId)
         ?.frameworkConfig?.viewUrl

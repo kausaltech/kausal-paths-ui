@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
-import { useMutation, useQuery } from '@apollo/client/react';
+import { skipToken, useMutation, useQuery } from '@apollo/client/react';
 import { ArrowLeft } from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 
@@ -81,10 +81,10 @@ export default function RegisterPage() {
 
   const [registerUser, { loading }] = useMutation(REGISTER_USER);
 
-  const { data: frameworkData } = useQuery(GET_FRAMEWORK_NAME, {
-    variables: { identifier: frameworkId },
-    skip: !frameworkId,
-  });
+  const { data: frameworkData } = useQuery(
+    GET_FRAMEWORK_NAME,
+    frameworkId ? { variables: { identifier: frameworkId } } : skipToken
+  );
   const frameworkName = frameworkData?.framework?.name;
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
