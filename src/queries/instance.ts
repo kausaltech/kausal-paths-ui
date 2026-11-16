@@ -48,7 +48,7 @@ const GET_INSTANCE_CONTEXT: InstanceContextDocument = gql`
       leadTitle
       leadParagraph
       features {
-        hideNodeDetails
+        hideScenarioEditor
         maximumFractionDigits
         baselineVisibleInGraphs
         showAccumulatedEffects
