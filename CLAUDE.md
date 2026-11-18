@@ -123,6 +123,16 @@ include the module whenever it is initialized.
 - Prefer Emotion styled components for new styling; Sass/Bootstrap exist for legacy reasons
 - Icons: use `react-bootstrap-icons` (not `@mui/icons-material`) for consistency with the rest of the app
 - React 19 with the React Compiler babel plugin enabled
+- **Invalid data:** Never silently discard invalid input. When code tolerates invalid data by skipping all or part of it (e.g., dropping an invalid list item while still processing the rest of the list), report it to Sentry so we become aware of the problem. Use a fixed message so the events group into one issue, and pass the offending data as extra context:
+  ```ts
+  for (const item of items) {
+    if (!isValid(item)) {
+      Sentry.captureMessage('Skipping invalid item', { level: 'warning', extra: { item } });
+      continue;
+    }
+    process(item);
+  }
+  ```
 
 <!-- BEGIN:nextjs-agent-rules -->
 
