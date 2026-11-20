@@ -552,6 +552,8 @@
   "nodes-problem-no-detail": "Ei lisätietoja saatavilla.",
   "nodes-problem-phase-compute": "Laskenta",
   "nodes-problem-phase-init": "Alustus",
+  "nodes-problem-upstream-failed": "Ei laskettu, koska nämä solmut epäonnistuivat:",
+  "nodes-problem-upstream-skipped": "Laskettu ilman näiden epäonnistuneiden solmujen syötteitä:",
   "nodes-problems": "Ongelmat",
   "nodes-read-only": "Vain luku",
   "nodes-read-only-short-desc": "Vaihda luonnostilaan muokataksesi.",

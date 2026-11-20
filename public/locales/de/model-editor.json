@@ -557,6 +557,8 @@
   "nodes-problem-no-detail": "Keine weiteren Details verfügbar.",
   "nodes-problem-phase-compute": "Berechnung",
   "nodes-problem-phase-init": "Initialisierung",
+  "nodes-problem-upstream-failed": "Nicht berechnet, weil diese Knoten fehlgeschlagen sind:",
+  "nodes-problem-upstream-skipped": "Berechnet ohne die Eingaben dieser Knoten, die fehlgeschlagen sind:",
   "nodes-problems": "Probleme",
   "nodes-read-only": "Schreibgeschützt",
   "nodes-read-only-short-desc": "Zum Bearbeiten in den Entwurf wechseln.",

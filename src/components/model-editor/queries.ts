@@ -94,9 +94,13 @@ export function patchNodeGraphOverride(nodeId: string, patch: NodeFieldOverrides
  *    and re-fetched via NodeStatusDownstream.
  */
 export type NodeStatusError = { phase: NodeErrorPhase; message: string };
+/** An upstream node whose own failure this node inherits. */
+export type NodeFailureOrigin = { id: string; name: string };
 export type NodeStatusEntry = {
   status: NodeStatus;
   errors: NodeStatusError[];
+  /** Where the errors are when this node has none of its own (a cascade). */
+  failureOrigins: NodeFailureOrigin[];
   /** True while a compute-phase result for this node is still in flight. */
   pending: boolean;
 };
@@ -302,6 +306,10 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
       errors {
         phase
         message
+      }
+      failureOrigins {
+        id
+        name
       }
       layoutMeta {
         primaryClass
@@ -1143,6 +1151,10 @@ export const NODE_STATUSES: TypedDocumentNode<NodeStatusesQuery, NodeStatusesQue
             errors(compute: true) {
               phase
               message
+            }
+            failureOrigins(compute: true) {
+              id
+              name
             }
           }
         }

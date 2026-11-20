@@ -593,6 +593,8 @@
   "nodes-problem-no-detail": "No further detail available.",
   "nodes-problem-phase-compute": "Calculation",
   "nodes-problem-phase-init": "Setup",
+  "nodes-problem-upstream-failed": "Not computed, because these nodes failed:",
+  "nodes-problem-upstream-skipped": "Computed without the inputs from these nodes, which failed:",
   "nodes-problems": "Problems",
   "nodes-read-only": "Read-only",
   "nodes-read-only-short-desc": "Switch to Draft to edit.",

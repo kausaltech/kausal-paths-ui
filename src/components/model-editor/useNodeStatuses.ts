@@ -12,6 +12,7 @@ type StatusNode = {
   editor?: {
     status?: NodeStatus | null;
     errors: NodeStatusEntry['errors'];
+    failureOrigins?: NodeStatusEntry['failureOrigins'];
   } | null;
 };
 
@@ -19,6 +20,7 @@ function toEntry(node: StatusNode, pending: boolean): NodeStatusEntry {
   return {
     status: node.editor?.status ?? NodeStatus.Ok,
     errors: node.editor?.errors ?? [],
+    failureOrigins: node.editor?.failureOrigins ?? [],
     pending,
   };
 }

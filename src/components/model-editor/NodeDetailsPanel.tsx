@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { Box, Chip, FormControlLabel, IconButton, Switch, Typography } from '@mui/material';
+import { Box, Chip, FormControlLabel, IconButton, Link, Switch, Typography } from '@mui/material';
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
 import { skipToken, useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
@@ -56,9 +56,11 @@ const SET_ACTION_ENABLED: TypedDocumentNode<
 function NodeProblemsContent({
   entry,
   t,
+  onNavigateToNode,
 }: {
   entry: NodeStatusEntry;
   t: ReturnType<typeof useTranslations<'model-editor'>>;
+  onNavigateToNode: (nodeId: string) => void;
 }) {
   const isError = entry.status === NodeStatus.Failed;
   const color = isError ? 'error.main' : 'warning.main';
@@ -107,7 +109,27 @@ function NodeProblemsContent({
           </Typography>
         </Box>
       ))}
-      {entry.errors.length === 0 && (
+      {entry.errors.length === 0 && entry.failureOrigins.length > 0 && (
+        // A cascade: the errors are on the upstream nodes this one inherits its failure from.
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Typography variant="body2" sx={{ fontSize: 12, lineHeight: 1.4 }}>
+            {isError ? t('nodes-problem-upstream-failed') : t('nodes-problem-upstream-skipped')}
+          </Typography>
+          {entry.failureOrigins.map((origin) => (
+            <Link
+              key={origin.id}
+              component="button"
+              type="button"
+              variant="body2"
+              onClick={() => onNavigateToNode(origin.id)}
+              sx={{ fontSize: 12, textAlign: 'left', alignSelf: 'flex-start' }}
+            >
+              {origin.name}
+            </Link>
+          ))}
+        </Box>
+      )}
+      {entry.errors.length === 0 && entry.failureOrigins.length === 0 && (
         <Typography variant="body2" sx={{ fontSize: 12, color: 'text.secondary' }}>
           {t('nodes-problem-no-detail')}
         </Typography>
@@ -369,7 +391,7 @@ export default function NodeDetailsPanel({
           open={problemsOpen}
           onToggle={() => setProblemsOpen((v) => !v)}
         >
-          <NodeProblemsContent entry={statusEntry} t={t} />
+          <NodeProblemsContent entry={statusEntry} t={t} onNavigateToNode={handleNavigateToNode} />
         </CollapsibleSection>
       )}
 
