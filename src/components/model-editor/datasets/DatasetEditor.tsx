@@ -37,6 +37,7 @@ import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getModelEditorBase, getModelEditorSection } from '../paths';
 import { useIsEntityReadOnly } from '../useIsEditorReadOnly';
+import { ConnectedNodeChips } from './ConnectedNodeChips';
 import DataPointDetailsPanel from './DataPointDetailsPanel';
 import DatasetDataGrid from './DatasetDataGrid';
 import DatasetDetailsPanel from './DatasetDetailsPanel';
@@ -159,6 +160,8 @@ export default function DatasetEditor({ datasetId }: Props) {
       : skipToken
   );
   const connectedNodes = connectedNodesData?.instance.model.nodes ?? [];
+  const navigateToNode = (id: string) =>
+    router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`);
 
   if (loading && !data) {
     return (
@@ -435,13 +438,33 @@ export default function DatasetEditor({ datasetId }: Props) {
           marginRight: drawerOpen ? `${DETAILS_WIDTH}px` : 0,
         }}
       >
-        <Button
-          startIcon={<ArrowLeft />}
-          onClick={() => router.push(listBase)}
-          sx={{ mb: 2, alignSelf: 'flex-start' }}
+        {/* Back to the list, and on to the nodes this dataset feeds: the way back
+            for an editor who came here from a node. */}
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{ mb: 2, alignItems: 'center', justifyContent: 'space-between' }}
         >
-          {t('datasets-back-to-datasets')}
-        </Button>
+          <Button
+            startIcon={<ArrowLeft />}
+            onClick={() => router.push(listBase)}
+            sx={{ flexShrink: 0 }}
+          >
+            {t('datasets-back-to-datasets')}
+          </Button>
+          {connectedNodes.length > 0 && (
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', flexShrink: 0 }}>
+                {t('datasets-used-by-nodes')}
+              </Typography>
+              <ConnectedNodeChips
+                nodes={connectedNodes}
+                onNavigateToNode={navigateToNode}
+                justify="flex-end"
+              />
+            </Stack>
+          )}
+        </Stack>
 
         {/* Data points */}
         <Paper
@@ -594,9 +617,7 @@ export default function DatasetEditor({ datasetId }: Props) {
               onDeleteMetric={handleDeleteMetric}
               onRenameDataset={handleRenameDataset}
               onNotice={setNotice}
-              onNavigateToNode={(id) =>
-                router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`)
-              }
+              onNavigateToNode={navigateToNode}
               readOnly={readOnly}
             />
           )}

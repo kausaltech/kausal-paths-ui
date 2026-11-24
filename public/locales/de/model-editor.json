@@ -161,6 +161,7 @@
   "datasets-datapoint-no-value": "Dieser Datenpunkt hat keinen Wert.",
   "datasets-dataset": "Datensatz",
   "datasets-dataset-details": "Datensatzdetails",
+  "datasets-used-by-nodes": "Verwendet von",
   "datasets-dataset-not-found": "Datensatz nicht gefunden.",
   "datasets-dataset-path": "Datensatzpfad",
   "datasets-default-metric-label": "Wert",

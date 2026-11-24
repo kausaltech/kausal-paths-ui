@@ -161,6 +161,7 @@
   "datasets-datapoint-no-value": "Tällä datapisteellä ei ole arvoa.",
   "datasets-dataset": "Tietoaineisto",
   "datasets-dataset-details": "Tietoaineiston tiedot",
+  "datasets-used-by-nodes": "Käyttävät solmut",
   "datasets-dataset-not-found": "Tietoaineistoa ei löytynyt.",
   "datasets-dataset-path": "Tietoaineiston polku",
   "datasets-default-metric-label": "Arvo",

@@ -32,19 +32,16 @@ import {
 import type {
   CreateDataSourceInput,
   DataSourceFieldsFragment,
-  DatasetConnectedNodesQuery,
   DatasetDetailFieldsFragment,
   DatasetSourceReferenceFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { getNodeStyle } from '../ElkNode';
-import { ConnectedNodeChip } from '../node-details/shared';
+import { type ConnectedNode, ConnectedNodeChips } from './ConnectedNodeChips';
 import { MetricDialog, type MetricFormValues } from './MetricDialog';
 import { AttachSourceForm, SourceReferenceCard } from './shared';
 
 type MetricRow = DatasetDetailFieldsFragment['metrics'][number];
 type DimensionRow = DatasetDetailFieldsFragment['dimensions'][number];
 type CategoryRow = DimensionRow['categories'][number];
-type ConnectedNode = DatasetConnectedNodesQuery['instance']['model']['nodes'][number];
 
 function CategoryChip({ cat, used }: { cat: CategoryRow; used: boolean }) {
   const t = useTranslations('model-editor');
@@ -447,26 +444,7 @@ export default function DatasetDetailsPanel({
             {t('datasets-no-nodes-bound')}
           </Typography>
         ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-            {connectedNodes.map((node) => {
-              const nodeClass =
-                node.editor?.spec?.typeConfig && 'nodeClass' in node.editor.spec.typeConfig
-                  ? node.editor.spec.typeConfig.nodeClass
-                  : (node.editor?.nodeType ?? '');
-              const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
-              const style = getNodeStyle(node.kind ?? '', nodeClass, isOutcome);
-              return (
-                <ConnectedNodeChip
-                  key={node.id}
-                  nodeId={node.id}
-                  label={node.name ?? node.id}
-                  style={style}
-                  onSelect={(id) => onNavigateToNode(id)}
-                  onHover={() => {}}
-                />
-              );
-            })}
-          </Box>
+          <ConnectedNodeChips nodes={connectedNodes} onNavigateToNode={onNavigateToNode} />
         )}
       </Paper>
 
