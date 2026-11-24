@@ -244,6 +244,10 @@ export const GET_INSTANCE_DATASETS: TypedDocumentNode<
       editor {
         datasets {
           ...DatasetSummaryFields
+          dataSources {
+            id
+            label
+          }
           dataPointComments {
             id
           }

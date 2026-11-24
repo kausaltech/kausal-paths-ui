@@ -139,7 +139,7 @@ function DatasetRowActions({
   );
 }
 
-type SortKey = 'name' | 'dimensions' | 'metrics' | 'comments' | 'lastModified';
+type SortKey = 'name' | 'dimensions' | 'metrics' | 'sources' | 'comments' | 'lastModified';
 type SortOrder = 'asc' | 'desc';
 
 type DatasetRow = NonNullable<
@@ -154,6 +154,8 @@ function getSortValue(ds: DatasetRow, key: SortKey): string | number {
       return ds.dimensions.length;
     case 'metrics':
       return ds.metrics.length;
+    case 'sources':
+      return ds.dataSources.length;
     case 'comments':
       return ds.dataPointComments.length;
     case 'lastModified':
@@ -384,6 +386,15 @@ export default function DatasetList() {
                   {t('datasets-metrics')}
                 </TableSortLabel>
               </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'sources' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'sources'}
+                  direction={sortKey === 'sources' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('sources')}
+                >
+                  {t('datasets-sources')}
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="right" sortDirection={sortKey === 'comments' ? sortOrder : false}>
                 <TableSortLabel
                   active={sortKey === 'comments'}
@@ -413,7 +424,7 @@ export default function DatasetList() {
           <TableBody>
             {sortedDatasets.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={7}>
                   <Typography
                     sx={{
                       color: 'text.secondary',
@@ -482,6 +493,22 @@ export default function DatasetList() {
                       title={ds.metrics.map((m) => m.unitInfo?.standard || m.label).join(', ')}
                     >
                       <Chip label={ds.metrics.length} size="small" />
+                    </Tooltip>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.disabled',
+                      }}
+                    >
+                      —
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell align="right">
+                  {ds.dataSources.length > 0 ? (
+                    <Tooltip title={ds.dataSources.map((s) => s.label).join('; ')}>
+                      <Chip label={ds.dataSources.length} size="small" />
                     </Tooltip>
                   ) : (
                     <Typography
