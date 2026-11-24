@@ -23,11 +23,16 @@ export type NodeContentSectionProps = {
 /**
  * Translatable node-content fields (name, short description, description).
  *
- * Editor reads/writes always target the instance's default-language column
- * (see useEditorApolloContext), so the default-language tab is editable.
- * Other-language tabs show the resolved translation read-only — they re-run
- * a small query with `context: { locale }` and `fetchPolicy: 'no-cache'` so
- * each switch returns fresh data without colliding on Apollo's cache key.
+ * The default-language tab reads and writes the instance's default-language
+ * columns (see useEditorApolloContext). Other-language tabs re-run a small
+ * query with `context: { locale }` and `fetchPolicy: 'no-cache'` so each switch
+ * returns fresh data without colliding on Apollo's cache key, and write back
+ * through the same locale, which the backend stores as that language's
+ * translation.
+ *
+ * The backend resolves a missing translation to the default-language text, so
+ * a value equal to the default one is shown as untranslated: an empty field
+ * with the default text as a hint. Clearing a field removes its translation.
  */
 export function NodeContentSection({ node, readOnly }: NodeContentSectionProps) {
   const t = useTranslations('model-editor');
@@ -66,6 +71,13 @@ export function NodeContentSection({ node, readOnly }: NodeContentSectionProps) 
   }, [fetchTranslation, isDefault, node.id, selectedLang]);
 
   const translated = translationData?.node ?? null;
+
+  // A translated value equal to the default-language one is the backend's
+  // fallback, not a translation of its own.
+  const ownTranslation = (value: string | null | undefined, defaultValue: string | null) =>
+    value && value !== defaultValue ? value : '';
+  const updateTranslation = (input: Parameters<typeof updateNode>[1]) =>
+    updateNode(node.id, input, { locale: selectedLang });
 
   const langLabel = (code: string) =>
     code === instance.defaultLanguage
@@ -139,23 +151,68 @@ export function NodeContentSection({ node, readOnly }: NodeContentSectionProps) 
     </Box>
   );
 
-  const readOnlyBody = (
+  const translatedShortDescription = ownTranslation(
+    translated?.shortDescription,
+    node.shortDescription
+  );
+  const untranslatedHint = t('nodes-translation-missing', {
+    language: getNativeLanguageName(instance.defaultLanguage),
+  });
+
+  const translationBody = (
     <Box sx={{ display: 'contents' }}>
       <Alert severity="info" sx={{ fontSize: 12, py: 0.5, '& .MuiAlert-message': { py: 0.25 } }}>
-        {t('nodes-translations-readonly')}
+        {t('nodes-translation-editing', {
+          language: getNativeLanguageName(selectedLang),
+          defaultLanguage: getNativeLanguageName(instance.defaultLanguage),
+        })}
       </Alert>
-      {translationLoading ? (
+      {translationLoading || !translated ? (
         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
           {t('nodes-loading-translation')}
         </Typography>
-      ) : (
+      ) : readOnly ? (
         <>
-          <ReadOnlyTextField label={t('nodes-field-name')} value={translated?.name} />
+          <ReadOnlyTextField label={t('nodes-field-name')} value={translated.name} />
           <ReadOnlyRichTextField
             label={t('nodes-short-description')}
-            value={translated?.shortDescription}
+            value={translated.shortDescription}
           />
-          <ReadOnlyRichTextField label={t('nodes-description')} value={translated?.description} />
+          <ReadOnlyRichTextField label={t('nodes-description')} value={translated.description} />
+        </>
+      ) : (
+        <>
+          <LiveTextField
+            key={`name:${node.id}:${selectedLang}`}
+            label={t('nodes-field-name')}
+            nodeId={node.id}
+            value={ownTranslation(translated.name, node.name)}
+            placeholder={node.name ?? undefined}
+            onCommit={(next) => updateTranslation({ name: next })}
+          />
+
+          <RichTextField
+            key={`shortDescription:${node.id}:${selectedLang}`}
+            label={t('nodes-short-description')}
+            value={translatedShortDescription}
+            placeholder={node.shortDescription ? untranslatedHint : undefined}
+            onCommit={(html) => updateTranslation({ shortDescription: html ?? '' })}
+          />
+
+          <RichTextField
+            key={`description:${node.id}:${selectedLang}`}
+            label={t('nodes-description')}
+            value={ownTranslation(translated.description, node.description)}
+            placeholder={node.description ? untranslatedHint : undefined}
+            // Pin the short description as in the default-language tab; an
+            // untranslated one is sent empty, which keeps it untranslated.
+            onCommit={(html) =>
+              updateTranslation({
+                description: html ?? '',
+                shortDescription: translatedShortDescription,
+              })
+            }
+          />
         </>
       )}
     </Box>
@@ -164,7 +221,7 @@ export function NodeContentSection({ node, readOnly }: NodeContentSectionProps) 
   const body = (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {tabs}
-      {isDefault ? editableBody : readOnlyBody}
+      {isDefault ? editableBody : translationBody}
       <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
         <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
           <Button
@@ -180,7 +237,7 @@ export function NodeContentSection({ node, readOnly }: NodeContentSectionProps) 
     </Box>
   );
 
-  if (!readOnly || !isDefault) return body;
+  if (!readOnly) return body;
   return (
     <Tooltip title={t('entity-read-only-desc')} placement="left" arrow followCursor>
       {body}

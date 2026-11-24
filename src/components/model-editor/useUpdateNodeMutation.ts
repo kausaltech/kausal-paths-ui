@@ -24,6 +24,16 @@ function stripNulls(input: Partial<UpdateNodeInput>): UpdateNodeInput {
   return out satisfies UpdateNodeInput;
 }
 
+export type UpdateNodeOptions = {
+  /**
+   * Write the translatable texts (name, short name, descriptions) into this
+   * language instead of the instance's default language. The mutation
+   * response then carries the texts in this language too, so they are not
+   * propagated to the default-language node graph.
+   */
+  locale?: string;
+};
+
 /**
  * Update a node's editable fields. Handles the editor's write plumbing:
  * passes the draft-head version token (and refreshes it after the write),
@@ -36,7 +46,9 @@ export function useUpdateNodeMutation() {
   const editorContext = useEditorApolloContext();
   const [mutate] = useMutation(UPDATE_NODE);
   return useCallback(
-    async (nodeId: string, input: Partial<UpdateNodeInput>) => {
+    async (nodeId: string, input: Partial<UpdateNodeInput>, options: UpdateNodeOptions = {}) => {
+      const locale = options.locale ?? instance.defaultLanguage;
+      const isDefaultLocale = locale === instance.defaultLanguage;
       try {
         const result = await mutate({
           variables: {
@@ -45,13 +57,19 @@ export function useUpdateNodeMutation() {
             input: stripNulls(input),
             version: draftHeadTokenVar(),
           },
-          context: editorContext,
+          context: isDefaultLocale ? editorContext : { ...editorContext, locale },
+          // A translated response must not overwrite the cached default-language
+          // node, which the rest of the editor reads.
+          fetchPolicy: isDefaultLocale ? undefined : 'no-cache',
           // Re-fetch the token after a successful write so subsequent mutations
           // pass the new head and don't trip the stale-check.
           refetchQueries: ['EditorPublishState'],
         });
         const payload = result.data?.instanceEditor.nodeEditor.update;
-        if (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode') {
+        if (
+          isDefaultLocale &&
+          (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode')
+        ) {
           // NodeGraph query uses fetchPolicy: 'no-cache', so propagate the
           // updated fields via the reactive-var overlay.
           const override: NodeFieldOverrides = {};
@@ -90,6 +108,6 @@ export function useUpdateNodeMutation() {
         throw err;
       }
     },
-    [instance.id, mutate, client, editorContext]
+    [instance.id, instance.defaultLanguage, mutate, client, editorContext]
   );
 }
