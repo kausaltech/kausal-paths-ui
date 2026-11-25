@@ -49,6 +49,7 @@
     "@sentry/node": "^10.78.0",
     "@sentry/opentelemetry": "^10.78.0",
     "@sentry/vercel-edge": "^10.78.0",
+    "@tiptap/extensions": "^3.33.0",
     "@tiptap/pm": "^3.33.0",
     "@tiptap/react": "^3.33.0",
     "@tiptap/starter-kit": "^3.33.0",

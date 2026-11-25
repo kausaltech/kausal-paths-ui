@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 
+import { Placeholder, type PlaceholderOptions } from '@tiptap/extensions';
 import { type Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link45deg, ListOl, ListUl, TypeBold, TypeItalic } from 'react-bootstrap-icons';
@@ -161,7 +162,12 @@ export default function RichTextField({
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [StarterKit.configure({ link: { openOnClick: false } })],
+    extensions: [
+      StarterKit.configure({ link: { openOnClick: false } }),
+      // StarterKit does not include it, and without it Tiptap never marks an empty paragraph
+      // with `is-editor-empty`, so the placeholder styled below would never show.
+      Placeholder.configure({ placeholder: placeholder ?? '' }),
+    ],
     content: value || '',
     editable: !disabled,
     onBlur: ({ editor }) => {
@@ -205,6 +211,19 @@ export default function RichTextField({
     if (editor) editor.setEditable(!disabled);
   }, [editor, disabled]);
 
+  // The editor is created once, so a placeholder that changes after mount (the default-language
+  // text being saved, say) goes into the extension's options. Decorations are recomputed on a
+  // view update, hence the empty transaction.
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    const extension = editor.extensionManager.extensions.find((ext) => ext.name === 'placeholder');
+    if (!extension) return;
+    const options = extension.options as PlaceholderOptions;
+    if (options.placeholder === (placeholder ?? '')) return;
+    options.placeholder = placeholder ?? '';
+    editor.view.dispatch(editor.state.tr);
+  }, [editor, placeholder]);
+
   return (
     <Box>
       {!hideHeader && (
@@ -238,7 +257,9 @@ export default function RichTextField({
           '& .ProseMirror ul, & .ProseMirror ol': { pl: 2.5, my: 0.5 },
           '& .ProseMirror a': { color: 'primary.main', textDecoration: 'underline' },
           '& .ProseMirror p.is-editor-empty:first-of-type::before': {
-            content: `"${placeholder ?? ''}"`,
+            // The extension puts the text in `data-placeholder`; reading it from there also
+            // keeps quotes in the text from breaking the CSS string.
+            content: 'attr(data-placeholder)',
             color: 'text.disabled',
             float: 'left',
             height: 0,

@@ -101,6 +101,9 @@ importers:
       '@sentry/vercel-edge':
         specifier: ^10.78.0
         version: 10.78.0
+      '@tiptap/extensions':
+        specifier: ^3.33.0
+        version: 3.33.0(@tiptap/core@3.33.0)(@tiptap/pm@3.33.0)
       '@tiptap/pm':
         specifier: ^3.33.0
         version: 3.33.0
